@@ -11,6 +11,7 @@ using PotionCraft.ObjectBased.Mortar;
 using PotionCraft.ObjectBased.RecipeMap.RecipeMapItem.IndicatorMapItem;
 using PotionCraft.ObjectBased.Stack;
 using PotionCraft.ObjectBased.UIElements;
+using PotionCraft.ObjectBased.UIElements.Books.RecipeBook;
 using PotionCraft.Settings;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -34,6 +35,7 @@ namespace AlchAss
         private static ConfigEntry<bool> enableStirSpeed;
         private static ConfigEntry<bool> enableLadleSpeed;
         private static ConfigEntry<bool> enableHeatSpeed;
+        private static ConfigEntry<bool> enableBrewMore;
 
         private static ConfigEntry<Vector2> positionGrindDebugWindow;
         private static ConfigEntry<Vector2> positionHealthDebugWindow;
@@ -59,29 +61,30 @@ namespace AlchAss
 
         void Awake()
         {
-            enableGrindStatus = Config.Bind("信息窗口", "研磨信息", true, "开启后，显示研磨进度。");
-            enableHealthStatus = Config.Bind("信息窗口", "血量信息", true, "开启后，显示血量。");
-            enableVortexStatus = Config.Bind("信息窗口", "漩涡信息", true, "开启后，显示漩涡中心方向和夹角。");
-            enableStirStatus = Config.Bind("信息窗口", "搅拌信息", true, "开启后，显示搅拌阶段、搅拌进度和搅拌方向。");
-            enablePositionStatus = Config.Bind("信息窗口", "位置信息", true, "开启后，显示位置、方向、旋转和折算盐量，以及与所接触效果的差值。");
-            enableDeviationStatus = Config.Bind("信息窗口", "偏离信息", true, "开启后，显示与所接触效果的总体、位置和旋转偏差度。");
-            enableClosestPathStatus = Config.Bind("信息窗口", "路径信息", true, "开启后，显示路径最近点的目标效果和偏差度。");
-            enableClosestLadleStatus = Config.Bind("信息窗口", "加水信息", true, "开启后，显示加水最近点的目标效果和偏差度。");
+            enableGrindStatus = Config.Bind("信息窗口", "研磨信息", true, "开启后，显示研磨进度.");
+            enableHealthStatus = Config.Bind("信息窗口", "血量信息", true, "开启后，显示血量.");
+            enableVortexStatus = Config.Bind("信息窗口", "漩涡信息", true, "开启后，显示漩涡中心方向和夹角.");
+            enableStirStatus = Config.Bind("信息窗口", "搅拌信息", true, "开启后，显示搅拌阶段、搅拌进度和搅拌方向.");
+            enablePositionStatus = Config.Bind("信息窗口", "位置信息", true, "开启后，显示位置、方向、旋转和折算盐量，以及与所接触效果的差值.");
+            enableDeviationStatus = Config.Bind("信息窗口", "偏离信息", true, "开启后，显示与所接触效果的总体、位置和旋转偏差度.");
+            enableClosestPathStatus = Config.Bind("信息窗口", "路径信息", true, "开启后，显示路径最近点的目标效果和偏差度.");
+            enableClosestLadleStatus = Config.Bind("信息窗口", "加水信息", true, "开启后，显示加水最近点的目标效果和偏差度.");
 
-            enableShuttingDown = Config.Bind("速度控制", "允许漩涡急停", true, "开启后，右键点击风箱把手将使药水瞬间冷却。");
-            enableGrindSpeed = Config.Bind("速度控制", "允许研磨减速", true, "开启后，按住 Z, X 或 Z + X 键将使研磨减速至 10%, 1% 或 0.1%。");
-            enableStirSpeed = Config.Bind("速度控制", "允许搅拌减速", true, "开启后，按住 Z, X 或 Z + X 键将使搅拌减速至 10%, 1% 或 0.1%。");
-            enableLadleSpeed = Config.Bind("速度控制", "允许加水减速", true, "开启后，按住 Z, X 或 Z + X 键将使加水减速至 10%, 1% 或 0.1%。");
-            enableHeatSpeed = Config.Bind("速度控制", "允许加热减速", true, "开启后，按住 Z, X 或 Z + X 键将使加热减速至 10%, 1% 或 0.1%。");
+            enableShuttingDown = Config.Bind("操作控制", "允许漩涡急停", true, "开启后，右键点击风箱把手将使药水瞬间冷却.");
+            enableGrindSpeed = Config.Bind("操作控制", "允许研磨减速", true, "开启后，按住 Z, X 或 Z + X 键将使研磨减速至 10%, 1% 或 0.1%.");
+            enableStirSpeed = Config.Bind("操作控制", "允许搅拌减速", true, "开启后，按住 Z, X 或 Z + X 键将使搅拌减速至 10%, 1% 或 0.1%.");
+            enableLadleSpeed = Config.Bind("操作控制", "允许加水减速", true, "开启后，按住 Z, X 或 Z + X 键将使加水减速至 10%, 1% 或 0.1%.");
+            enableHeatSpeed = Config.Bind("操作控制", "允许加热减速", true, "开启后，按住 Z, X 或 Z + X 键将使加热减速至 10%, 1% 或 0.1%.");
+            enableBrewMore = Config.Bind("操作控制", "允许大批炼药", true, "开启后，按住 Z, X 或 Z + X 键将使炼药数量增加至 500%, 1000% 或 2000%.");
 
-            positionGrindDebugWindow = Config.Bind("窗口位置", "研磨信息", new Vector2(8.5f, -4.5f), "调整研磨信息窗口坐标。");
-            positionHealthDebugWindow = Config.Bind("窗口位置", "血量信息", new Vector2(5.5f, -4.5f), "调整血量信息窗口坐标。");
-            positionVortexDebugWindow = Config.Bind("窗口位置", "漩涡信息", new Vector2(2.5f, -4.5f), "调整漩涡信息窗口坐标。");
-            positionStirDebugWindow = Config.Bind("窗口位置", "搅拌信息", new Vector2(-0.5f, -4.5f), "调整搅拌信息窗口坐标。");
-            positionPositionDebugWindow = Config.Bind("窗口位置", "位置信息", new Vector2(-3.5f, -4.5f), "调整位置信息窗口坐标。");
-            positionDeviationDebugWindow = Config.Bind("窗口位置", "偏离信息", new Vector2(-6.5f, -4.5f), "调整偏离信息窗口坐标。");
-            positionClosestPathDebugWindow = Config.Bind("窗口位置", "路径信息", new Vector2(-9.5f, -4.5f), "调整路径信息窗口坐标。");
-            positionClosestLadleDebugWindow = Config.Bind("窗口位置", "加水信息", new Vector2(-12.5f, -4.5f), "调整加水信息窗口坐标。");
+            positionGrindDebugWindow = Config.Bind("窗口位置", "研磨信息", new Vector2(8.5f, -4.5f), "调整研磨信息窗口坐标.");
+            positionHealthDebugWindow = Config.Bind("窗口位置", "血量信息", new Vector2(5.5f, -4.5f), "调整血量信息窗口坐标.");
+            positionVortexDebugWindow = Config.Bind("窗口位置", "漩涡信息", new Vector2(2.5f, -4.5f), "调整漩涡信息窗口坐标.");
+            positionStirDebugWindow = Config.Bind("窗口位置", "搅拌信息", new Vector2(-0.5f, -4.5f), "调整搅拌信息窗口坐标.");
+            positionPositionDebugWindow = Config.Bind("窗口位置", "位置信息", new Vector2(-3.5f, -4.5f), "调整位置信息窗口坐标.");
+            positionDeviationDebugWindow = Config.Bind("窗口位置", "偏离信息", new Vector2(-6.5f, -4.5f), "调整偏离信息窗口坐标.");
+            positionClosestPathDebugWindow = Config.Bind("窗口位置", "路径信息", new Vector2(-9.5f, -4.5f), "调整路径信息窗口坐标.");
+            positionClosestLadleDebugWindow = Config.Bind("窗口位置", "加水信息", new Vector2(-12.5f, -4.5f), "调整加水信息窗口坐标.");
 
             LocalizationManager.OnInitialize.AddListener(Helper.SetModLocalization);
             Harmony.CreateAndPatchAll(typeof(AlchAss));
@@ -282,5 +285,21 @@ namespace AlchAss
                     closestLadleDebugWindow.ShowText(closestLadleDebugWindow.transform.position.ToString());
             }
         }
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(RecipeBookRecipeBrewController), "BrewRecipe")]
+        private static void BrewMore(ref int count, IRecipeBookPageContent recipePageContent)
+        {
+            if (enableBrewMore.Value)
+            {
+                if (Keyboard.current.xKey.isPressed && Keyboard.current.zKey.isPressed)
+                    InfoCalc.BrewRecipe(ref count, recipePageContent, 20);
+                else if (Keyboard.current.xKey.isPressed)
+                    InfoCalc.BrewRecipe(ref count, recipePageContent, 10);
+                else if (Keyboard.current.zKey.isPressed)
+                    InfoCalc.BrewRecipe(ref count, recipePageContent, 5);
+            }
+        }
     }
 }
+
