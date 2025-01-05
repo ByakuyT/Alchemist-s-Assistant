@@ -1,4 +1,4 @@
-# Alchemist-s-Assistant
+# Alchemist's Assistant
 
 这个模组基于 General Utils 和 FasterChores 两个模组，整合了 General Utils 的主要功能和修改自 FasterChores 的操作减速功能。所有功能都可配置，请在 BepInEx\config 中找到 GenUtilFork.cfg 并编辑其中内容。
 注意本模组和 FasterChores 在变速功能上冲突。
