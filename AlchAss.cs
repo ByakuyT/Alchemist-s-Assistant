@@ -1,21 +1,11 @@
-﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Runtime.Remoting.Messaging;
-using System.Web.UI;
 using BepInEx;
 using BepInEx.Configuration;
-using DG.Tweening.Plugins.Core;
 using HarmonyLib;
-using Mono.CSharp;
-using PotionCraft.Assemblies.DataBaseSystem.PreparedObjects;
 using PotionCraft.DebugObjects.DebugWindows;
 using PotionCraft.LocalizationSystem;
-using PotionCraft.ManagersSystem;
 using PotionCraft.ManagersSystem.RecipeMap;
 using PotionCraft.ObjectBased;
-using PotionCraft.ObjectBased.Bellows;
-using PotionCraft.ObjectBased.Camera;
 using PotionCraft.ObjectBased.Cauldron;
 using PotionCraft.ObjectBased.Mortar;
 using PotionCraft.ObjectBased.RecipeMap.RecipeMapItem.IndicatorMapItem;
@@ -27,7 +17,7 @@ using UnityEngine.InputSystem;
 
 namespace AlchAss
 {
-    [BepInPlugin("AlchAss", "Alchemist's Assistant", "2.0.0")]
+    [BepInPlugin("AlchAss", "Alchemist's Assistant", "2.0.1")]
     public class AlchAss : BaseUnityPlugin
     {
         private static ConfigEntry<bool> enableGrindStatus;
@@ -107,7 +97,7 @@ namespace AlchAss
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(Window), "ToForeground")]
-        public static bool WindowForeground(Window __instance)
+        private static bool WindowForeground(Window __instance)
         {
             if (__instance is not DebugWindow dbg)
                 return true;
@@ -127,7 +117,7 @@ namespace AlchAss
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(SubstanceGrinding), "TryToGrind")]
-        public static void GrindSlowDown(ref float pestleLinearSpeed, ref float pestleAngularSpeed)
+        private static void GrindSlowDown(ref float pestleLinearSpeed, ref float pestleAngularSpeed)
         {
             if (enableGrindSpeed.Value)
             {
@@ -142,7 +132,7 @@ namespace AlchAss
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(Cauldron), "UpdateStirringValue")]
-        public static void StirSlowDown(ref float ___StirringValue)
+        private static void StirSlowDown(ref float ___StirringValue)
         {
             if (enableStirSpeed.Value)
             {
@@ -157,7 +147,7 @@ namespace AlchAss
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(RecipeMapManager), "GetSpeedOfMovingTowardsBase")]
-        public static void LadleSlowDown(ref float __result)
+        private static void LadleSlowDown(ref float __result)
         {
             if (enableLadleSpeed.Value)
             {
@@ -172,7 +162,7 @@ namespace AlchAss
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(RecipeMapManager), "MoveIndicatorTowardsVortex")]
-        public static void HeatSlowDown(ref float __state)
+        private static void HeatSlowDown(ref float __state)
         {
             if (enableHeatSpeed.Value)
             {
@@ -187,7 +177,7 @@ namespace AlchAss
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(RecipeMapManager), "MoveIndicatorTowardsVortex")]
-        public static void HeatSlowDownEnd(float __state)
+        private static void HeatSlowDownEnd(float __state)
         {
             if (enableHeatSpeed.Value)
                 if (__state != 0f)
@@ -197,7 +187,7 @@ namespace AlchAss
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(Mortar), "Update")]
-        public static void GrindStatus(Mortar __instance)
+        private static void GrindStatus(Mortar __instance)
         {
             if (enableGrindStatus.Value)
                 if (grindDebugWindow == null)
@@ -214,7 +204,7 @@ namespace AlchAss
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(IndicatorMapItem), "UpdateByCollection")]
-        public static void PotionStatus(IndicatorMapItem __instance)
+        private static void PotionStatus(IndicatorMapItem __instance)
         {
             if (enableHealthStatus.Value)
                 if (healthDebugWindow == null)
@@ -265,14 +255,14 @@ namespace AlchAss
                 if (positionDebugWindow != null)
                 {
                     if (!windowsPosition)
-                        positionDebugWindow.ShowText(posdev.st1);
+                        positionDebugWindow.ShowText(posdev.Item1);
                     else
                         positionDebugWindow.ShowText(positionDebugWindow.transform.position.ToString());
                 }
                 if (deviationDebugWindow != null)
                 {
                     if (!windowsPosition)
-                        deviationDebugWindow.ShowText(posdev.st2);
+                        deviationDebugWindow.ShowText(posdev.Item2);
                     else
                         deviationDebugWindow.ShowText(deviationDebugWindow.transform.position.ToString());
                 }
