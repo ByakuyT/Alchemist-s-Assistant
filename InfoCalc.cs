@@ -9,6 +9,7 @@ using PotionCraft.ObjectBased.Mortar;
 using PotionCraft.ObjectBased.RecipeMap.Path;
 using PotionCraft.ObjectBased.RecipeMap.RecipeMapItem.IndicatorMapItem;
 using PotionCraft.ObjectBased.RecipeMap.RecipeMapItem.PotionEffectMapItem;
+using PotionCraft.ObjectBased.UIElements.Books.RecipeBook;
 using PotionCraft.Settings;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -185,6 +186,11 @@ namespace AlchAss
                 return LocalizationManager.GetText("#mod_closest_potion_ladle") + potionEffectMapItem.Effect.GetLocalizedTitle() + "\n" + LocalizationManager.GetText("#mod_closest_general_ladle") + "<color=red>L" + num17.ToString() + "</color> " + num16.ToString() + "%\n" + LocalizationManager.GetText("#mod_closest_distance_ladle") + "<color=red>L" + num13.ToString() + "</color> " + num12.ToString() + "%\n" + LocalizationManager.GetText("#mod_closest_angle_ladle") + "<color=red>L" + num15.ToString() + "</color> " + num14.ToString() + "%";
             }
             return LocalizationManager.GetText("#mod_closest_potion_ladle") + "\n" + LocalizationManager.GetText("#mod_closest_general_ladle") + "\n" + LocalizationManager.GetText("#mod_closest_distance_ladle") + "\n" + LocalizationManager.GetText("#mod_closest_angle_ladle");
+        }
+        public static void BrewRecipe(ref int count, IRecipeBookPageContent recipePageContent, int times)
+        {
+            if (Helper.CanBrewTimes(recipePageContent, count, times))
+                count *= times;
         }
     }
 }
