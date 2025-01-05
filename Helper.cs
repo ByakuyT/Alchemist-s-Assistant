@@ -5,7 +5,10 @@ using PotionCraft.Assemblies.DataBaseSystem.PreparedObjects;
 using PotionCraft.DebugObjects.DebugWindows;
 using PotionCraft.LocalizationSystem;
 using PotionCraft.ManagersSystem;
+using PotionCraft.ManagersSystem.Potion.Entities;
 using PotionCraft.ObjectBased.RecipeMap.RecipeMapItem.PotionEffectMapItem;
+using PotionCraft.ObjectBased.UIElements.Books.RecipeBook;
+using PotionCraft.ScriptableObjects;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -72,6 +75,23 @@ namespace AlchAss
         {
             if (Keyboard.current.f11Key.wasPressedThisFrame)
                 AlchAss.windowsPosition = !AlchAss.windowsPosition;
+        }
+        public static bool CanBrewTimes(IRecipeBookPageContent recipePageContent, int count, int times)
+        {
+            var requiredComponents = RecipeBookRecipeBrewController.GetUsedDuringBrewingIngredientsAmount(recipePageContent.GetComponentsToUseInBrewWithPreparedIngredients(), recipePageContent.GetComponentsToUseInBrewWithoutPreparedIngredients(), count * times, true);
+            foreach (var component in requiredComponents)
+            {
+                if (component.Type == AlchemySubstanceComponentType.InventoryItem)
+                {
+                    var inventoryItem = component.Component as InventoryItem;
+                    if (inventoryItem == null)
+                        continue;
+                    int availableAmount = Managers.Player.Inventory.GetItemCount(inventoryItem);
+                    if (availableAmount < component.Amount)
+                        return false;
+                }
+            }
+            return true;
         }
     }
 }
