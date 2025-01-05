@@ -1,29 +1,16 @@
-﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using DG.Tweening.Plugins.Core;
 using HarmonyLib;
 using PotionCraft.Assemblies.DataBaseSystem.PreparedObjects;
 using PotionCraft.DebugObjects.DebugWindows;
 using PotionCraft.LocalizationSystem;
 using PotionCraft.ManagersSystem;
-using PotionCraft.ObjectBased;
 using PotionCraft.ObjectBased.RecipeMap.RecipeMapItem.PotionEffectMapItem;
-using PotionCraft.ObjectBased.UIElements;
-using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using static Mono.Security.X509.X520;
 
 namespace AlchAss
 {
-    public struct DoubleString
-    {
-        public string st1;
-        public string st2;
-    };
     public static class Helper
     {
         public static void SetModLocalization()
