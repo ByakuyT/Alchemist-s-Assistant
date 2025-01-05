@@ -1,7 +1,6 @@
 # Alchemist's Assistant
 
-这个模组基于 General Utils 和 FasterChores 两个模组，整合了 General Utils 的主要功能和修改自 FasterChores 的操作减速功能。所有功能都可配置，请在 BepInEx\config 中找到 GenUtilFork.cfg 并编辑其中内容。
-注意本模组和 FasterChores 在变速功能上冲突。
+这个模组基于 General Utils 和 FasterChores 两个模组编写，包括 General Utils 的主要功能和修改自 FasterChores 的操作减速功能。所有功能都可配置，请在 BepInEx\config 中找到 AlchAss.cfg 并编辑其中内容。注意本模组和 FasterChores 在变速功能上冲突。
 
 ## 功能：
 1. 按住 Z 键时研磨、搅拌、加水和漩涡移动速度减少至 10%，按住 X 键时速度减少至 1%，同时按住 Z 键和 X 键时速度减少至 0.1%；注意由于技术原因，目前研磨减速功能只在药材已经完全研磨为团状（最低约 30% 研磨度）时生效；
@@ -14,4 +13,4 @@
 8. 实时显示药水加水移动路径上最接近的效果，和最接近时的偏差程度；
 9. 当药水瓶在漩涡中时，实时显示漩涡中心的方向，和药水瓶加水方向与漩涡中心方向的夹角；
 10. 实时显示研磨程度；
-11. 按下 F11 键会切换为位置显示模式，窗口中将会显示其自身的位置。
+11. 按下 F11 键后会切换为位置显示模式，对话框将显示其自身当前位置。
