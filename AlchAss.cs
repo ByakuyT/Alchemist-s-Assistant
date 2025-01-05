@@ -45,6 +45,8 @@ namespace AlchAss
         private static ConfigEntry<Vector2> positionDeviationDebugWindow;
         private static ConfigEntry<Vector2> positionClosestPathDebugWindow;
         private static ConfigEntry<Vector2> positionClosestLadleDebugWindow;
+        private static ConfigEntry<Vector3> speedControl;
+        private static ConfigEntry<Vector3Int> brewControl;
 
         private static DebugWindow grindDebugWindow;
         private static DebugWindow healthDebugWindow;
@@ -71,11 +73,13 @@ namespace AlchAss
             enableClosestLadleStatus = Config.Bind("信息窗口", "加水信息", true, "开启后，显示加水最近点的目标效果和偏差度.");
 
             enableShuttingDown = Config.Bind("操作控制", "允许漩涡急停", true, "开启后，右键点击风箱把手将使药水瞬间冷却.");
-            enableGrindSpeed = Config.Bind("操作控制", "允许研磨减速", true, "开启后，按住 Z, X 或 Z + X 键将使研磨减速至 10%, 1% 或 0.1%.");
-            enableStirSpeed = Config.Bind("操作控制", "允许搅拌减速", true, "开启后，按住 Z, X 或 Z + X 键将使搅拌减速至 10%, 1% 或 0.1%.");
-            enableLadleSpeed = Config.Bind("操作控制", "允许加水减速", true, "开启后，按住 Z, X 或 Z + X 键将使加水减速至 10%, 1% 或 0.1%.");
-            enableHeatSpeed = Config.Bind("操作控制", "允许加热减速", true, "开启后，按住 Z, X 或 Z + X 键将使加热减速至 10%, 1% 或 0.1%.");
-            enableBrewMore = Config.Bind("操作控制", "允许大批炼药", true, "开启后，按住 Z, X 或 Z + X 键将使炼药数量增加至 500%, 1000% 或 2000%.");
+            enableGrindSpeed = Config.Bind("操作控制", "允许研磨减速", true, "开启后，按住 Z, X 或 Z + X 键将使研磨减速至相应比例.");
+            enableStirSpeed = Config.Bind("操作控制", "允许搅拌减速", true, "开启后，按住 Z, X 或 Z + X 键将使搅拌减速至相应比例.");
+            enableLadleSpeed = Config.Bind("操作控制", "允许加水减速", true, "开启后，按住 Z, X 或 Z + X 键将使加水减速至相应比例.");
+            enableHeatSpeed = Config.Bind("操作控制", "允许加热减速", true, "开启后，按住 Z, X 或 Z + X 键将使加热减速至相应比例.");
+            enableBrewMore = Config.Bind("操作控制", "允许大批炼药", true, "开启后，按住 Z, X 或 Z + X 键将使炼药数量增加至相应比例.");
+            speedControl = Config.Bind("操作控制", "减速比例", new Vector3(10f, 100f, 1000f), "按住 Z, X 或 Z + X 键减速操作至 1/x*, 1/y*, 1/z*");
+            brewControl = Config.Bind("操作控制", "研磨信息", new Vector3Int(5, 10, 20), "按住 Z, X 或 Z + X 键增加炼药数量至 x*, y*, z*");
 
             positionGrindDebugWindow = Config.Bind("窗口位置", "研磨信息", new Vector2(8.5f, -4.5f), "调整研磨信息窗口坐标.");
             positionHealthDebugWindow = Config.Bind("窗口位置", "血量信息", new Vector2(5.5f, -4.5f), "调整血量信息窗口坐标.");
@@ -125,11 +129,11 @@ namespace AlchAss
             if (enableGrindSpeed.Value)
             {
                 if (Keyboard.current.xKey.isPressed && Keyboard.current.zKey.isPressed)
-                    InfoCalc.GrindSlowDown(ref pestleLinearSpeed, ref pestleAngularSpeed, 1000);
+                    InfoCalc.GrindSlowDown(ref pestleLinearSpeed, ref pestleAngularSpeed, speedControl.Value.z);
                 else if (Keyboard.current.xKey.isPressed)
-                    InfoCalc.GrindSlowDown(ref pestleLinearSpeed, ref pestleAngularSpeed, 100);
+                    InfoCalc.GrindSlowDown(ref pestleLinearSpeed, ref pestleAngularSpeed, speedControl.Value.y);
                 else if (Keyboard.current.zKey.isPressed)
-                    InfoCalc.GrindSlowDown(ref pestleLinearSpeed, ref pestleAngularSpeed, 10);
+                    InfoCalc.GrindSlowDown(ref pestleLinearSpeed, ref pestleAngularSpeed, speedControl.Value.x);
             }
         }
 
@@ -140,11 +144,11 @@ namespace AlchAss
             if (enableStirSpeed.Value)
             {
                 if (Keyboard.current.xKey.isPressed && Keyboard.current.zKey.isPressed)
-                    InfoCalc.StirSlowDown(ref ___StirringValue, 1000);
+                    InfoCalc.StirSlowDown(ref ___StirringValue, speedControl.Value.z);
                 else if (Keyboard.current.xKey.isPressed)
-                    InfoCalc.StirSlowDown(ref ___StirringValue, 100);
+                    InfoCalc.StirSlowDown(ref ___StirringValue, speedControl.Value.y);
                 else if (Keyboard.current.zKey.isPressed)
-                    InfoCalc.StirSlowDown(ref ___StirringValue, 10);
+                    InfoCalc.StirSlowDown(ref ___StirringValue, speedControl.Value.x);
             }
         }
 
@@ -155,11 +159,11 @@ namespace AlchAss
             if (enableLadleSpeed.Value)
             {
                 if (Keyboard.current.xKey.isPressed && Keyboard.current.zKey.isPressed)
-                    InfoCalc.LadleSlowDown(ref __result, 1000);
+                    InfoCalc.LadleSlowDown(ref __result, speedControl.Value.z);
                 else if (Keyboard.current.xKey.isPressed)
-                    InfoCalc.LadleSlowDown(ref __result, 100);
+                    InfoCalc.LadleSlowDown(ref __result, speedControl.Value.y);
                 else if (Keyboard.current.zKey.isPressed)
-                    InfoCalc.LadleSlowDown(ref __result, 10);
+                    InfoCalc.LadleSlowDown(ref __result, speedControl.Value.x);
             }
         }
 
@@ -170,11 +174,11 @@ namespace AlchAss
             if (enableHeatSpeed.Value)
             {
                 if (Keyboard.current.xKey.isPressed && Keyboard.current.zKey.isPressed)
-                    InfoCalc.HeatSlowDown(ref __state, 1000);
+                    InfoCalc.HeatSlowDown(ref __state, speedControl.Value.z);
                 else if (Keyboard.current.xKey.isPressed)
-                    InfoCalc.HeatSlowDown(ref __state, 100);
+                    InfoCalc.HeatSlowDown(ref __state, speedControl.Value.y);
                 else if (Keyboard.current.zKey.isPressed)
-                    InfoCalc.HeatSlowDown(ref __state, 10);
+                    InfoCalc.HeatSlowDown(ref __state, speedControl.Value.x);
             }
         }
 
@@ -293,13 +297,12 @@ namespace AlchAss
             if (enableBrewMore.Value)
             {
                 if (Keyboard.current.xKey.isPressed && Keyboard.current.zKey.isPressed)
-                    InfoCalc.BrewRecipe(ref count, recipePageContent, 20);
+                    InfoCalc.BrewRecipe(ref count, recipePageContent, brewControl.Value.z);
                 else if (Keyboard.current.xKey.isPressed)
-                    InfoCalc.BrewRecipe(ref count, recipePageContent, 10);
+                    InfoCalc.BrewRecipe(ref count, recipePageContent, brewControl.Value.y);
                 else if (Keyboard.current.zKey.isPressed)
-                    InfoCalc.BrewRecipe(ref count, recipePageContent, 5);
+                    InfoCalc.BrewRecipe(ref count, recipePageContent, brewControl.Value.x);
             }
         }
     }
 }
-
