@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+using System;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Web.UI;
-using System.Web.UI.WebControls;
-using DG.Tweening.Plugins.Core;
 using HarmonyLib;
 using PotionCraft.LocalizationSystem;
 using PotionCraft.ManagersSystem;
@@ -95,9 +89,9 @@ namespace AlchAss
             direction = direction < float.MaxValue ? direction : 0f;
             return LocalizationManager.GetText("#mod_stir_stage") + deletedGraphicsSegments.ToString() + "\n" + LocalizationManager.GetText("#mod_stir_progress") + segmentLengthToDeletePhysics.ToString() + "\n" + LocalizationManager.GetText("#mod_stir_direction") + direction.ToString();
         }
-        public static DoubleString PositionDeviationCalc()
+        public static Tuple<string, string> PositionDeviationCalc()
         {
-            DoubleString posdev;
+            string pos, dev;
             var indicatorContainer = Managers.RecipeMap.recipeMapObject.indicatorContainer;
             if (Managers.RecipeMap.currentPotionEffectMapItem == null)
             {
@@ -106,9 +100,9 @@ namespace AlchAss
                 var num = Mathf.DeltaAngle(Managers.RecipeMap.indicatorRotation.Value, 0f);
                 var num2 = Vector2.SignedAngle(vector, Vector2.up);
                 var num3 = num / 9f * 25f;
-                posdev.st1 = LocalizationManager.GetText("#mod_position_distance") + magnitude.ToString() + "\n" + LocalizationManager.GetText("#mod_position_angle") + num2.ToString() + "'\n" + LocalizationManager.GetText("#mod_position_rotation") + num.ToString() + "'\n" + LocalizationManager.GetText("#mod_position_salt") + ((num3 > 0f) ? ("<sprite=\"IconsAtlas\" name=\"SunSalt\"> " + num3.ToString()) : ("<sprite=\"IconsAtlas\" name=\"MoonSalt\"> " + (-num3).ToString()));
-                posdev.st2 = LocalizationManager.GetText("#mod_deviation_general") + "\n" + LocalizationManager.GetText("#mod_deviation_distance") + "\n" + LocalizationManager.GetText("#mod_deviation_rotation");
-                return posdev;
+                pos = LocalizationManager.GetText("#mod_position_distance") + magnitude.ToString() + "\n" + LocalizationManager.GetText("#mod_position_angle") + num2.ToString() + "'\n" + LocalizationManager.GetText("#mod_position_rotation") + num.ToString() + "'\n" + LocalizationManager.GetText("#mod_position_salt") + ((num3 > 0f) ? ("<sprite=\"IconsAtlas\" name=\"SunSalt\"> " + num3.ToString()) : ("<sprite=\"IconsAtlas\" name=\"MoonSalt\"> " + (-num3).ToString()));
+                dev = LocalizationManager.GetText("#mod_deviation_general") + "\n" + LocalizationManager.GetText("#mod_deviation_distance") + "\n" + LocalizationManager.GetText("#mod_deviation_rotation");
+                return new Tuple<string, string>(pos, dev);
             }
             var transform = Managers.RecipeMap.currentPotionEffectMapItem.transform;
             var vector2 = indicatorContainer.localPosition;
@@ -117,13 +111,13 @@ namespace AlchAss
             var num5 = Mathf.DeltaAngle(Managers.RecipeMap.indicatorRotation.Value, transform.eulerAngles.z);
             var num6 = Vector2.SignedAngle(vector2, vector3);
             var num7 = num5 / 9f * 25f;
-            posdev.st1 = LocalizationManager.GetText("#mod_position_distance") + num4.ToString() + "\n" + LocalizationManager.GetText("#mod_position_angle") + num6.ToString() + "'\n" + LocalizationManager.GetText("#mod_position_rotation") + num5.ToString() + "'\n" + LocalizationManager.GetText("#mod_position_salt") + ((num7 > 0f) ? ("<sprite=\"IconsAtlas\" name=\"MoonSalt\"> " + num7.ToString()) : ("<sprite=\"IconsAtlas\" name=\"SunSalt\"> " + (-num7).ToString()));
+            pos = LocalizationManager.GetText("#mod_position_distance") + num4.ToString() + "\n" + LocalizationManager.GetText("#mod_position_angle") + num6.ToString() + "'\n" + LocalizationManager.GetText("#mod_position_rotation") + num5.ToString() + "'\n" + LocalizationManager.GetText("#mod_position_salt") + ((num7 > 0f) ? ("<sprite=\"IconsAtlas\" name=\"MoonSalt\"> " + num7.ToString()) : ("<sprite=\"IconsAtlas\" name=\"SunSalt\"> " + (-num7).ToString()));
             var num8 = num4 * 1800f;
             var num9 = Mathf.Abs(num5) / 3f * 25f;
             var num10 = ((num8 <= 100f) ? 3 : ((num8 <= 600f) ? 2 : 1));
             var num11 = ((num9 <= 100f) ? 3 : ((num9 <= 600f) ? 2 : 1));
-            posdev.st2 = LocalizationManager.GetText("#mod_deviation_general") + (num8 + num9).ToString() + "%\n" + LocalizationManager.GetText("#mod_deviation_distance") + "<color=red>L" + num10.ToString() + "</color> " + num8.ToString() + "%\n" + LocalizationManager.GetText("#mod_deviation_rotation") + "<color=red>L" + num11.ToString() + "</color> " + num9.ToString() + "%";
-            return posdev;
+            dev = LocalizationManager.GetText("#mod_deviation_general") + (num8 + num9).ToString() + "%\n" + LocalizationManager.GetText("#mod_deviation_distance") + "<color=red>L" + num10.ToString() + "</color> " + num8.ToString() + "%\n" + LocalizationManager.GetText("#mod_deviation_rotation") + "<color=red>L" + num11.ToString() + "</color> " + num9.ToString() + "%";
+            return new Tuple<string, string>(pos, dev);
         }
         public static string PathCalc()
         {
