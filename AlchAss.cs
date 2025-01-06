@@ -1,14 +1,17 @@
+using System;
 using System.Collections.Generic;
 using BepInEx;
 using BepInEx.Configuration;
 using HarmonyLib;
 using PotionCraft.DebugObjects.DebugWindows;
 using PotionCraft.LocalizationSystem;
+using PotionCraft.ManagersSystem;
 using PotionCraft.ManagersSystem.RecipeMap;
 using PotionCraft.ObjectBased;
 using PotionCraft.ObjectBased.Cauldron;
 using PotionCraft.ObjectBased.Mortar;
 using PotionCraft.ObjectBased.RecipeMap.RecipeMapItem.IndicatorMapItem;
+using PotionCraft.ObjectBased.RecipeMap.RecipeMapItem.SolventDirectionHint;
 using PotionCraft.ObjectBased.Stack;
 using PotionCraft.ObjectBased.UIElements;
 using PotionCraft.ObjectBased.UIElements.Books.RecipeBook;
@@ -18,7 +21,7 @@ using UnityEngine.InputSystem;
 
 namespace AlchAss
 {
-    [BepInPlugin("AlchAss", "Alchemist's Assistant", "2.1.0")]
+    [BepInPlugin("AlchAss", "Alchemist's Assistant", "2.2.0")]
     public class AlchAss : BaseUnityPlugin
     {
         private static ConfigEntry<bool> enableGrindStatus;
@@ -36,6 +39,8 @@ namespace AlchAss
         private static ConfigEntry<bool> enableLadleSpeed;
         private static ConfigEntry<bool> enableHeatSpeed;
         private static ConfigEntry<bool> enableBrewMore;
+        private static ConfigEntry<bool> enableWindowsPosition;
+        private static ConfigEntry<bool> enableDirectionLine;
 
         private static ConfigEntry<Vector2> positionGrindDebugWindow;
         private static ConfigEntry<Vector2> positionHealthDebugWindow;
@@ -57,8 +62,12 @@ namespace AlchAss
         private static DebugWindow closestPathDebugWindow;
         private static DebugWindow closestLadleDebugWindow;
 
-        public static Room lab;
         public static bool windowsPosition = false;
+        public static bool directionLine = false;
+        public static float endDirection = 0f;
+        public static Room lab = null;
+        public static Sprite spriteOld = null;
+        public static SolventDirectionHint solventDirectionHint = null;
         public static readonly List<DebugWindow> foreground_queue = new();
 
         void Awake()
@@ -71,6 +80,7 @@ namespace AlchAss
             enableDeviationStatus = Config.Bind("信息窗口", "偏离信息", true, "开启后，显示与所接触效果的总体、位置和旋转偏差度.");
             enableClosestPathStatus = Config.Bind("信息窗口", "路径信息", true, "开启后，显示路径最近点的目标效果和偏差度.");
             enableClosestLadleStatus = Config.Bind("信息窗口", "加水信息", true, "开启后，显示加水最近点的目标效果和偏差度.");
+            enableDirectionLine = Config.Bind("信息窗口", "方向提示", true, "开启后，按下 / 键显示当前搅拌方向提示线.");
 
             enableShuttingDown = Config.Bind("操作控制", "允许漩涡急停", true, "开启后，右键点击风箱把手将使药水瞬间冷却.");
             enableGrindSpeed = Config.Bind("操作控制", "允许研磨减速", true, "开启后，按住 Z, X 或 Z + X 键将使研磨减速至相应比例.");
@@ -81,6 +91,7 @@ namespace AlchAss
             speedControl = Config.Bind("操作控制", "减速比例", new Vector3(10f, 100f, 1000f), "按住 Z, X 或 Z + X 键减速操作至 1/x*, 1/y*, 1/z*");
             brewControl = Config.Bind("操作控制", "研磨信息", new Vector3(5, 10, 20), "按住 Z, X 或 Z + X 键增加炼药数量至 x*, y*, z*");
 
+            enableWindowsPosition = Config.Bind("窗口位置", "坐标显示", true, "开启后，按下 F11 键显示窗口坐标.");
             positionGrindDebugWindow = Config.Bind("窗口位置", "研磨信息", new Vector2(8.5f, -4.5f), "调整研磨信息窗口坐标.");
             positionHealthDebugWindow = Config.Bind("窗口位置", "血量信息", new Vector2(5.5f, -4.5f), "调整血量信息窗口坐标.");
             positionVortexDebugWindow = Config.Bind("窗口位置", "漩涡信息", new Vector2(2.5f, -4.5f), "调整漩涡信息窗口坐标.");
@@ -97,7 +108,10 @@ namespace AlchAss
 
         void Update()
         {
-            Helper.WindowsPosition();
+            if (enableWindowsPosition.Value)
+                Helper.WindowsPosition();
+            if (enableDirectionLine.Value)
+                Helper.DirectionLine();
             if (enableShuttingDown.Value)
                 InfoCalc.CoolDown();
         }
@@ -288,6 +302,8 @@ namespace AlchAss
                 else
                     closestLadleDebugWindow.ShowText(closestLadleDebugWindow.transform.position.ToString());
             }
+            if (AlchAss.solventDirectionHint != null)
+                Traverse.Create(AlchAss.solventDirectionHint).Method("OnPositionOnMapChanged", Array.Empty<object>()).GetValue();
         }
 
         [HarmonyPrefix]
@@ -304,6 +320,43 @@ namespace AlchAss
                     else if (Keyboard.current.zKey.isPressed)
                         InfoCalc.BrewRecipe(ref count, recipePageContent, (int)brewControl.Value.x);
                 }
+        }
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(SolventDirectionHint), "OnPositionOnMapChanged")]
+        public static void DirectionLineUpdate(SolventDirectionHint __instance)
+        {
+            if (enableDirectionLine.Value)
+            {
+                if (solventDirectionHint == null)
+                    solventDirectionHint = __instance;
+                var spriteRenderer = (SpriteRenderer)Traverse.Create(__instance).Field("spriteRenderer").GetValue();
+                if (directionLine)
+                {
+                    if (spriteOld == null)
+                        spriteOld = spriteRenderer.sprite;
+                    Texture2D texture = new Texture2D(1, 1);
+                    texture.SetPixels(new Color[1] { new Color(0.75f, 0.1f, 0.1f, 0.75f) });
+                    texture.Apply();
+                    Sprite redLineSprite = Sprite.Create(texture, new Rect(0, 0, 1, 1), new Vector2(0.5f, 0.5f), 1.0f, 0, SpriteMeshType.FullRect);
+                    spriteRenderer.sprite = redLineSprite;
+                }
+                else if (spriteOld != null)
+                    spriteRenderer.sprite = spriteOld;
+            }
+        }
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(SolventDirectionHint), "OnPositionOnMapChanged")]
+        public static void DirectionLineRender(SolventDirectionHint __instance)
+        {
+            if (directionLine)
+            {
+                var spriteRenderer = (SpriteRenderer)Traverse.Create(__instance).Field("spriteRenderer").GetValue();
+                var startPosition = Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition;
+                spriteRenderer.size = new Vector2(0.075f, 100f);
+                __instance.transform.localEulerAngles = new Vector3(0f, 0f, endDirection);
+            }
         }
     }
 }
