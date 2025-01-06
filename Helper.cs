@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using HarmonyLib;
@@ -6,7 +7,9 @@ using PotionCraft.DebugObjects.DebugWindows;
 using PotionCraft.LocalizationSystem;
 using PotionCraft.ManagersSystem;
 using PotionCraft.ManagersSystem.Potion.Entities;
+using PotionCraft.ObjectBased.Coals;
 using PotionCraft.ObjectBased.RecipeMap.RecipeMapItem.PotionEffectMapItem;
+using PotionCraft.ObjectBased.RecipeMap.RecipeMapItem.SolventDirectionHint;
 using PotionCraft.ObjectBased.UIElements.Books.RecipeBook;
 using PotionCraft.ScriptableObjects;
 using UnityEngine;
@@ -75,6 +78,15 @@ namespace AlchAss
         {
             if (Keyboard.current.f11Key.wasPressedThisFrame)
                 AlchAss.windowsPosition = !AlchAss.windowsPosition;
+        }
+        public static void DirectionLine()
+        {
+            if (Keyboard.current.slashKey.wasPressedThisFrame)
+            {
+                AlchAss.directionLine = !AlchAss.directionLine;
+                if (AlchAss.solventDirectionHint != null)
+                    Traverse.Create(AlchAss.solventDirectionHint).Method("OnPositionOnMapChanged", Array.Empty<object>()).GetValue();
+            }
         }
         public static bool CanBrewTimes(IRecipeBookPageContent recipePageContent, int count, int times)
         {
