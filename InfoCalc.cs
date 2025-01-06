@@ -84,10 +84,14 @@ namespace AlchAss
             var localPosition = Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition;
             var list = Hints.Select((FixedHint fixedHint) => fixedHint.evenlySpacedPointsFixedPhysics.points).SelectMany((Vector3[] points) => points).ToList<Vector3>();
             if (list.Count<Vector3>() > 1)
-                direction = Vector2.SignedAngle(Managers.RecipeMap.currentMap.referencesContainer.transform.InverseTransformPoint(Managers.RecipeMap.path.thisTransform.TransformPoint(list[1])) - localPosition, Vector2.up);
+            {
+                var endPosition = Managers.RecipeMap.currentMap.referencesContainer.transform.InverseTransformPoint(Managers.RecipeMap.path.thisTransform.TransformPoint(list[1]));
+                direction = Vector2.SignedAngle(endPosition - localPosition, Vector2.up);
+            }
             float deletedGraphicsSegments = Managers.RecipeMap.path.deletedGraphicsSegments;
             float segmentLengthToDeletePhysics = Managers.RecipeMap.path.segmentLengthToDeletePhysics;
             direction = direction < float.MaxValue ? direction : 0f;
+            AlchAss.endDirection = -direction;
             return LocalizationManager.GetText("#mod_stir_stage") + deletedGraphicsSegments.ToString() + "\n" + LocalizationManager.GetText("#mod_stir_progress") + segmentLengthToDeletePhysics.ToString() + "\n" + LocalizationManager.GetText("#mod_stir_direction") + direction.ToString();
         }
         public static Tuple<string, string> PositionDeviationCalc()
