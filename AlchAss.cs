@@ -83,7 +83,7 @@ namespace AlchAss
             enableDirectionLine = Config.Bind("信息窗口", "方向提示", true, "开启后，按下 / 键显示当前搅拌方向提示线.");
 
             enableShuttingDown = Config.Bind("操作控制", "允许漩涡急停", true, "开启后，右键点击风箱把手将使药水瞬间冷却.");
-            enableShuttingDown = Config.Bind("操作控制", "允许瞬间研磨", true, "开启后，右键点击研杵把手将使药材完全研磨.");
+            enableGrindAll = Config.Bind("操作控制", "允许瞬间研磨", true, "开启后，右键点击研杵把手将使药材完全研磨.");
             enableGrindSpeed = Config.Bind("操作控制", "允许研磨减速", true, "开启后，按住 Z, X 或 Z + X 键将使研磨减速至相应比例.");
             enableStirSpeed = Config.Bind("操作控制", "允许搅拌减速", true, "开启后，按住 Z, X 或 Z + X 键将使搅拌减速至相应比例.");
             enableLadleSpeed = Config.Bind("操作控制", "允许加水减速", true, "开启后，按住 Z, X 或 Z + X 键将使加水减速至相应比例.");
@@ -115,7 +115,7 @@ namespace AlchAss
                 Helper.DirectionLine();
             if (enableShuttingDown.Value)
                 InfoCalc.CoolDown();
-            if (enableShuttingDown.Value)
+            if (enableGrindAll.Value)
                 InfoCalc.GrindAll();
         }
 
