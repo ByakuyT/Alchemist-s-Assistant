@@ -50,7 +50,7 @@ namespace AlchAss
             RegisterLoc("#mod_vortex_angle", "AN: ", "夹角: ");
             RegisterLoc("#mod_health_status", "HP: ", "血量: ");
         }
-        private static void RegisterLoc(string key, string en, string zh)
+        public static void RegisterLoc(string key, string en, string zh)
         {
             for (var localeIndex = 0; localeIndex <= 13; ++localeIndex)
                 AccessTools.StaticFieldRefAccess<LocalizationData>(typeof(LocalizationManager), "localizationData").Add(localeIndex, key, localeIndex == 9 ? zh : en);
