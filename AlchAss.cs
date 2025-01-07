@@ -353,7 +353,6 @@ namespace AlchAss
             if (directionLine)
             {
                 var spriteRenderer = (SpriteRenderer)Traverse.Create(__instance).Field("spriteRenderer").GetValue();
-                var startPosition = Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition;
                 spriteRenderer.size = new Vector2(0.075f, 100f);
                 __instance.transform.localEulerAngles = new Vector3(0f, 0f, endDirection);
             }
