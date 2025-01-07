@@ -28,7 +28,7 @@ namespace AlchAss
                     if (Managers.Cursor.hoveredInteractiveItem.GetType() == typeof(Bellows))
                     {
                         var coals = Managers.Ingredient.coals;
-                        string[] lines = File.ReadAllLines(Path.Combine(Paths.PluginPath, AlchAss.grindPath));
+                        var lines = File.ReadAllLines(Path.Combine(Paths.PluginPath, AlchAss.grindHeatPath));
                         if (lines.Length > 0)
                             Traverse.Create(coals).Field("_heat").SetValue(float.Parse(lines[0]) / 100f);
                         Traverse.Create(coals).Method("Update", Array.Empty<object>()).GetValue();
@@ -43,30 +43,42 @@ namespace AlchAss
                         var mortar = Managers.Ingredient.mortar;
                         if (mortar.ContainedStack != null)
                         {
-                            string[] lines = File.ReadAllLines(Path.Combine(Paths.PluginPath, AlchAss.grindPath));
+                            var lines = File.ReadAllLines(Path.Combine(Paths.PluginPath, AlchAss.grindHeatPath));
                             if (lines.Length > 0)
                                 mortar.ContainedStack.overallGrindStatus = float.Parse(lines[0]) / 100f;
                         }
                     }
         }
-        public static void GrindSlowDown(ref float pestleLinearSpeed, ref float pestleAngularSpeed, float times)
+        public static void GrindSlowDown(ref float pestleLinearSpeed, ref float pestleAngularSpeed, int opt)
         {
-            pestleLinearSpeed /= times;
-            pestleAngularSpeed /= times;
+            var lines = File.ReadAllLines(Path.Combine(Paths.PluginPath, AlchAss.speedBrewPath));
+            if (lines.Length > opt)
+            {
+                pestleLinearSpeed /= float.Parse(lines[opt]);
+                pestleAngularSpeed /= float.Parse(lines[opt]);
+            }
         }
-        public static void StirSlowDown(ref float ___StirringValue, float times)
+        public static void StirSlowDown(ref float ___StirringValue, int opt)
         {
-            ___StirringValue /= times;
+            var lines = File.ReadAllLines(Path.Combine(Paths.PluginPath, AlchAss.speedBrewPath));
+            if (lines.Length > opt)
+                ___StirringValue /= float.Parse(lines[opt]);
         }
-        public static void LadleSlowDown(ref float __result, float times)
+        public static void LadleSlowDown(ref float __result, int opt)
         {
-            __result /= times;
+            var lines = File.ReadAllLines(Path.Combine(Paths.PluginPath, AlchAss.speedBrewPath));
+            if (lines.Length > opt)
+                __result /= float.Parse(lines[opt]);
         }
-        public static void HeatSlowDown(ref float __state, float times)
+        public static void HeatSlowDown(ref float __state, int opt)
         {
-            var asset = Settings<RecipeMapManagerVortexSettings>.Asset;
-            __state = asset.vortexMovementSpeed;
-            asset.vortexMovementSpeed /= times;
+            var lines = File.ReadAllLines(Path.Combine(Paths.PluginPath, AlchAss.speedBrewPath));
+            if (lines.Length > opt)
+            {
+                var asset = Settings<RecipeMapManagerVortexSettings>.Asset;
+                __state = asset.vortexMovementSpeed;
+                asset.vortexMovementSpeed /= float.Parse(lines[opt]);
+            }
         }
         public static string GrindCalc(Mortar __instance)
         {
@@ -210,10 +222,15 @@ namespace AlchAss
             }
             return LocalizationManager.GetText("#mod_closest_potion_ladle") + "\n" + LocalizationManager.GetText("#mod_closest_general_ladle") + "\n" + LocalizationManager.GetText("#mod_closest_distance_ladle") + "\n" + LocalizationManager.GetText("#mod_closest_angle_ladle");
         }
-        public static void BrewRecipe(ref int count, IRecipeBookPageContent recipePageContent, int times)
+        public static void BrewRecipe(ref int count, IRecipeBookPageContent recipePageContent, int opt)
         {
-            if (Helper.CanBrewTimes(recipePageContent, count, times))
-                count *= times;
+            var lines = File.ReadAllLines(Path.Combine(Paths.PluginPath, AlchAss.speedBrewPath));
+            if (lines.Length > opt)
+            {
+                var times = (int)float.Parse(lines[opt]);
+                if (Helper.CanBrewTimes(recipePageContent, count, times))
+                    count *= times;
+            }
         }
     }
 }
