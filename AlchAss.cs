@@ -18,7 +18,6 @@ using PotionCraft.ObjectBased.UIElements.Books.RecipeBook;
 using PotionCraft.Settings;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using ZXing;
 
 namespace AlchAss
 {
