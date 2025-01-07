@@ -74,7 +74,7 @@ namespace AlchAss
         }
         public static Vector2 StringToVector2(string input)
         {
-            string[] values = input.Trim('(', ')', ' ').Split(',');
+            var values = input.Trim('(', ')', ' ').Split(',');
             return new Vector2(float.Parse(values[0]), float.Parse(values[1]));
         }
         public static void DirectionLine()
