@@ -72,10 +72,10 @@ namespace AlchAss
             var availableEffects = Managers.RecipeMap.currentMap.referencesContainer.potionEffectsOnMap.Where(effect => effect.Status != PotionEffectStatus.Collected);
             return availableEffects.OrderBy(effect => ((Vector2)effect.thisTransform.localPosition - indicatorLocalPosition).sqrMagnitude).ToList();
         }
-        public static void WindowsPosition()
+        public static Vector2 StringToVector2(string input)
         {
-            if (Keyboard.current.f11Key.wasPressedThisFrame)
-                AlchAss.windowsPosition = !AlchAss.windowsPosition;
+            string[] values = input.Trim('(', ')', ' ').Split(',');
+            return new Vector2(float.Parse(values[0]), float.Parse(values[1]));
         }
         public static void DirectionLine()
         {
