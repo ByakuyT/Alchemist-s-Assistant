@@ -69,7 +69,8 @@ namespace AlchAss
         public static Sprite spriteOld = null;
         public static SolventDirectionHint solventDirectionHint = null;
         public static readonly List<DebugWindow> foreground_queue = new();
-        public static readonly string filePath = "AlchAssWindowConfig.txt";
+        public static readonly string grindPath = "AlchAssGrindHeatConfig.txt";
+        public static readonly string windowPath = "AlchAssWindowConfig.txt";
 
         public void Awake()
         {
@@ -93,8 +94,12 @@ namespace AlchAss
             speedControl = Config.Bind("操作控制", "减速比例", new Vector3(10f, 100f, 1000f), "按住 Z, X 或 Z + X 键减速操作至 1/x*, 1/y*, 1/z*");
             brewControl = Config.Bind("操作控制", "研磨信息", new Vector3(5, 10, 20), "按住 Z, X 或 Z + X 键增加炼药数量至 x*, y*, z*");
 
-            string[] lines = File.ReadAllLines(Path.Combine(Paths.PluginPath, filePath));
-            if (lines.Length >= 8)
+            if (!File.Exists(Path.Combine(Paths.PluginPath, grindPath)))
+                File.WriteAllText(Path.Combine(Paths.PluginPath, grindPath), "100");
+            if (!File.Exists(Path.Combine(Paths.PluginPath, windowPath)))
+                File.WriteAllText(Path.Combine(Paths.PluginPath, windowPath), null);
+            string[] lines = File.ReadAllLines(Path.Combine(Paths.PluginPath, windowPath));
+            if (lines.Length > 7)
             {
                 positionGrindDebugWindow = Helper.StringToVector2(lines[0]);
                 positionHealthDebugWindow = Helper.StringToVector2(lines[1]);
@@ -123,7 +128,7 @@ namespace AlchAss
 
         public void OnApplicationQuit()
         {
-            using StreamWriter writer = new StreamWriter(Path.Combine(Paths.PluginPath, filePath));
+            using StreamWriter writer = new(Path.Combine(Paths.PluginPath, windowPath));
             writer.WriteLine(grindDebugWindow.transform.position);
             writer.WriteLine(healthDebugWindow.transform.position);
             writer.WriteLine(vortexDebugWindow.transform.position);
