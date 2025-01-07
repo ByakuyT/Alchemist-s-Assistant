@@ -1,5 +1,7 @@
 using System;
+using System.IO;
 using System.Linq;
+using BepInEx;
 using HarmonyLib;
 using PotionCraft.LocalizationSystem;
 using PotionCraft.ManagersSystem;
@@ -26,7 +28,9 @@ namespace AlchAss
                     if (Managers.Cursor.hoveredInteractiveItem.GetType() == typeof(Bellows))
                     {
                         var coals = Managers.Ingredient.coals;
-                        Traverse.Create(coals).Field("_heat").SetValue(0f);
+                        string[] lines = File.ReadAllLines(Path.Combine(Paths.PluginPath, AlchAss.grindPath));
+                        if (lines.Length > 0)
+                            Traverse.Create(coals).Field("_heat").SetValue(float.Parse(lines[0]) / 100f);
                         Traverse.Create(coals).Method("Update", Array.Empty<object>()).GetValue();
                     }
         }
@@ -38,7 +42,11 @@ namespace AlchAss
                     {
                         var mortar = Managers.Ingredient.mortar;
                         if (mortar.ContainedStack != null)
-                            mortar.ContainedStack.overallGrindStatus = 1f;
+                        {
+                            string[] lines = File.ReadAllLines(Path.Combine(Paths.PluginPath, AlchAss.grindPath));
+                            if (lines.Length > 0)
+                                mortar.ContainedStack.overallGrindStatus = float.Parse(lines[0]) / 100f;
+                        }
                     }
         }
         public static void GrindSlowDown(ref float pestleLinearSpeed, ref float pestleAngularSpeed, float times)
