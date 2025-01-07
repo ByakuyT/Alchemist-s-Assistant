@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using BepInEx;
 using BepInEx.Configuration;
 using HarmonyLib;
@@ -17,10 +18,11 @@ using PotionCraft.ObjectBased.UIElements.Books.RecipeBook;
 using PotionCraft.Settings;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using ZXing;
 
 namespace AlchAss
 {
-    [BepInPlugin("AlchAss", "Alchemist's Assistant", "2.3.0")]
+    [BepInPlugin("AlchAss", "Alchemist's Assistant", "2.4.0")]
     public class AlchAss : BaseUnityPlugin
     {
         private static ConfigEntry<bool> enableGrindStatus;
@@ -38,18 +40,9 @@ namespace AlchAss
         private static ConfigEntry<bool> enableLadleSpeed;
         private static ConfigEntry<bool> enableHeatSpeed;
         private static ConfigEntry<bool> enableBrewMore;
-        private static ConfigEntry<bool> enableWindowsPosition;
         private static ConfigEntry<bool> enableDirectionLine;
         private static ConfigEntry<bool> enableGrindAll;
 
-        private static ConfigEntry<Vector2> positionGrindDebugWindow;
-        private static ConfigEntry<Vector2> positionHealthDebugWindow;
-        private static ConfigEntry<Vector2> positionVortexDebugWindow;
-        private static ConfigEntry<Vector2> positionStirDebugWindow;
-        private static ConfigEntry<Vector2> positionPositionDebugWindow;
-        private static ConfigEntry<Vector2> positionDeviationDebugWindow;
-        private static ConfigEntry<Vector2> positionClosestPathDebugWindow;
-        private static ConfigEntry<Vector2> positionClosestLadleDebugWindow;
         private static ConfigEntry<Vector3> speedControl;
         private static ConfigEntry<Vector3> brewControl;
 
@@ -62,13 +55,22 @@ namespace AlchAss
         private static DebugWindow closestPathDebugWindow;
         private static DebugWindow closestLadleDebugWindow;
 
-        public static bool windowsPosition = false;
+        private static Vector2 positionGrindDebugWindow = Vector2.zero;
+        private static Vector2 positionHealthDebugWindow = Vector2.zero;
+        private static Vector2 positionVortexDebugWindow = Vector2.zero;
+        private static Vector2 positionStirDebugWindow = Vector2.zero;
+        private static Vector2 positionPositionDebugWindow = Vector2.zero;
+        private static Vector2 positionDeviationDebugWindow = Vector2.zero;
+        private static Vector2 positionClosestPathDebugWindow = Vector2.zero;
+        private static Vector2 positionClosestLadleDebugWindow = Vector2.zero;
+
         public static bool directionLine = false;
         public static float endDirection = 0f;
         public static Room lab = null;
         public static Sprite spriteOld = null;
         public static SolventDirectionHint solventDirectionHint = null;
         public static readonly List<DebugWindow> foreground_queue = new();
+        public static readonly string filePath = "AlchAssWindowConfig.txt";
 
         public void Awake()
         {
@@ -92,15 +94,18 @@ namespace AlchAss
             speedControl = Config.Bind("操作控制", "减速比例", new Vector3(10f, 100f, 1000f), "按住 Z, X 或 Z + X 键减速操作至 1/x*, 1/y*, 1/z*");
             brewControl = Config.Bind("操作控制", "研磨信息", new Vector3(5, 10, 20), "按住 Z, X 或 Z + X 键增加炼药数量至 x*, y*, z*");
 
-            enableWindowsPosition = Config.Bind("窗口位置", "坐标显示", true, "开启后，按下 F11 键显示窗口坐标.");
-            positionGrindDebugWindow = Config.Bind("窗口位置", "研磨信息", new Vector2(8.5f, -4.5f), "调整研磨信息窗口坐标.");
-            positionHealthDebugWindow = Config.Bind("窗口位置", "血量信息", new Vector2(5.5f, -4.5f), "调整血量信息窗口坐标.");
-            positionVortexDebugWindow = Config.Bind("窗口位置", "漩涡信息", new Vector2(2.5f, -4.5f), "调整漩涡信息窗口坐标.");
-            positionStirDebugWindow = Config.Bind("窗口位置", "搅拌信息", new Vector2(-0.5f, -4.5f), "调整搅拌信息窗口坐标.");
-            positionPositionDebugWindow = Config.Bind("窗口位置", "位置信息", new Vector2(-3.5f, -4.5f), "调整位置信息窗口坐标.");
-            positionDeviationDebugWindow = Config.Bind("窗口位置", "偏离信息", new Vector2(-6.5f, -4.5f), "调整偏离信息窗口坐标.");
-            positionClosestPathDebugWindow = Config.Bind("窗口位置", "路径信息", new Vector2(-9.5f, -4.5f), "调整路径信息窗口坐标.");
-            positionClosestLadleDebugWindow = Config.Bind("窗口位置", "加水信息", new Vector2(-12.5f, -4.5f), "调整加水信息窗口坐标.");
+            string[] lines = File.ReadAllLines(Path.Combine(Paths.PluginPath, filePath));
+            if (lines.Length >= 8)
+            {
+                positionGrindDebugWindow = Helper.StringToVector2(lines[0]);
+                positionHealthDebugWindow = Helper.StringToVector2(lines[1]);
+                positionVortexDebugWindow = Helper.StringToVector2(lines[2]);
+                positionStirDebugWindow = Helper.StringToVector2(lines[3]);
+                positionPositionDebugWindow = Helper.StringToVector2(lines[4]);
+                positionDeviationDebugWindow = Helper.StringToVector2(lines[5]);
+                positionClosestPathDebugWindow = Helper.StringToVector2(lines[6]);
+                positionClosestLadleDebugWindow = Helper.StringToVector2(lines[7]);
+            }
 
             LocalizationManager.OnInitialize.AddListener(Helper.SetModLocalization);
             Harmony.CreateAndPatchAll(typeof(AlchAss));
@@ -109,14 +114,25 @@ namespace AlchAss
 
         public void Update()
         {
-            if (enableWindowsPosition.Value)
-                Helper.WindowsPosition();
             if (enableDirectionLine.Value)
                 Helper.DirectionLine();
             if (enableShuttingDown.Value)
                 InfoCalc.CoolDown();
             if (enableGrindAll.Value)
                 InfoCalc.GrindAll();
+        }
+
+        public void OnApplicationQuit()
+        {
+            using StreamWriter writer = new StreamWriter(Path.Combine(Paths.PluginPath, filePath));
+            writer.WriteLine(grindDebugWindow.transform.position);
+            writer.WriteLine(healthDebugWindow.transform.position);
+            writer.WriteLine(vortexDebugWindow.transform.position);
+            writer.WriteLine(stirDebugWindow.transform.position);
+            writer.WriteLine(positionDebugWindow.transform.position);
+            writer.WriteLine(deviationDebugWindow.transform.position);
+            writer.WriteLine(closestPathDebugWindow.transform.position);
+            writer.WriteLine(closestLadleDebugWindow.transform.position);
         }
 
         [HarmonyPrefix]
@@ -222,15 +238,10 @@ namespace AlchAss
         {
             if (enableGrindStatus.Value)
                 if (grindDebugWindow == null)
-                    grindDebugWindow = Helper.CreateDebugWindow("#mod_dialog_grind_status", positionGrindDebugWindow.Value);
+                    grindDebugWindow = Helper.CreateDebugWindow("#mod_dialog_grind_status", positionGrindDebugWindow);
 
             if (grindDebugWindow != null)
-            {
-                if (!windowsPosition)
-                    grindDebugWindow.ShowText(InfoCalc.GrindCalc(__instance));
-                else
-                    grindDebugWindow.ShowText(grindDebugWindow.transform.position.ToString());
-            }
+                grindDebugWindow.ShowText(InfoCalc.GrindCalc(__instance));
         }
 
         [HarmonyPostfix]
@@ -239,79 +250,44 @@ namespace AlchAss
         {
             if (enableHealthStatus.Value)
                 if (healthDebugWindow == null)
-                    healthDebugWindow = Helper.CreateDebugWindow("#mod_dialog_health_status", positionHealthDebugWindow.Value);
+                    healthDebugWindow = Helper.CreateDebugWindow("#mod_dialog_health_status", positionHealthDebugWindow);
             if (enableVortexStatus.Value)
                 if (vortexDebugWindow == null)
-                    vortexDebugWindow = Helper.CreateDebugWindow("#mod_dialog_vortex_status", positionVortexDebugWindow.Value);
+                    vortexDebugWindow = Helper.CreateDebugWindow("#mod_dialog_vortex_status", positionVortexDebugWindow);
             if (enableStirStatus.Value)
                 if (stirDebugWindow == null)
-                    stirDebugWindow = Helper.CreateDebugWindow("#mod_dialog_stir_status", positionStirDebugWindow.Value);
+                    stirDebugWindow = Helper.CreateDebugWindow("#mod_dialog_stir_status", positionStirDebugWindow);
             if (enablePositionStatus.Value)
                 if (positionDebugWindow == null)
-                    positionDebugWindow = Helper.CreateDebugWindow("#mod_dialog_position_status", positionPositionDebugWindow.Value);
+                    positionDebugWindow = Helper.CreateDebugWindow("#mod_dialog_position_status", positionPositionDebugWindow);
             if (enableDeviationStatus.Value)
                 if (deviationDebugWindow == null)
-                    deviationDebugWindow = Helper.CreateDebugWindow("#mod_dialog_deviation_status", positionDeviationDebugWindow.Value);
+                    deviationDebugWindow = Helper.CreateDebugWindow("#mod_dialog_deviation_status", positionDeviationDebugWindow);
             if (enableClosestPathStatus.Value)
                 if (closestPathDebugWindow == null)
-                    closestPathDebugWindow = Helper.CreateDebugWindow("#mod_dialog_path_status", positionClosestPathDebugWindow.Value);
+                    closestPathDebugWindow = Helper.CreateDebugWindow("#mod_dialog_path_status", positionClosestPathDebugWindow);
             if (enableClosestLadleStatus.Value)
                 if (closestLadleDebugWindow == null)
-                    closestLadleDebugWindow = Helper.CreateDebugWindow("#mod_dialog_ladle_status", positionClosestLadleDebugWindow.Value);
+                    closestLadleDebugWindow = Helper.CreateDebugWindow("#mod_dialog_ladle_status", positionClosestLadleDebugWindow);
 
             if (healthDebugWindow != null)
-            {
-                if (!windowsPosition)
-                    healthDebugWindow.ShowText(InfoCalc.HealthCalc(__instance));
-                else
-                    healthDebugWindow.ShowText(healthDebugWindow.transform.position.ToString());
-            }
+                healthDebugWindow.ShowText(InfoCalc.HealthCalc(__instance));
             if (vortexDebugWindow != null)
-            {
-                if (!windowsPosition)
-                    vortexDebugWindow.ShowText(InfoCalc.VortexCalc());
-                else
-                    vortexDebugWindow.ShowText(vortexDebugWindow.transform.position.ToString());
-            }
+                vortexDebugWindow.ShowText(InfoCalc.VortexCalc());
             if (stirDebugWindow != null)
-            {
-                if (!windowsPosition)
-                    stirDebugWindow.ShowText(InfoCalc.StirCalc());
-                else
-                    stirDebugWindow.ShowText(stirDebugWindow.transform.position.ToString());
-            }
+                stirDebugWindow.ShowText(InfoCalc.StirCalc());
             if (positionDebugWindow != null || deviationDebugWindow != null)
             {
                 var posdev = InfoCalc.PositionDeviationCalc();
                 if (positionDebugWindow != null)
-                {
-                    if (!windowsPosition)
-                        positionDebugWindow.ShowText(posdev.Item1);
-                    else
-                        positionDebugWindow.ShowText(positionDebugWindow.transform.position.ToString());
-                }
+                    positionDebugWindow.ShowText(posdev.Item1);
                 if (deviationDebugWindow != null)
-                {
-                    if (!windowsPosition)
-                        deviationDebugWindow.ShowText(posdev.Item2);
-                    else
-                        deviationDebugWindow.ShowText(deviationDebugWindow.transform.position.ToString());
-                }
+                    deviationDebugWindow.ShowText(posdev.Item2);
             }
             if (closestPathDebugWindow != null)
-            {
-                if (!windowsPosition)
-                    closestPathDebugWindow.ShowText(InfoCalc.PathCalc());
-                else
-                    closestPathDebugWindow.ShowText(closestPathDebugWindow.transform.position.ToString());
-            }
+                closestPathDebugWindow.ShowText(InfoCalc.PathCalc());
             if (closestLadleDebugWindow != null)
-            {
-                if (!windowsPosition)
-                    closestLadleDebugWindow.ShowText(InfoCalc.LadleCalc());
-                else
-                    closestLadleDebugWindow.ShowText(closestLadleDebugWindow.transform.position.ToString());
-            }
+                closestLadleDebugWindow.ShowText(InfoCalc.LadleCalc());
             if (AlchAss.solventDirectionHint != null)
                 Traverse.Create(AlchAss.solventDirectionHint).Method("OnPositionOnMapChanged", Array.Empty<object>()).GetValue();
         }
