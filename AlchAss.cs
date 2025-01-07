@@ -21,7 +21,7 @@ using UnityEngine.InputSystem;
 
 namespace AlchAss
 {
-    [BepInPlugin("AlchAss", "Alchemist's Assistant", "2.4.0")]
+    [BepInPlugin("AlchAss", "Alchemist's Assistant", "2.5.0")]
     public class AlchAss : BaseUnityPlugin
     {
         private static ConfigEntry<bool> enableGrindStatus;
@@ -42,9 +42,6 @@ namespace AlchAss
         private static ConfigEntry<bool> enableDirectionLine;
         private static ConfigEntry<bool> enableGrindAll;
 
-        private static ConfigEntry<Vector3> speedControl;
-        private static ConfigEntry<Vector3> brewControl;
-
         private static DebugWindow grindDebugWindow;
         private static DebugWindow healthDebugWindow;
         private static DebugWindow vortexDebugWindow;
@@ -63,13 +60,17 @@ namespace AlchAss
         private static Vector2 positionClosestPathDebugWindow = Vector2.zero;
         private static Vector2 positionClosestLadleDebugWindow = Vector2.zero;
 
+        private static Vector2 speedControl = Vector2.zero;
+        private static Vector2Int brewControl = Vector2Int.zero;
+
         public static bool directionLine = false;
         public static float endDirection = 0f;
         public static Room lab = null;
         public static Sprite spriteOld = null;
         public static SolventDirectionHint solventDirectionHint = null;
         public static readonly List<DebugWindow> foreground_queue = new();
-        public static readonly string grindPath = "AlchAssGrindHeatConfig.txt";
+        public static readonly string grindHeatPath = "AlchAssGrindHeatConfig.txt";
+        public static readonly string speedBrewPath = "AlchAssSpeedBrewConfig.txt";
         public static readonly string windowPath = "AlchAssWindowConfig.txt";
 
         public void Awake()
@@ -84,21 +85,21 @@ namespace AlchAss
             enableClosestLadleStatus = Config.Bind("信息窗口", "加水信息", true, "开启后，显示加水最近点的目标效果和偏差度.");
             enableDirectionLine = Config.Bind("信息窗口", "方向提示", true, "开启后，按下 / 键显示当前搅拌方向提示线.");
 
-            enableShuttingDown = Config.Bind("操作控制", "允许漩涡急停", true, "开启后，右键点击风箱把手将使药水瞬间冷却.");
-            enableGrindAll = Config.Bind("操作控制", "允许瞬间研磨", true, "开启后，右键点击研杵把手将使药材完全研磨.");
-            enableGrindSpeed = Config.Bind("操作控制", "允许研磨减速", true, "开启后，按住 Z, X 或 Z + X 键将使研磨减速至相应比例.");
-            enableStirSpeed = Config.Bind("操作控制", "允许搅拌减速", true, "开启后，按住 Z, X 或 Z + X 键将使搅拌减速至相应比例.");
-            enableLadleSpeed = Config.Bind("操作控制", "允许加水减速", true, "开启后，按住 Z, X 或 Z + X 键将使加水减速至相应比例.");
-            enableHeatSpeed = Config.Bind("操作控制", "允许加热减速", true, "开启后，按住 Z, X 或 Z + X 键将使加热减速至相应比例.");
-            enableBrewMore = Config.Bind("操作控制", "允许大批炼药", true, "开启后，按住 Z, X 或 Z + X 键将使炼药数量增加至相应比例.");
-            speedControl = Config.Bind("操作控制", "减速比例", new Vector3(10f, 100f, 1000f), "按住 Z, X 或 Z + X 键减速操作至 1/x*, 1/y*, 1/z*");
-            brewControl = Config.Bind("操作控制", "研磨信息", new Vector3(5, 10, 20), "按住 Z, X 或 Z + X 键增加炼药数量至 x*, y*, z*");
+            enableShuttingDown = Config.Bind("操作控制", "允许漩涡急停", true, "开启后，右键点击风箱把手将使药剂热量值变为指定值.");
+            enableGrindAll = Config.Bind("操作控制", "允许瞬间研磨", true, "开启后，右键点击研杵把手将使药材研磨度变为指定值.");
+            enableGrindSpeed = Config.Bind("操作控制", "允许研磨减速", true, "开启后，按住 Z 或 X 键将使研磨减速至相应指定比例.");
+            enableStirSpeed = Config.Bind("操作控制", "允许搅拌减速", true, "开启后，按住 Z 或 X 键将使搅拌减速至相应指定比例.");
+            enableLadleSpeed = Config.Bind("操作控制", "允许加水减速", true, "开启后，按住 Z 或 X 键将使加水减速至相应指定比例.");
+            enableHeatSpeed = Config.Bind("操作控制", "允许加热减速", true, "开启后，按住 Z 或 X 键将使加热减速至相应指定比例.");
+            enableBrewMore = Config.Bind("操作控制", "允许大批炼药", true, "开启后，按住 Z 或 X 键将使炼药数量增加至相应指定比例.");
 
-            if (!File.Exists(Path.Combine(Paths.PluginPath, grindPath)))
-                File.WriteAllText(Path.Combine(Paths.PluginPath, grindPath), "100");
+            if (!File.Exists(Path.Combine(Paths.PluginPath, grindHeatPath)))
+                File.WriteAllText(Path.Combine(Paths.PluginPath, grindHeatPath), "100");
+            if (!File.Exists(Path.Combine(Paths.PluginPath, speedBrewPath)))
+                File.WriteAllText(Path.Combine(Paths.PluginPath, speedBrewPath), "10\n100");
             if (!File.Exists(Path.Combine(Paths.PluginPath, windowPath)))
                 File.WriteAllText(Path.Combine(Paths.PluginPath, windowPath), null);
-            string[] lines = File.ReadAllLines(Path.Combine(Paths.PluginPath, windowPath));
+            var lines = File.ReadAllLines(Path.Combine(Paths.PluginPath, windowPath));
             if (lines.Length > 7)
             {
                 positionGrindDebugWindow = Helper.StringToVector2(lines[0]);
@@ -172,12 +173,10 @@ namespace AlchAss
         {
             if (enableGrindSpeed.Value)
             {
-                if (Keyboard.current.xKey.isPressed && Keyboard.current.zKey.isPressed)
-                    InfoCalc.GrindSlowDown(ref pestleLinearSpeed, ref pestleAngularSpeed, speedControl.Value.z);
-                else if (Keyboard.current.xKey.isPressed)
-                    InfoCalc.GrindSlowDown(ref pestleLinearSpeed, ref pestleAngularSpeed, speedControl.Value.y);
+                if (Keyboard.current.xKey.isPressed)
+                    InfoCalc.GrindSlowDown(ref pestleLinearSpeed, ref pestleAngularSpeed, 1);
                 else if (Keyboard.current.zKey.isPressed)
-                    InfoCalc.GrindSlowDown(ref pestleLinearSpeed, ref pestleAngularSpeed, speedControl.Value.x);
+                    InfoCalc.GrindSlowDown(ref pestleLinearSpeed, ref pestleAngularSpeed, 0);
             }
         }
 
@@ -187,12 +186,10 @@ namespace AlchAss
         {
             if (enableStirSpeed.Value)
             {
-                if (Keyboard.current.xKey.isPressed && Keyboard.current.zKey.isPressed)
-                    InfoCalc.StirSlowDown(ref ___StirringValue, speedControl.Value.z);
-                else if (Keyboard.current.xKey.isPressed)
-                    InfoCalc.StirSlowDown(ref ___StirringValue, speedControl.Value.y);
+                if (Keyboard.current.xKey.isPressed)
+                    InfoCalc.StirSlowDown(ref ___StirringValue, 1);
                 else if (Keyboard.current.zKey.isPressed)
-                    InfoCalc.StirSlowDown(ref ___StirringValue, speedControl.Value.x);
+                    InfoCalc.StirSlowDown(ref ___StirringValue, 0);
             }
         }
 
@@ -202,12 +199,10 @@ namespace AlchAss
         {
             if (enableLadleSpeed.Value)
             {
-                if (Keyboard.current.xKey.isPressed && Keyboard.current.zKey.isPressed)
-                    InfoCalc.LadleSlowDown(ref __result, speedControl.Value.z);
-                else if (Keyboard.current.xKey.isPressed)
-                    InfoCalc.LadleSlowDown(ref __result, speedControl.Value.y);
+                if (Keyboard.current.xKey.isPressed)
+                    InfoCalc.LadleSlowDown(ref __result, 1);
                 else if (Keyboard.current.zKey.isPressed)
-                    InfoCalc.LadleSlowDown(ref __result, speedControl.Value.x);
+                    InfoCalc.LadleSlowDown(ref __result, 0);
             }
         }
 
@@ -217,12 +212,10 @@ namespace AlchAss
         {
             if (enableHeatSpeed.Value)
             {
-                if (Keyboard.current.xKey.isPressed && Keyboard.current.zKey.isPressed)
-                    InfoCalc.HeatSlowDown(ref __state, speedControl.Value.z);
-                else if (Keyboard.current.xKey.isPressed)
-                    InfoCalc.HeatSlowDown(ref __state, speedControl.Value.y);
+                if (Keyboard.current.xKey.isPressed)
+                    InfoCalc.HeatSlowDown(ref __state, 1);
                 else if (Keyboard.current.zKey.isPressed)
-                    InfoCalc.HeatSlowDown(ref __state, speedControl.Value.x);
+                    InfoCalc.HeatSlowDown(ref __state, 0);
             }
         }
 
@@ -243,9 +236,7 @@ namespace AlchAss
             if (enableGrindStatus.Value)
                 if (grindDebugWindow == null)
                     grindDebugWindow = Helper.CreateDebugWindow("#mod_dialog_grind_status", positionGrindDebugWindow);
-
-            if (grindDebugWindow != null)
-                grindDebugWindow.ShowText(InfoCalc.GrindCalc(__instance));
+            grindDebugWindow?.ShowText(InfoCalc.GrindCalc(__instance));
         }
 
         [HarmonyPostfix]
@@ -274,24 +265,17 @@ namespace AlchAss
                 if (closestLadleDebugWindow == null)
                     closestLadleDebugWindow = Helper.CreateDebugWindow("#mod_dialog_ladle_status", positionClosestLadleDebugWindow);
 
-            if (healthDebugWindow != null)
-                healthDebugWindow.ShowText(InfoCalc.HealthCalc(__instance));
-            if (vortexDebugWindow != null)
-                vortexDebugWindow.ShowText(InfoCalc.VortexCalc());
-            if (stirDebugWindow != null)
-                stirDebugWindow.ShowText(InfoCalc.StirCalc());
+            healthDebugWindow?.ShowText(InfoCalc.HealthCalc(__instance));
+            vortexDebugWindow?.ShowText(InfoCalc.VortexCalc());
+            stirDebugWindow?.ShowText(InfoCalc.StirCalc());
             if (positionDebugWindow != null || deviationDebugWindow != null)
             {
                 var posdev = InfoCalc.PositionDeviationCalc();
-                if (positionDebugWindow != null)
-                    positionDebugWindow.ShowText(posdev.Item1);
-                if (deviationDebugWindow != null)
-                    deviationDebugWindow.ShowText(posdev.Item2);
+                positionDebugWindow?.ShowText(posdev.Item1);
+                deviationDebugWindow?.ShowText(posdev.Item2);
             }
-            if (closestPathDebugWindow != null)
-                closestPathDebugWindow.ShowText(InfoCalc.PathCalc());
-            if (closestLadleDebugWindow != null)
-                closestLadleDebugWindow.ShowText(InfoCalc.LadleCalc());
+            closestPathDebugWindow?.ShowText(InfoCalc.PathCalc());
+            closestLadleDebugWindow?.ShowText(InfoCalc.LadleCalc());
             if (AlchAss.solventDirectionHint != null)
                 Traverse.Create(AlchAss.solventDirectionHint).Method("OnPositionOnMapChanged", Array.Empty<object>()).GetValue();
         }
@@ -303,12 +287,10 @@ namespace AlchAss
             if (enableBrewMore.Value)
                 if (count > 1)
                 {
-                    if (Keyboard.current.xKey.isPressed && Keyboard.current.zKey.isPressed)
-                        InfoCalc.BrewRecipe(ref count, recipePageContent, (int)brewControl.Value.z);
-                    else if (Keyboard.current.xKey.isPressed)
-                        InfoCalc.BrewRecipe(ref count, recipePageContent, (int)brewControl.Value.y);
+                    if (Keyboard.current.xKey.isPressed)
+                        InfoCalc.BrewRecipe(ref count, recipePageContent, 1);
                     else if (Keyboard.current.zKey.isPressed)
-                        InfoCalc.BrewRecipe(ref count, recipePageContent, (int)brewControl.Value.x);
+                        InfoCalc.BrewRecipe(ref count, recipePageContent, 0);
                 }
         }
 
