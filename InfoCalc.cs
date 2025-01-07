@@ -6,6 +6,7 @@ using PotionCraft.ManagersSystem;
 using PotionCraft.ManagersSystem.RecipeMap;
 using PotionCraft.ObjectBased.Bellows;
 using PotionCraft.ObjectBased.Mortar;
+using PotionCraft.ObjectBased.Pestle;
 using PotionCraft.ObjectBased.RecipeMap.Path;
 using PotionCraft.ObjectBased.RecipeMap.RecipeMapItem.IndicatorMapItem;
 using PotionCraft.ObjectBased.RecipeMap.RecipeMapItem.PotionEffectMapItem;
@@ -21,13 +22,23 @@ namespace AlchAss
         public static void CoolDown()
         {
             if (Mouse.current.rightButton.wasPressedThisFrame)
-
                 if (Managers.Cursor.hoveredInteractiveItem != null)
                     if (Managers.Cursor.hoveredInteractiveItem.GetType() == typeof(Bellows))
                     {
-                        BellowsCoals coals = Managers.Ingredient.coals;
+                        var coals = Managers.Ingredient.coals;
                         Traverse.Create(coals).Field("_heat").SetValue(0f);
                         Traverse.Create(coals).Method("Update", Array.Empty<object>()).GetValue();
+                    }
+        }
+        public static void GrindAll()
+        {
+            if (Mouse.current.rightButton.wasPressedThisFrame)
+                if (Managers.Cursor.hoveredInteractiveItem != null)
+                    if (Managers.Cursor.hoveredInteractiveItem.GetType() == typeof(Pestle))
+                    {
+                        var mortar = Managers.Ingredient.mortar;
+                        if (mortar.ContainedStack != null)
+                            mortar.ContainedStack.overallGrindStatus = 1f;
                     }
         }
         public static void GrindSlowDown(ref float pestleLinearSpeed, ref float pestleAngularSpeed, float times)
