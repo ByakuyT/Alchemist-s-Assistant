@@ -5,7 +5,6 @@ using BepInEx.Configuration;
 using HarmonyLib;
 using PotionCraft.DebugObjects.DebugWindows;
 using PotionCraft.LocalizationSystem;
-using PotionCraft.ManagersSystem;
 using PotionCraft.ManagersSystem.RecipeMap;
 using PotionCraft.ObjectBased;
 using PotionCraft.ObjectBased.Cauldron;
@@ -21,7 +20,7 @@ using UnityEngine.InputSystem;
 
 namespace AlchAss
 {
-    [BepInPlugin("AlchAss", "Alchemist's Assistant", "2.2.0")]
+    [BepInPlugin("AlchAss", "Alchemist's Assistant", "2.3.0")]
     public class AlchAss : BaseUnityPlugin
     {
         private static ConfigEntry<bool> enableGrindStatus;
@@ -41,6 +40,7 @@ namespace AlchAss
         private static ConfigEntry<bool> enableBrewMore;
         private static ConfigEntry<bool> enableWindowsPosition;
         private static ConfigEntry<bool> enableDirectionLine;
+        private static ConfigEntry<bool> enableGrindAll;
 
         private static ConfigEntry<Vector2> positionGrindDebugWindow;
         private static ConfigEntry<Vector2> positionHealthDebugWindow;
@@ -70,7 +70,7 @@ namespace AlchAss
         public static SolventDirectionHint solventDirectionHint = null;
         public static readonly List<DebugWindow> foreground_queue = new();
 
-        void Awake()
+        public void Awake()
         {
             enableGrindStatus = Config.Bind("信息窗口", "研磨信息", true, "开启后，显示研磨进度.");
             enableHealthStatus = Config.Bind("信息窗口", "血量信息", true, "开启后，显示血量.");
@@ -83,6 +83,7 @@ namespace AlchAss
             enableDirectionLine = Config.Bind("信息窗口", "方向提示", true, "开启后，按下 / 键显示当前搅拌方向提示线.");
 
             enableShuttingDown = Config.Bind("操作控制", "允许漩涡急停", true, "开启后，右键点击风箱把手将使药水瞬间冷却.");
+            enableShuttingDown = Config.Bind("操作控制", "允许瞬间研磨", true, "开启后，右键点击研杵把手将使药材完全研磨.");
             enableGrindSpeed = Config.Bind("操作控制", "允许研磨减速", true, "开启后，按住 Z, X 或 Z + X 键将使研磨减速至相应比例.");
             enableStirSpeed = Config.Bind("操作控制", "允许搅拌减速", true, "开启后，按住 Z, X 或 Z + X 键将使搅拌减速至相应比例.");
             enableLadleSpeed = Config.Bind("操作控制", "允许加水减速", true, "开启后，按住 Z, X 或 Z + X 键将使加水减速至相应比例.");
@@ -106,7 +107,7 @@ namespace AlchAss
             Logger.LogInfo("插件加载完成！");
         }
 
-        void Update()
+        public void Update()
         {
             if (enableWindowsPosition.Value)
                 Helper.WindowsPosition();
@@ -114,11 +115,20 @@ namespace AlchAss
                 Helper.DirectionLine();
             if (enableShuttingDown.Value)
                 InfoCalc.CoolDown();
+            if (enableShuttingDown.Value)
+                InfoCalc.GrindAll();
+        }
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(MovableUIItem), "FixOutOfBoundsCase")]
+        public static bool WindowFixOutOfBoundsCase(MovableUIItem __instance)
+        {
+            return __instance is not DebugWindow;
         }
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(Window), "ToForeground")]
-        private static bool WindowForeground(Window __instance)
+        public static bool WindowForeground(Window __instance)
         {
             if (__instance is not DebugWindow dbg)
                 return true;
@@ -130,7 +140,7 @@ namespace AlchAss
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(Room), "Awake")]
-        private static void InitDebugWindows(Room __instance)
+        public static void InitDebugWindows(Room __instance)
         {
             if (__instance.roomIndex == RoomIndex.Laboratory)
                 lab = __instance;
@@ -138,7 +148,7 @@ namespace AlchAss
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(SubstanceGrinding), "TryToGrind")]
-        private static void GrindSlowDown(ref float pestleLinearSpeed, ref float pestleAngularSpeed)
+        public static void GrindSlowDown(ref float pestleLinearSpeed, ref float pestleAngularSpeed)
         {
             if (enableGrindSpeed.Value)
             {
@@ -153,7 +163,7 @@ namespace AlchAss
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(Cauldron), "UpdateStirringValue")]
-        private static void StirSlowDown(ref float ___StirringValue)
+        public static void StirSlowDown(ref float ___StirringValue)
         {
             if (enableStirSpeed.Value)
             {
@@ -168,7 +178,7 @@ namespace AlchAss
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(RecipeMapManager), "GetSpeedOfMovingTowardsBase")]
-        private static void LadleSlowDown(ref float __result)
+        public static void LadleSlowDown(ref float __result)
         {
             if (enableLadleSpeed.Value)
             {
@@ -183,7 +193,7 @@ namespace AlchAss
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(RecipeMapManager), "MoveIndicatorTowardsVortex")]
-        private static void HeatSlowDown(ref float __state)
+        public static void HeatSlowDown(ref float __state)
         {
             if (enableHeatSpeed.Value)
             {
@@ -198,7 +208,7 @@ namespace AlchAss
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(RecipeMapManager), "MoveIndicatorTowardsVortex")]
-        private static void HeatSlowDownEnd(float __state)
+        public static void HeatSlowDownEnd(float __state)
         {
             if (enableHeatSpeed.Value)
                 if (__state != 0f)
@@ -208,7 +218,7 @@ namespace AlchAss
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(Mortar), "Update")]
-        private static void GrindStatus(Mortar __instance)
+        public static void GrindStatus(Mortar __instance)
         {
             if (enableGrindStatus.Value)
                 if (grindDebugWindow == null)
@@ -225,7 +235,7 @@ namespace AlchAss
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(IndicatorMapItem), "UpdateByCollection")]
-        private static void PotionStatus(IndicatorMapItem __instance)
+        public static void PotionStatus(IndicatorMapItem __instance)
         {
             if (enableHealthStatus.Value)
                 if (healthDebugWindow == null)
@@ -308,7 +318,7 @@ namespace AlchAss
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(RecipeBookRecipeBrewController), "BrewRecipe")]
-        private static void BrewMore(ref int count, IRecipeBookPageContent recipePageContent)
+        public static void BrewMore(ref int count, IRecipeBookPageContent recipePageContent)
         {
             if (enableBrewMore.Value)
                 if (count > 1)
