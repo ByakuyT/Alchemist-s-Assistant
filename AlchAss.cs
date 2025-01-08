@@ -6,12 +6,14 @@ using BepInEx.Configuration;
 using HarmonyLib;
 using PotionCraft.DebugObjects.DebugWindows;
 using PotionCraft.LocalizationSystem;
+using PotionCraft.ManagersSystem;
 using PotionCraft.ManagersSystem.RecipeMap;
 using PotionCraft.ObjectBased;
 using PotionCraft.ObjectBased.Cauldron;
 using PotionCraft.ObjectBased.Mortar;
 using PotionCraft.ObjectBased.RecipeMap.RecipeMapItem.IndicatorMapItem;
 using PotionCraft.ObjectBased.RecipeMap.RecipeMapItem.SolventDirectionHint;
+using PotionCraft.ObjectBased.RecipeMap.RecipeMapItem.VortexMapItem;
 using PotionCraft.ObjectBased.Stack;
 using PotionCraft.ObjectBased.UIElements;
 using PotionCraft.ObjectBased.UIElements.Books.RecipeBook;
@@ -41,6 +43,7 @@ namespace AlchAss
         private static ConfigEntry<bool> enableBrewMore;
         private static ConfigEntry<bool> enableDirectionLine;
         private static ConfigEntry<bool> enableGrindAll;
+        private static ConfigEntry<bool> enableVortexEdge;
 
         private static DebugWindow grindDebugWindow;
         private static DebugWindow healthDebugWindow;
@@ -60,10 +63,10 @@ namespace AlchAss
         private static Vector2 positionClosestPathDebugWindow = Vector2.zero;
         private static Vector2 positionClosestLadleDebugWindow = Vector2.zero;
 
-        private static Vector2 speedControl = Vector2.zero;
-        private static Vector2Int brewControl = Vector2Int.zero;
-
         public static bool directionLine = false;
+        public static bool vortexEdgeControl = false;
+        public static int vortexEdgeOn = 1;
+        public static float vortexEdgeDistance = float.MaxValue;
         public static float endDirection = 0f;
         public static Room lab = null;
         public static Sprite spriteOld = null;
@@ -87,6 +90,7 @@ namespace AlchAss
 
             enableShuttingDown = Config.Bind("操作控制", "允许漩涡急停", true, "开启后，右键点击风箱把手将使药剂热量值变为指定值.");
             enableGrindAll = Config.Bind("操作控制", "允许瞬间研磨", true, "开启后，右键点击研杵把手将使药材研磨度变为指定值.");
+            enableVortexEdge = Config.Bind("操作控制", "允许漩涡贴边", true, "开启后，按下 ' 键后药水瓶即将到达漩涡边缘时将禁用搅拌和加水，离开边缘或启用二级减速时恢复.");
             enableGrindSpeed = Config.Bind("操作控制", "允许研磨减速", true, "开启后，按住 Z 或 X 键将使研磨减速至相应指定比例.");
             enableStirSpeed = Config.Bind("操作控制", "允许搅拌减速", true, "开启后，按住 Z 或 X 键将使搅拌减速至相应指定比例.");
             enableLadleSpeed = Config.Bind("操作控制", "允许加水减速", true, "开启后，按住 Z 或 X 键将使加水减速至相应指定比例.");
@@ -120,11 +124,13 @@ namespace AlchAss
         public void Update()
         {
             if (enableDirectionLine.Value)
-                Helper.DirectionLine();
+                InfoCalc.DirectionLine();
             if (enableShuttingDown.Value)
                 InfoCalc.CoolDown();
             if (enableGrindAll.Value)
                 InfoCalc.GrindAll();
+            if (enableVortexEdge.Value)
+                InfoCalc.VortexEdge();
         }
 
         public void OnApplicationQuit()
@@ -178,6 +184,26 @@ namespace AlchAss
                 else if (Keyboard.current.zKey.isPressed)
                     InfoCalc.GrindSlowDown(ref pestleLinearSpeed, ref pestleAngularSpeed, 0);
             }
+        }
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(Cauldron), "UpdateStirringValue")]
+        public static bool StirDisable(ref float ___StirringValue)
+        {
+            if (vortexEdgeOn > 0)
+                return true;
+            ___StirringValue = 0f;
+            return false;
+        }
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(RecipeMapManager), "GetSpeedOfMovingTowardsBase")]
+        public static bool LadleDisable(ref float __result)
+        {
+            if (vortexEdgeOn > 0)
+                return true;
+            __result = 0f;
+            return false;
         }
 
         [HarmonyPostfix]
@@ -241,7 +267,7 @@ namespace AlchAss
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(IndicatorMapItem), "UpdateByCollection")]
-        public static void PotionStatus(IndicatorMapItem __instance)
+        public static void PotionStatus(float ___health)
         {
             if (enableHealthStatus.Value)
                 if (healthDebugWindow == null)
@@ -265,7 +291,7 @@ namespace AlchAss
                 if (closestLadleDebugWindow == null)
                     closestLadleDebugWindow = Helper.CreateDebugWindow("#mod_dialog_ladle_status", positionClosestLadleDebugWindow);
 
-            healthDebugWindow?.ShowText(InfoCalc.HealthCalc(__instance));
+            healthDebugWindow?.ShowText(InfoCalc.HealthCalc(___health));
             vortexDebugWindow?.ShowText(InfoCalc.VortexCalc());
             stirDebugWindow?.ShowText(InfoCalc.StirCalc());
             if (positionDebugWindow != null || deviationDebugWindow != null)
@@ -296,38 +322,49 @@ namespace AlchAss
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(SolventDirectionHint), "OnPositionOnMapChanged")]
-        public static void DirectionLineUpdate(SolventDirectionHint __instance)
+        public static void DirectionLineUpdate(SolventDirectionHint __instance, SpriteRenderer ___spriteRenderer)
         {
             if (enableDirectionLine.Value)
             {
                 if (solventDirectionHint == null)
                     solventDirectionHint = __instance;
-                var spriteRenderer = (SpriteRenderer)Traverse.Create(__instance).Field("spriteRenderer").GetValue();
                 if (directionLine)
                 {
                     if (spriteOld == null)
-                        spriteOld = spriteRenderer.sprite;
+                        spriteOld = ___spriteRenderer.sprite;
                     Texture2D texture = new Texture2D(1, 1);
                     texture.SetPixels(new Color[1] { new Color(0.75f, 0.1f, 0.1f, 0.75f) });
                     texture.Apply();
                     Sprite redLineSprite = Sprite.Create(texture, new Rect(0, 0, 1, 1), new Vector2(0.5f, 0.5f), 1.0f, 0, SpriteMeshType.FullRect);
-                    spriteRenderer.sprite = redLineSprite;
+                    ___spriteRenderer.sprite = redLineSprite;
+                    ___spriteRenderer.size = new Vector2(0.075f, 100f);
+                    __instance.transform.localEulerAngles = new Vector3(0f, 0f, endDirection);
                 }
                 else if (spriteOld != null)
-                    spriteRenderer.sprite = spriteOld;
+                    ___spriteRenderer.sprite = spriteOld;
             }
         }
 
         [HarmonyPostfix]
-        [HarmonyPatch(typeof(SolventDirectionHint), "OnPositionOnMapChanged")]
-        public static void DirectionLineRender(SolventDirectionHint __instance)
+        [HarmonyPatch(typeof(VortexMapItemCollider), "OnTriggerEnter2D")]
+        public static void VortexDistanceEnter()
         {
-            if (directionLine)
-            {
-                var spriteRenderer = (SpriteRenderer)Traverse.Create(__instance).Field("spriteRenderer").GetValue();
-                spriteRenderer.size = new Vector2(0.075f, 100f);
-                __instance.transform.localEulerAngles = new Vector3(0f, 0f, endDirection);
-            }
+            var v1 = Managers.RecipeMap.CurrentVortexMapItem.thisTransform.localPosition;
+            var v2 = Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition;
+            if (enableVortexEdge.Value)
+                vortexEdgeDistance = (v1 - v2).sqrMagnitude;
+            if (vortexEdgeControl)
+                vortexEdgeOn = -1;
+        }
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(VortexMapItemCollider), "OnTriggerExit2D")]
+        public static void VortexDistanceExit()
+        {
+            if (enableVortexEdge.Value)
+                vortexEdgeDistance = float.MaxValue;
+            if (vortexEdgeControl)
+                vortexEdgeOn = 1;
         }
     }
 }
