@@ -25,6 +25,7 @@ namespace AlchAss
             if (Keyboard.current.slashKey.wasPressedThisFrame)
             {
                 AlchAss.directionLine = !AlchAss.directionLine;
+                Helper.SpawnMessageText("指示线已" + (AlchAss.directionLine ? "开启" : "关闭"));
                 if (AlchAss.solventDirectionHint != null)
                     Traverse.Create(AlchAss.solventDirectionHint).Method("OnPositionOnMapChanged", Array.Empty<object>()).GetValue();
             }
@@ -40,6 +41,7 @@ namespace AlchAss
                 }
                 else
                     AlchAss.vortexEdgeControl = true;
+                Helper.SpawnMessageText("漩涡贴边已" + (AlchAss.vortexEdgeControl ? "开启" : "关闭"));
             }
         }
         public static void CoolDown()
@@ -121,22 +123,24 @@ namespace AlchAss
             {
                 var v1 = Managers.RecipeMap.CurrentVortexMapItem.thisTransform.localPosition;
                 var v2 = Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition;
-                var dist = (v1 - v2).sqrMagnitude;
+                var radV = ((CircleCollider2D)Traverse.Create(Managers.RecipeMap.CurrentVortexMapItem).Field("vortexCollider").GetValue()).radius;
+                var dist = (v1 - v2).magnitude;
+                var maxd = radV + 0.74f;
                 if (AlchAss.vortexEdgeControl)
                 {
                     if (AlchAss.vortexEdgeOn >= 0)
                     {
-                        if (Keyboard.current.xKey.isPressed || dist < AlchAss.vortexEdgeDistance * 0.999f)
-                            AlchAss.vortexEdgeOn = 1;
+                        if (Keyboard.current.xKey.isPressed || dist < maxd - 0.15f)
+                            AlchAss.vortexEdgeOn = float.MaxValue;
                         else
-                            AlchAss.vortexEdgeOn = 0;
+                            AlchAss.vortexEdgeOn = Mathf.Pow(1f - dist / maxd, 1.35f);
                     }
-                    else if (dist < AlchAss.vortexEdgeDistance * 0.8f)
-                        AlchAss.vortexEdgeOn = 1;
+                    else if (dist < radV * radV)
+                        AlchAss.vortexEdgeOn = float.MaxValue;
                 }
                 float ang1 = Vector2.SignedAngle(v1 - v2, Vector2.up);
                 float ang2 = Mathf.DeltaAngle(Vector2.SignedAngle(v2, Vector2.up), ang1);
-                return LocalizationManager.GetText("#mod_vortex_direction") + ang1.ToString() + "\n" + LocalizationManager.GetText("#mod_vortex_angle") + ang2.ToString() + "\n" + LocalizationManager.GetText("#mod_vortex_dist") + dist.ToString() + "\n" + LocalizationManager.GetText("#mod_vortex_edge") + AlchAss.vortexEdgeDistance.ToString();
+                return LocalizationManager.GetText("#mod_vortex_direction") + ang1.ToString() + "\n" + LocalizationManager.GetText("#mod_vortex_angle") + ang2.ToString() + "\n" + LocalizationManager.GetText("#mod_vortex_dist") + dist.ToString() + "\n" + LocalizationManager.GetText("#mod_vortex_edge") + maxd.ToString();
             }
             else
                 return LocalizationManager.GetText("#mod_vortex_direction") + "\n" + LocalizationManager.GetText("#mod_vortex_angle") + "\n" + LocalizationManager.GetText("#mod_vortex_dist") + "\n" + LocalizationManager.GetText("#mod_vortex_edge");
@@ -211,11 +215,11 @@ namespace AlchAss
             if (num < float.MaxValue)
             {
                 var num6 = num * 1800f;
-                var num7 = ((num6 <= 100f) ? 3 : ((num6 <= 600f) ? 2 : ((num6 <= 2755f) ? 1 : 0)));
+                var num7 = ((num6 <= 100f) ? 3 : ((num6 <= 600f) ? 2 : ((num6 <= 2754f) ? 1 : 0)));
                 var num8 = Mathf.Abs(Mathf.DeltaAngle(Managers.RecipeMap.indicatorRotation.Value, potionEffectMapItem.transform.localEulerAngles.z)) / 3f * 25f;
                 var num9 = ((num8 <= 100f) ? 3 : ((num8 <= 600f) ? 2 : 1));
                 var num10 = num6 + num8;
-                var num11 = ((num10 <= 100f) ? 3 : ((num10 <= 600f) ? 2 : ((num6 <= 2755f) ? 1 : 0)));
+                var num11 = ((num10 <= 100f) ? 3 : ((num10 <= 600f) ? 2 : ((num6 <= 2754f) ? 1 : 0)));
                 return LocalizationManager.GetText("#mod_closest_potion_path") + potionEffectMapItem.Effect.GetLocalizedTitle() + "\n" + LocalizationManager.GetText("#mod_closest_general_path") + "<color=red>L" + num11.ToString() + "</color> " + num10.ToString() + "%\n" + LocalizationManager.GetText("#mod_closest_distance_path") + "<color=red>L" + num7.ToString() + "</color> " + num6.ToString() + "%\n" + LocalizationManager.GetText("#mod_closest_angle_path") + "<color=red>L" + num9.ToString() + "</color> " + num8.ToString() + "%";
             }
             return LocalizationManager.GetText("#mod_closest_potion_path") + "\n" + LocalizationManager.GetText("#mod_closest_general_path") + "\n" + LocalizationManager.GetText("#mod_closest_distance_path") + "\n" + LocalizationManager.GetText("#mod_closest_angle_path");
@@ -246,11 +250,11 @@ namespace AlchAss
             if (num2 < float.MaxValue)
             {
                 var num12 = num2 * 1800f;
-                var num13 = ((num12 <= 100f) ? 3 : ((num12 <= 600f) ? 2 : ((num12 <= 2755f) ? 1 : 0)));
+                var num13 = ((num12 <= 100f) ? 3 : ((num12 <= 600f) ? 2 : ((num12 <= 2754f) ? 1 : 0)));
                 var num14 = Mathf.Abs(Mathf.DeltaAngle(Managers.RecipeMap.indicatorRotation.Value, potionEffectMapItem.transform.localEulerAngles.z)) / 3f * 25f;
                 var num15 = ((num14 <= 100f) ? 3 : ((num14 <= 600f) ? 2 : 1));
                 var num16 = num12 + num14;
-                var num17 = ((num16 <= 100f) ? 3 : ((num16 <= 600f) ? 2 : ((num12 <= 2755f) ? 1 : 0)));
+                var num17 = ((num16 <= 100f) ? 3 : ((num16 <= 600f) ? 2 : ((num12 <= 2754f) ? 1 : 0)));
                 return LocalizationManager.GetText("#mod_closest_potion_ladle") + potionEffectMapItem.Effect.GetLocalizedTitle() + "\n" + LocalizationManager.GetText("#mod_closest_general_ladle") + "<color=red>L" + num17.ToString() + "</color> " + num16.ToString() + "%\n" + LocalizationManager.GetText("#mod_closest_distance_ladle") + "<color=red>L" + num13.ToString() + "</color> " + num12.ToString() + "%\n" + LocalizationManager.GetText("#mod_closest_angle_ladle") + "<color=red>L" + num15.ToString() + "</color> " + num14.ToString() + "%";
             }
             return LocalizationManager.GetText("#mod_closest_potion_ladle") + "\n" + LocalizationManager.GetText("#mod_closest_general_ladle") + "\n" + LocalizationManager.GetText("#mod_closest_distance_ladle") + "\n" + LocalizationManager.GetText("#mod_closest_angle_ladle");
