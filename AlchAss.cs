@@ -6,7 +6,6 @@ using BepInEx.Configuration;
 using HarmonyLib;
 using PotionCraft.DebugObjects.DebugWindows;
 using PotionCraft.LocalizationSystem;
-using PotionCraft.ManagersSystem;
 using PotionCraft.ManagersSystem.RecipeMap;
 using PotionCraft.ObjectBased;
 using PotionCraft.ObjectBased.Cauldron;
@@ -20,10 +19,10 @@ using PotionCraft.ObjectBased.UIElements.Books.RecipeBook;
 using PotionCraft.Settings;
 using UnityEngine;
 using UnityEngine.InputSystem;
-
+//药水瓶半径0.74，效果半径0.79
 namespace AlchAss
 {
-    [BepInPlugin("AlchAss", "Alchemist's Assistant", "2.5.0")]
+    [BepInPlugin("AlchAss", "Alchemist's Assistant", "2.6.0")]
     public class AlchAss : BaseUnityPlugin
     {
         private static ConfigEntry<bool> enableGrindStatus;
@@ -65,8 +64,7 @@ namespace AlchAss
 
         public static bool directionLine = false;
         public static bool vortexEdgeControl = false;
-        public static int vortexEdgeOn = 1;
-        public static float vortexEdgeDistance = float.MaxValue;
+        public static float vortexEdgeOn = float.MaxValue;
         public static float endDirection = 0f;
         public static Room lab = null;
         public static Sprite spriteOld = null;
@@ -90,7 +88,7 @@ namespace AlchAss
 
             enableShuttingDown = Config.Bind("操作控制", "允许漩涡急停", true, "开启后，右键点击风箱把手将使药剂热量值变为指定值.");
             enableGrindAll = Config.Bind("操作控制", "允许瞬间研磨", true, "开启后，右键点击研杵把手将使药材研磨度变为指定值.");
-            enableVortexEdge = Config.Bind("操作控制", "允许漩涡贴边", true, "开启后，按下 ' 键后药水瓶即将到达漩涡边缘时将禁用搅拌和加水，离开边缘或启用二级减速时恢复.");
+            enableVortexEdge = Config.Bind("操作控制", "允许漩涡贴边", true, "开启后，按下 ' 键后药水瓶即将到达漩涡边缘时将逐渐减速搅拌和加水直到停止，离开边缘或启用二级减速时恢复.");
             enableGrindSpeed = Config.Bind("操作控制", "允许研磨减速", true, "开启后，按住 Z 或 X 键将使研磨减速至相应指定比例.");
             enableStirSpeed = Config.Bind("操作控制", "允许搅拌减速", true, "开启后，按住 Z 或 X 键将使搅拌减速至相应指定比例.");
             enableLadleSpeed = Config.Bind("操作控制", "允许加水减速", true, "开启后，按住 Z 或 X 键将使加水减速至相应指定比例.");
@@ -186,26 +184,6 @@ namespace AlchAss
             }
         }
 
-        [HarmonyPrefix]
-        [HarmonyPatch(typeof(Cauldron), "UpdateStirringValue")]
-        public static bool StirDisable(ref float ___StirringValue)
-        {
-            if (vortexEdgeOn > 0)
-                return true;
-            ___StirringValue = 0f;
-            return false;
-        }
-
-        [HarmonyPrefix]
-        [HarmonyPatch(typeof(RecipeMapManager), "GetSpeedOfMovingTowardsBase")]
-        public static bool LadleDisable(ref float __result)
-        {
-            if (vortexEdgeOn > 0)
-                return true;
-            __result = 0f;
-            return false;
-        }
-
         [HarmonyPostfix]
         [HarmonyPatch(typeof(Cauldron), "UpdateStirringValue")]
         public static void StirSlowDown(ref float ___StirringValue)
@@ -217,6 +195,8 @@ namespace AlchAss
                 else if (Keyboard.current.zKey.isPressed)
                     InfoCalc.StirSlowDown(ref ___StirringValue, 0);
             }
+            if (vortexEdgeControl)
+                ___StirringValue *= Mathf.Clamp01(vortexEdgeOn);
         }
 
         [HarmonyPostfix]
@@ -230,6 +210,8 @@ namespace AlchAss
                 else if (Keyboard.current.zKey.isPressed)
                     InfoCalc.LadleSlowDown(ref __result, 0);
             }
+            if (vortexEdgeControl)
+                __result *= Mathf.Clamp01(vortexEdgeOn);
         }
 
         [HarmonyPrefix]
@@ -349,10 +331,6 @@ namespace AlchAss
         [HarmonyPatch(typeof(VortexMapItemCollider), "OnTriggerEnter2D")]
         public static void VortexDistanceEnter()
         {
-            var v1 = Managers.RecipeMap.CurrentVortexMapItem.thisTransform.localPosition;
-            var v2 = Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition;
-            if (enableVortexEdge.Value)
-                vortexEdgeDistance = (v1 - v2).sqrMagnitude;
             if (vortexEdgeControl)
                 vortexEdgeOn = -1;
         }
@@ -361,8 +339,6 @@ namespace AlchAss
         [HarmonyPatch(typeof(VortexMapItemCollider), "OnTriggerExit2D")]
         public static void VortexDistanceExit()
         {
-            if (enableVortexEdge.Value)
-                vortexEdgeDistance = float.MaxValue;
             if (vortexEdgeControl)
                 vortexEdgeOn = 1;
         }
