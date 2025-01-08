@@ -10,7 +10,6 @@ using PotionCraft.ObjectBased.Bellows;
 using PotionCraft.ObjectBased.Mortar;
 using PotionCraft.ObjectBased.Pestle;
 using PotionCraft.ObjectBased.RecipeMap.Path;
-using PotionCraft.ObjectBased.RecipeMap.RecipeMapItem.IndicatorMapItem;
 using PotionCraft.ObjectBased.RecipeMap.RecipeMapItem.PotionEffectMapItem;
 using PotionCraft.ObjectBased.UIElements.Books.RecipeBook;
 using PotionCraft.Settings;
@@ -21,6 +20,28 @@ namespace AlchAss
 {
     public static class InfoCalc
     {
+        public static void DirectionLine()
+        {
+            if (Keyboard.current.slashKey.wasPressedThisFrame)
+            {
+                AlchAss.directionLine = !AlchAss.directionLine;
+                if (AlchAss.solventDirectionHint != null)
+                    Traverse.Create(AlchAss.solventDirectionHint).Method("OnPositionOnMapChanged", Array.Empty<object>()).GetValue();
+            }
+        }
+        public static void VortexEdge()
+        {
+            if (Keyboard.current.quoteKey.wasPressedThisFrame)
+            {
+                if (AlchAss.vortexEdgeControl)
+                {
+                    AlchAss.vortexEdgeControl = false;
+                    AlchAss.vortexEdgeOn = 1;
+                }
+                else
+                    AlchAss.vortexEdgeControl = true;
+            }
+        }
         public static void CoolDown()
         {
             if (Mouse.current.rightButton.wasPressedThisFrame)
@@ -90,9 +111,8 @@ namespace AlchAss
             else
                 return LocalizationManager.GetText("#mod_grind_progress");
         }
-        public static string HealthCalc(IndicatorMapItem __instance)
+        public static string HealthCalc(float health)
         {
-            var health = (float)AccessTools.Field(typeof(IndicatorMapItem), "health").GetValue(__instance);
             return LocalizationManager.GetText("#mod_health_status") + (health * 100f).ToString() + "%";
         }
         public static string VortexCalc()
@@ -101,12 +121,25 @@ namespace AlchAss
             {
                 var v1 = Managers.RecipeMap.CurrentVortexMapItem.thisTransform.localPosition;
                 var v2 = Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition;
+                var dist = (v1 - v2).sqrMagnitude;
+                if (AlchAss.vortexEdgeControl)
+                {
+                    if (AlchAss.vortexEdgeOn >= 0)
+                    {
+                        if (Keyboard.current.xKey.isPressed || dist < AlchAss.vortexEdgeDistance * 0.999f)
+                            AlchAss.vortexEdgeOn = 1;
+                        else
+                            AlchAss.vortexEdgeOn = 0;
+                    }
+                    else if (dist < AlchAss.vortexEdgeDistance * 0.8f)
+                        AlchAss.vortexEdgeOn = 1;
+                }
                 float ang1 = Vector2.SignedAngle(v1 - v2, Vector2.up);
                 float ang2 = Mathf.DeltaAngle(Vector2.SignedAngle(v2, Vector2.up), ang1);
-                return LocalizationManager.GetText("#mod_vortex_direction") + ang1.ToString() + "\n" + LocalizationManager.GetText("#mod_vortex_angle") + ang2.ToString();
+                return LocalizationManager.GetText("#mod_vortex_direction") + ang1.ToString() + "\n" + LocalizationManager.GetText("#mod_vortex_angle") + ang2.ToString() + "\n" + LocalizationManager.GetText("#mod_vortex_dist") + dist.ToString() + "\n" + LocalizationManager.GetText("#mod_vortex_edge") + AlchAss.vortexEdgeDistance.ToString();
             }
             else
-                return LocalizationManager.GetText("#mod_vortex_direction") + "\n" + LocalizationManager.GetText("#mod_vortex_angle");
+                return LocalizationManager.GetText("#mod_vortex_direction") + "\n" + LocalizationManager.GetText("#mod_vortex_angle") + "\n" + LocalizationManager.GetText("#mod_vortex_dist") + "\n" + LocalizationManager.GetText("#mod_vortex_edge");
         }
         public static string StirCalc()
         {
