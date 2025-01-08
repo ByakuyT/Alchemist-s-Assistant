@@ -7,7 +7,6 @@ using PotionCraft.DebugObjects.DebugWindows;
 using PotionCraft.LocalizationSystem;
 using PotionCraft.ManagersSystem;
 using PotionCraft.ManagersSystem.Ingredient;
-using PotionCraft.ManagersSystem.Player;
 using PotionCraft.ManagersSystem.Potion.Entities;
 using PotionCraft.ManagersSystem.TMP;
 using PotionCraft.ObjectBased.RecipeMap.RecipeMapItem.PotionEffectMapItem;
