@@ -1,14 +1,20 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using HarmonyLib;
 using PotionCraft.Assemblies.DataBaseSystem.PreparedObjects;
 using PotionCraft.DebugObjects.DebugWindows;
 using PotionCraft.LocalizationSystem;
 using PotionCraft.ManagersSystem;
+using PotionCraft.ManagersSystem.Ingredient;
+using PotionCraft.ManagersSystem.Player;
 using PotionCraft.ManagersSystem.Potion.Entities;
+using PotionCraft.ManagersSystem.TMP;
 using PotionCraft.ObjectBased.RecipeMap.RecipeMapItem.PotionEffectMapItem;
 using PotionCraft.ObjectBased.UIElements.Books.RecipeBook;
+using PotionCraft.ObjectBased.UIElements.FloatingText;
 using PotionCraft.ScriptableObjects;
+using PotionCraft.Settings;
 using UnityEngine;
 
 namespace AlchAss
@@ -49,6 +55,17 @@ namespace AlchAss
             RegisterLoc("#mod_vortex_dist", "DI: ", "距离: ");
             RegisterLoc("#mod_vortex_edge", "ED: ", "边缘: ");
             RegisterLoc("#mod_health_status", "HP: ", "血量: ");
+        }
+        public static void SpawnMessageText(string msg)
+        {
+            var cursorPosition = Managers.Cursor.cursor.transform.position;
+            var commonAtlasName = Settings<TMPManagerSettings>.Asset.CommonAtlasName;
+            var formattedText = string.Format("<voffset=0.085em><size=81%><sprite=\"{1}\" name=\"SpeechBubble ExclamationMark Icon\"></size>\u202f{0}", msg, commonAtlasName);
+            var textContent = new CollectedFloatingText.FloatingTextContent(formattedText, CollectedFloatingText.FloatingTextContent.Type.Text, 0f);
+            var assetValue = typeof(Settings<IngredientManagerSettings>).GetProperty("Asset", BindingFlags.Public | BindingFlags.Static).GetValue(null);
+            var collectedFloatingTextField = assetValue.GetType().GetProperty("CollectedFloatingText", BindingFlags.NonPublic | BindingFlags.Instance);
+            var collectedFloatingText = collectedFloatingTextField.GetValue(assetValue) as CollectedFloatingText;
+            CollectedFloatingText.SpawnNewText(collectedFloatingText.gameObject, cursorPosition, new[] { textContent }, Managers.Game.Cam.transform, false, false);
         }
         public static void RegisterLoc(string key, string en, string zh)
         {
