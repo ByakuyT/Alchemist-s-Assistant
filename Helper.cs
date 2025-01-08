@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using HarmonyLib;
@@ -11,7 +10,6 @@ using PotionCraft.ObjectBased.RecipeMap.RecipeMapItem.PotionEffectMapItem;
 using PotionCraft.ObjectBased.UIElements.Books.RecipeBook;
 using PotionCraft.ScriptableObjects;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 namespace AlchAss
 {
@@ -48,6 +46,8 @@ namespace AlchAss
             RegisterLoc("#mod_deviation_rotation", "RO: ", "旋转: ");
             RegisterLoc("#mod_vortex_direction", "DI: ", "方向: ");
             RegisterLoc("#mod_vortex_angle", "AN: ", "夹角: ");
+            RegisterLoc("#mod_vortex_dist", "DI: ", "距离: ");
+            RegisterLoc("#mod_vortex_edge", "ED: ", "边缘: ");
             RegisterLoc("#mod_health_status", "HP: ", "血量: ");
         }
         public static void RegisterLoc(string key, string en, string zh)
@@ -76,15 +76,6 @@ namespace AlchAss
         {
             var values = input.Trim('(', ')', ' ').Split(',');
             return new Vector2(float.Parse(values[0]), float.Parse(values[1]));
-        }
-        public static void DirectionLine()
-        {
-            if (Keyboard.current.slashKey.wasPressedThisFrame)
-            {
-                AlchAss.directionLine = !AlchAss.directionLine;
-                if (AlchAss.solventDirectionHint != null)
-                    Traverse.Create(AlchAss.solventDirectionHint).Method("OnPositionOnMapChanged", Array.Empty<object>()).GetValue();
-            }
         }
         public static bool CanBrewTimes(IRecipeBookPageContent recipePageContent, int count, int times)
         {
