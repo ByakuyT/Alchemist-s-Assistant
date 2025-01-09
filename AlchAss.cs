@@ -22,7 +22,7 @@ using UnityEngine.InputSystem;
 //药水瓶半径0.74，效果半径0.79
 namespace AlchAss
 {
-    [BepInPlugin("AlchAss", "Alchemist's Assistant", "2.6.0")]
+    [BepInPlugin("AlchAss", "Alchemist's Assistant", "2.6.1")]
     public class AlchAss : BaseUnityPlugin
     {
         private static ConfigEntry<bool> enableGrindStatus;
@@ -88,7 +88,7 @@ namespace AlchAss
 
             enableShuttingDown = Config.Bind("操作控制", "允许漩涡急停", true, "开启后，右键点击风箱把手将使药剂热量值变为指定值.");
             enableGrindAll = Config.Bind("操作控制", "允许瞬间研磨", true, "开启后，右键点击研杵把手将使药材研磨度变为指定值.");
-            enableVortexEdge = Config.Bind("操作控制", "允许漩涡贴边", true, "开启后，按下 ' 键后药水瓶即将到达漩涡边缘时将逐渐减速搅拌和加水直到停止，离开边缘或启用二级减速时恢复.");
+            enableVortexEdge = Config.Bind("操作控制", "允许漩涡贴边", true, "开启后，按下 ' 键后药水瓶即将离开漩涡边缘时将逐渐减速搅拌和加水直到停止.");
             enableGrindSpeed = Config.Bind("操作控制", "允许研磨减速", true, "开启后，按住 Z 或 X 键将使研磨减速至相应指定比例.");
             enableStirSpeed = Config.Bind("操作控制", "允许搅拌减速", true, "开启后，按住 Z 或 X 键将使搅拌减速至相应指定比例.");
             enableLadleSpeed = Config.Bind("操作控制", "允许加水减速", true, "开启后，按住 Z 或 X 键将使加水减速至相应指定比例.");
