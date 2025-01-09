@@ -130,12 +130,12 @@ namespace AlchAss
                 {
                     if (AlchAss.vortexEdgeOn >= 0)
                     {
-                        if (Keyboard.current.xKey.isPressed || dist < maxd - 0.15f)
+                        if (dist < maxd - 0.135f)
                             AlchAss.vortexEdgeOn = float.MaxValue;
                         else
-                            AlchAss.vortexEdgeOn = Mathf.Pow(1f - dist / maxd, 1.35f);
+                            AlchAss.vortexEdgeOn = Mathf.Pow((maxd - dist) / 1.74f, 1.35f);
                     }
-                    else if (dist < radV * radV)
+                    else if (dist < radV)
                         AlchAss.vortexEdgeOn = float.MaxValue;
                 }
                 float ang1 = Vector2.SignedAngle(v1 - v2, Vector2.up);
