@@ -22,7 +22,7 @@ using UnityEngine.InputSystem;
 //药水瓶半径0.74，效果半径0.79
 namespace AlchAss
 {
-    [BepInPlugin("AlchAss", "Alchemist's Assistant", "2.6.1")]
+    [BepInPlugin("AlchAss", "Alchemist's Assistant", "2.7.0")]
     public class AlchAss : BaseUnityPlugin
     {
         private static ConfigEntry<bool> enableGrindStatus;
@@ -64,8 +64,12 @@ namespace AlchAss
 
         public static bool directionLine = false;
         public static bool vortexEdgeControl = false;
+        public static bool swampAddFlag = false;
         public static float vortexEdgeOn = float.MaxValue;
         public static float endDirection = 0f;
+        public static float swampStir = 0f;
+        public static float swampCnt = 0f;
+        public static float swampAdd = 0f;
         public static Room lab = null;
         public static Sprite spriteOld = null;
         public static SolventDirectionHint solventDirectionHint = null;
@@ -243,7 +247,7 @@ namespace AlchAss
         {
             if (enableGrindStatus.Value)
                 if (grindDebugWindow == null)
-                    grindDebugWindow = Helper.CreateDebugWindow("#mod_dialog_grind_status", positionGrindDebugWindow);
+                    grindDebugWindow = Helper.CreateDebugWindow("dialog_grind_status", positionGrindDebugWindow);
             grindDebugWindow?.ShowText(InfoCalc.GrindCalc(__instance));
         }
 
@@ -253,25 +257,25 @@ namespace AlchAss
         {
             if (enableHealthStatus.Value)
                 if (healthDebugWindow == null)
-                    healthDebugWindow = Helper.CreateDebugWindow("#mod_dialog_health_status", positionHealthDebugWindow);
+                    healthDebugWindow = Helper.CreateDebugWindow("dialog_health_status", positionHealthDebugWindow);
             if (enableVortexStatus.Value)
                 if (vortexDebugWindow == null)
-                    vortexDebugWindow = Helper.CreateDebugWindow("#mod_dialog_vortex_status", positionVortexDebugWindow);
+                    vortexDebugWindow = Helper.CreateDebugWindow("dialog_vortex_status", positionVortexDebugWindow);
             if (enableStirStatus.Value)
                 if (stirDebugWindow == null)
-                    stirDebugWindow = Helper.CreateDebugWindow("#mod_dialog_stir_status", positionStirDebugWindow);
+                    stirDebugWindow = Helper.CreateDebugWindow("dialog_stir_status", positionStirDebugWindow);
             if (enablePositionStatus.Value)
                 if (positionDebugWindow == null)
-                    positionDebugWindow = Helper.CreateDebugWindow("#mod_dialog_position_status", positionPositionDebugWindow);
+                    positionDebugWindow = Helper.CreateDebugWindow("dialog_position_status", positionPositionDebugWindow);
             if (enableDeviationStatus.Value)
                 if (deviationDebugWindow == null)
-                    deviationDebugWindow = Helper.CreateDebugWindow("#mod_dialog_deviation_status", positionDeviationDebugWindow);
+                    deviationDebugWindow = Helper.CreateDebugWindow("dialog_deviation_status", positionDeviationDebugWindow);
             if (enableClosestPathStatus.Value)
                 if (closestPathDebugWindow == null)
-                    closestPathDebugWindow = Helper.CreateDebugWindow("#mod_dialog_path_status", positionClosestPathDebugWindow);
+                    closestPathDebugWindow = Helper.CreateDebugWindow("dialog_path_status", positionClosestPathDebugWindow);
             if (enableClosestLadleStatus.Value)
                 if (closestLadleDebugWindow == null)
-                    closestLadleDebugWindow = Helper.CreateDebugWindow("#mod_dialog_ladle_status", positionClosestLadleDebugWindow);
+                    closestLadleDebugWindow = Helper.CreateDebugWindow("dialog_ladle_status", positionClosestLadleDebugWindow);
 
             healthDebugWindow?.ShowText(InfoCalc.HealthCalc(___health));
             vortexDebugWindow?.ShowText(InfoCalc.VortexCalc());
@@ -314,8 +318,8 @@ namespace AlchAss
                 {
                     if (spriteOld == null)
                         spriteOld = ___spriteRenderer.sprite;
-                    Texture2D texture = new Texture2D(1, 1);
-                    texture.SetPixels(new Color[1] { new Color(0.75f, 0.1f, 0.1f, 0.75f) });
+                    Texture2D texture = new(1, 1);
+                    texture.SetPixels(new Color[1] { new(0.75f, 0.1f, 0.1f, 0.75f) });
                     texture.Apply();
                     Sprite redLineSprite = Sprite.Create(texture, new Rect(0, 0, 1, 1), new Vector2(0.5f, 0.5f), 1.0f, 0, SpriteMeshType.FullRect);
                     ___spriteRenderer.sprite = redLineSprite;
