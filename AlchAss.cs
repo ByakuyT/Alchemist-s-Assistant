@@ -333,7 +333,7 @@ namespace AlchAss
         public static void VortexDistanceEnter()
         {
             if (vortexEdgeControl)
-                vortexEdgeOn = 0f;
+                vortexEdgeOn = float.MinValue;
         }
 
         [HarmonyPostfix]
@@ -341,7 +341,7 @@ namespace AlchAss
         public static void VortexDistanceExit()
         {
             if (vortexEdgeControl)
-                vortexEdgeOn = 1f;
+                vortexEdgeOn = float.MaxValue;
         }
     }
 }
