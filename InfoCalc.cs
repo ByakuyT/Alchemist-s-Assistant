@@ -126,15 +126,10 @@ namespace AlchAss
                 var maxd = radV + 0.74f;
                 if (AlchAss.vortexEdgeControl)
                 {
-                    if (AlchAss.vortexEdgeOn >= 0)
-                    {
-                        if (dist < maxd - 0.135f)
-                            AlchAss.vortexEdgeOn = float.MaxValue;
-                        else
-                            AlchAss.vortexEdgeOn = Mathf.Pow((maxd - dist) / 1.74f, 1.35f);
-                    }
-                    else if (dist < radV)
+                    if (dist < maxd - 0.135f)
                         AlchAss.vortexEdgeOn = float.MaxValue;
+                    else
+                        AlchAss.vortexEdgeOn = Mathf.Pow((maxd - dist) / 1.74f, 1.35f);
                 }
                 float ang1 = Vector2.SignedAngle(v1 - v2, Vector2.up);
                 float ang2 = Mathf.DeltaAngle(Vector2.SignedAngle(v2, Vector2.up), ang1);
@@ -159,31 +154,10 @@ namespace AlchAss
             direction = direction < float.MaxValue ? direction : 0f;
             var swamp = 0f;
             AlchAss.endDirection = -direction;
-            if (deletedGraphicsSegments > 0f || segmentLengthToDeletePhysics > 0f)
-            {
-                var swampZonePart = ZonePart.GetZonesActivePartsCount(typeof(SwampZonePart));
-                if (swampZonePart == 0)
-                    AlchAss.swampStir = deletedGraphicsSegments;
-                swamp = deletedGraphicsSegments - AlchAss.swampStir;
-                if (swamp > 0)
-                {
-                    AlchAss.swampCnt = swamp;
-                    AlchAss.swampAddFlag = true;
-                }
-                else if (AlchAss.swampAddFlag)
-                {
-                    AlchAss.swampAdd += AlchAss.swampCnt;
-                    AlchAss.swampAddFlag = false;
-                }
-                swamp += AlchAss.swampAdd;
-            }
-            else
-            {
-                AlchAss.swampStir = 0f;
-                AlchAss.swampCnt = 0f;
-                AlchAss.swampAdd = 0f;
-                AlchAss.swampAddFlag = false;
-            }
+            var swampZonePart = ZonePart.GetZonesActivePartsCount(typeof(SwampZonePart));
+            if (swampZonePart == 0)
+                AlchAss.swampStir = deletedGraphicsSegments;
+            swamp = deletedGraphicsSegments - AlchAss.swampStir;
             return LocalizationManager.GetText("stir_stage") + deletedGraphicsSegments.ToString() + "\n" + LocalizationManager.GetText("stir_progress") + segmentLengthToDeletePhysics.ToString() + "\n" + LocalizationManager.GetText("stir_direction") + direction.ToString() + "\n" + LocalizationManager.GetText("stir_swamp") + swamp.ToString();
         }
         public static Tuple<string, string> PositionDeviationCalc()
