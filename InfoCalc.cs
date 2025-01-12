@@ -11,6 +11,7 @@ using PotionCraft.ObjectBased.Mortar;
 using PotionCraft.ObjectBased.Pestle;
 using PotionCraft.ObjectBased.RecipeMap.Path;
 using PotionCraft.ObjectBased.RecipeMap.RecipeMapItem.PotionEffectMapItem;
+using PotionCraft.ObjectBased.RecipeMap.RecipeMapItem.Zones;
 using PotionCraft.ObjectBased.UIElements.Books.RecipeBook;
 using PotionCraft.Settings;
 using UnityEngine;
@@ -103,19 +104,16 @@ namespace AlchAss
                 asset.vortexMovementSpeed /= float.Parse(lines[opt]);
             }
         }
-        public static string GrindCalc(Mortar __instance)
+        public static string GrindCalc(Mortar mortar)
         {
-            if (__instance.ContainedStack != null)
-            {
-                var grind = __instance.ContainedStack.overallGrindStatus;
-                return LocalizationManager.GetText("#mod_grind_progress") + (grind * 100f).ToString() + "%";
-            }
+            if (mortar.ContainedStack != null)
+                return LocalizationManager.GetText("grind_progress") + (mortar.ContainedStack.overallGrindStatus * 100f).ToString() + "%";
             else
-                return LocalizationManager.GetText("#mod_grind_progress");
+                return LocalizationManager.GetText("grind_progress");
         }
         public static string HealthCalc(float health)
         {
-            return LocalizationManager.GetText("#mod_health_status") + (health * 100f).ToString() + "%";
+            return LocalizationManager.GetText("health_status") + (health * 100f).ToString() + "%";
         }
         public static string VortexCalc()
         {
@@ -140,10 +138,10 @@ namespace AlchAss
                 }
                 float ang1 = Vector2.SignedAngle(v1 - v2, Vector2.up);
                 float ang2 = Mathf.DeltaAngle(Vector2.SignedAngle(v2, Vector2.up), ang1);
-                return LocalizationManager.GetText("#mod_vortex_direction") + ang1.ToString() + "\n" + LocalizationManager.GetText("#mod_vortex_angle") + ang2.ToString() + "\n" + LocalizationManager.GetText("#mod_vortex_dist") + dist.ToString() + "\n" + LocalizationManager.GetText("#mod_vortex_edge") + maxd.ToString();
+                return LocalizationManager.GetText("vortex_direction") + ang1.ToString() + "\n" + LocalizationManager.GetText("vortex_angle") + ang2.ToString() + "\n" + LocalizationManager.GetText("vortex_dist") + dist.ToString() + "\n" + LocalizationManager.GetText("vortex_edge") + maxd.ToString();
             }
             else
-                return LocalizationManager.GetText("#mod_vortex_direction") + "\n" + LocalizationManager.GetText("#mod_vortex_angle") + "\n" + LocalizationManager.GetText("#mod_vortex_dist") + "\n" + LocalizationManager.GetText("#mod_vortex_edge");
+                return LocalizationManager.GetText("vortex_direction") + "\n" + LocalizationManager.GetText("vortex_angle") + "\n" + LocalizationManager.GetText("vortex_dist") + "\n" + LocalizationManager.GetText("vortex_edge");
         }
         public static string StirCalc()
         {
@@ -159,8 +157,34 @@ namespace AlchAss
             float deletedGraphicsSegments = Managers.RecipeMap.path.deletedGraphicsSegments;
             float segmentLengthToDeletePhysics = Managers.RecipeMap.path.segmentLengthToDeletePhysics;
             direction = direction < float.MaxValue ? direction : 0f;
+            var swamp = 0f;
             AlchAss.endDirection = -direction;
-            return LocalizationManager.GetText("#mod_stir_stage") + deletedGraphicsSegments.ToString() + "\n" + LocalizationManager.GetText("#mod_stir_progress") + segmentLengthToDeletePhysics.ToString() + "\n" + LocalizationManager.GetText("#mod_stir_direction") + direction.ToString();
+            if (deletedGraphicsSegments > 0f || segmentLengthToDeletePhysics > 0f)
+            {
+                var swampZonePart = ZonePart.GetZonesActivePartsCount(typeof(SwampZonePart));
+                if (swampZonePart == 0)
+                    AlchAss.swampStir = deletedGraphicsSegments;
+                swamp = deletedGraphicsSegments - AlchAss.swampStir;
+                if (swamp > 0)
+                {
+                    AlchAss.swampCnt = swamp;
+                    AlchAss.swampAddFlag = true;
+                }
+                else if (AlchAss.swampAddFlag)
+                {
+                    AlchAss.swampAdd += AlchAss.swampCnt;
+                    AlchAss.swampAddFlag = false;
+                }
+                swamp += AlchAss.swampAdd;
+            }
+            else
+            {
+                AlchAss.swampStir = 0f;
+                AlchAss.swampCnt = 0f;
+                AlchAss.swampAdd = 0f;
+                AlchAss.swampAddFlag = false;
+            }
+            return LocalizationManager.GetText("stir_stage") + deletedGraphicsSegments.ToString() + "\n" + LocalizationManager.GetText("stir_progress") + segmentLengthToDeletePhysics.ToString() + "\n" + LocalizationManager.GetText("stir_direction") + direction.ToString() + "\n" + LocalizationManager.GetText("stir_swamp") + swamp.ToString();
         }
         public static Tuple<string, string> PositionDeviationCalc()
         {
@@ -173,8 +197,8 @@ namespace AlchAss
                 var num = Mathf.DeltaAngle(Managers.RecipeMap.indicatorRotation.Value, 0f);
                 var num2 = Vector2.SignedAngle(vector, Vector2.up);
                 var num3 = num / 9f * 25f;
-                pos = LocalizationManager.GetText("#mod_position_distance") + magnitude.ToString() + "\n" + LocalizationManager.GetText("#mod_position_angle") + num2.ToString() + "'\n" + LocalizationManager.GetText("#mod_position_rotation") + num.ToString() + "'\n" + LocalizationManager.GetText("#mod_position_salt") + ((num3 > 0f) ? ("<sprite=\"IconsAtlas\" name=\"SunSalt\"> " + num3.ToString()) : ("<sprite=\"IconsAtlas\" name=\"MoonSalt\"> " + (-num3).ToString()));
-                dev = LocalizationManager.GetText("#mod_deviation_general") + "\n" + LocalizationManager.GetText("#mod_deviation_distance") + "\n" + LocalizationManager.GetText("#mod_deviation_rotation");
+                pos = LocalizationManager.GetText("position_distance") + magnitude.ToString() + "\n" + LocalizationManager.GetText("position_angle") + num2.ToString() + "'\n" + LocalizationManager.GetText("position_rotation") + num.ToString() + "'\n" + LocalizationManager.GetText("position_salt") + ((num3 > 0f) ? ("<sprite=\"IconsAtlas\" name=\"SunSalt\"> " + num3.ToString()) : ("<sprite=\"IconsAtlas\" name=\"MoonSalt\"> " + (-num3).ToString()));
+                dev = LocalizationManager.GetText("deviation_general") + "\n" + LocalizationManager.GetText("deviation_distance") + "\n" + LocalizationManager.GetText("deviation_rotation");
                 return new Tuple<string, string>(pos, dev);
             }
             var transform = Managers.RecipeMap.currentPotionEffectMapItem.transform;
@@ -184,12 +208,12 @@ namespace AlchAss
             var num5 = Mathf.DeltaAngle(Managers.RecipeMap.indicatorRotation.Value, transform.eulerAngles.z);
             var num6 = Vector2.SignedAngle(vector2, vector3);
             var num7 = num5 / 9f * 25f;
-            pos = LocalizationManager.GetText("#mod_position_distance") + num4.ToString() + "\n" + LocalizationManager.GetText("#mod_position_angle") + num6.ToString() + "'\n" + LocalizationManager.GetText("#mod_position_rotation") + num5.ToString() + "'\n" + LocalizationManager.GetText("#mod_position_salt") + ((num7 > 0f) ? ("<sprite=\"IconsAtlas\" name=\"MoonSalt\"> " + num7.ToString()) : ("<sprite=\"IconsAtlas\" name=\"SunSalt\"> " + (-num7).ToString()));
+            pos = LocalizationManager.GetText("position_distance") + num4.ToString() + "\n" + LocalizationManager.GetText("position_angle") + num6.ToString() + "'\n" + LocalizationManager.GetText("position_rotation") + num5.ToString() + "'\n" + LocalizationManager.GetText("position_salt") + ((num7 > 0f) ? ("<sprite=\"IconsAtlas\" name=\"MoonSalt\"> " + num7.ToString()) : ("<sprite=\"IconsAtlas\" name=\"SunSalt\"> " + (-num7).ToString()));
             var num8 = num4 * 1800f;
             var num9 = Mathf.Abs(num5) / 3f * 25f;
             var num10 = ((num8 <= 100f) ? 3 : ((num8 <= 600f) ? 2 : 1));
             var num11 = ((num9 <= 100f) ? 3 : ((num9 <= 600f) ? 2 : 1));
-            dev = LocalizationManager.GetText("#mod_deviation_general") + (num8 + num9).ToString() + "%\n" + LocalizationManager.GetText("#mod_deviation_distance") + "<color=red>L" + num10.ToString() + "</color> " + num8.ToString() + "%\n" + LocalizationManager.GetText("#mod_deviation_rotation") + "<color=red>L" + num11.ToString() + "</color> " + num9.ToString() + "%";
+            dev = LocalizationManager.GetText("deviation_general") + (num8 + num9).ToString() + "%\n" + LocalizationManager.GetText("deviation_distance") + "<color=red>L" + num10.ToString() + "</color> " + num8.ToString() + "%\n" + LocalizationManager.GetText("deviation_rotation") + "<color=red>L" + num11.ToString() + "</color> " + num9.ToString() + "%";
             return new Tuple<string, string>(pos, dev);
         }
         public static string PathCalc()
@@ -220,9 +244,9 @@ namespace AlchAss
                 var num9 = ((num8 <= 100f) ? 3 : ((num8 <= 600f) ? 2 : 1));
                 var num10 = num6 + num8;
                 var num11 = ((num10 <= 100f) ? 3 : ((num10 <= 600f) ? 2 : ((num6 <= 2754f) ? 1 : 0)));
-                return LocalizationManager.GetText("#mod_closest_potion_path") + potionEffectMapItem.Effect.GetLocalizedTitle() + "\n" + LocalizationManager.GetText("#mod_closest_general_path") + "<color=red>L" + num11.ToString() + "</color> " + num10.ToString() + "%\n" + LocalizationManager.GetText("#mod_closest_distance_path") + "<color=red>L" + num7.ToString() + "</color> " + num6.ToString() + "%\n" + LocalizationManager.GetText("#mod_closest_angle_path") + "<color=red>L" + num9.ToString() + "</color> " + num8.ToString() + "%";
+                return LocalizationManager.GetText("closest_potion_path") + potionEffectMapItem.Effect.GetLocalizedTitle() + "\n" + LocalizationManager.GetText("closest_general_path") + "<color=red>L" + num11.ToString() + "</color> " + num10.ToString() + "%\n" + LocalizationManager.GetText("closest_distance_path") + "<color=red>L" + num7.ToString() + "</color> " + num6.ToString() + "%\n" + LocalizationManager.GetText("closest_angle_path") + "<color=red>L" + num9.ToString() + "</color> " + num8.ToString() + "%";
             }
-            return LocalizationManager.GetText("#mod_closest_potion_path") + "\n" + LocalizationManager.GetText("#mod_closest_general_path") + "\n" + LocalizationManager.GetText("#mod_closest_distance_path") + "\n" + LocalizationManager.GetText("#mod_closest_angle_path");
+            return LocalizationManager.GetText("closest_potion_path") + "\n" + LocalizationManager.GetText("closest_general_path") + "\n" + LocalizationManager.GetText("closest_distance_path") + "\n" + LocalizationManager.GetText("closest_angle_path");
         }
         public static string LadleCalc()
         {
@@ -255,9 +279,9 @@ namespace AlchAss
                 var num15 = ((num14 <= 100f) ? 3 : ((num14 <= 600f) ? 2 : 1));
                 var num16 = num12 + num14;
                 var num17 = ((num16 <= 100f) ? 3 : ((num16 <= 600f) ? 2 : ((num12 <= 2754f) ? 1 : 0)));
-                return LocalizationManager.GetText("#mod_closest_potion_ladle") + potionEffectMapItem.Effect.GetLocalizedTitle() + "\n" + LocalizationManager.GetText("#mod_closest_general_ladle") + "<color=red>L" + num17.ToString() + "</color> " + num16.ToString() + "%\n" + LocalizationManager.GetText("#mod_closest_distance_ladle") + "<color=red>L" + num13.ToString() + "</color> " + num12.ToString() + "%\n" + LocalizationManager.GetText("#mod_closest_angle_ladle") + "<color=red>L" + num15.ToString() + "</color> " + num14.ToString() + "%";
+                return LocalizationManager.GetText("closest_potion_ladle") + potionEffectMapItem.Effect.GetLocalizedTitle() + "\n" + LocalizationManager.GetText("closest_general_ladle") + "<color=red>L" + num17.ToString() + "</color> " + num16.ToString() + "%\n" + LocalizationManager.GetText("closest_distance_ladle") + "<color=red>L" + num13.ToString() + "</color> " + num12.ToString() + "%\n" + LocalizationManager.GetText("closest_angle_ladle") + "<color=red>L" + num15.ToString() + "</color> " + num14.ToString() + "%";
             }
-            return LocalizationManager.GetText("#mod_closest_potion_ladle") + "\n" + LocalizationManager.GetText("#mod_closest_general_ladle") + "\n" + LocalizationManager.GetText("#mod_closest_distance_ladle") + "\n" + LocalizationManager.GetText("#mod_closest_angle_ladle");
+            return LocalizationManager.GetText("closest_potion_ladle") + "\n" + LocalizationManager.GetText("closest_general_ladle") + "\n" + LocalizationManager.GetText("closest_distance_ladle") + "\n" + LocalizationManager.GetText("closest_angle_ladle");
         }
         public static void BrewRecipe(ref int count, IRecipeBookPageContent recipePageContent, int opt)
         {
