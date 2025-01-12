@@ -124,7 +124,7 @@ namespace AlchAss
                 var radV = ((CircleCollider2D)Traverse.Create(Managers.RecipeMap.CurrentVortexMapItem).Field("vortexCollider").GetValue()).radius;
                 var dist = (v1 - v2).magnitude;
                 var maxd = radV + 0.74f;
-                if (AlchAss.vortexEdgeControl)
+                if (AlchAss.vortexEdgeControl && AlchAss.vortexEdgeOn >= 0)
                 {
                     if (dist < maxd - 0.135f)
                         AlchAss.vortexEdgeOn = float.MaxValue;
