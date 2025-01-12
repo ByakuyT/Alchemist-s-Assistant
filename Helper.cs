@@ -22,38 +22,39 @@ namespace AlchAss
     {
         public static void SetModLocalization()
         {
-            RegisterLoc("#mod_dialog_grind_status", "Grind Status", "研磨信息");
-            RegisterLoc("#mod_dialog_stir_status", "Stir Status", "搅拌信息");
-            RegisterLoc("#mod_dialog_path_status", "Path Status", "路径信息");
-            RegisterLoc("#mod_dialog_ladle_status", "Ladle Status", "加水信息");
-            RegisterLoc("#mod_dialog_position_status", "Position Status", "位置信息");
-            RegisterLoc("#mod_dialog_deviation_status", "Deviation Status", "偏离信息");
-            RegisterLoc("#mod_dialog_vortex_status", "Vortex Status", "漩涡信息");
-            RegisterLoc("#mod_dialog_health_status", "Health Status", "血量信息");
-            RegisterLoc("#mod_grind_progress", "PR: ", "进度: ");
-            RegisterLoc("#mod_stir_stage", "ST: ", "阶段: ");
-            RegisterLoc("#mod_stir_progress", "PR: ", "进度: ");
-            RegisterLoc("#mod_stir_direction", "DI: ", "方向: ");
-            RegisterLoc("#mod_closest_potion_path", "PO:", "目标: ");
-            RegisterLoc("#mod_closest_general_path", "GE:", "总体: ");
-            RegisterLoc("#mod_closest_distance_path", "DI:", "距离: ");
-            RegisterLoc("#mod_closest_angle_path", "AN:", "旋转: ");
-            RegisterLoc("#mod_closest_potion_ladle", "PO:", "目标: ");
-            RegisterLoc("#mod_closest_general_ladle", "GE:", "总体: ");
-            RegisterLoc("#mod_closest_distance_ladle", "DI:", "距离: ");
-            RegisterLoc("#mod_closest_angle_ladle", "AN:", "旋转: ");
-            RegisterLoc("#mod_position_distance", "DI: ", "距离: ");
-            RegisterLoc("#mod_position_rotation", "RO: ", "旋转: ");
-            RegisterLoc("#mod_position_angle", "AN: ", "方向: ");
-            RegisterLoc("#mod_position_salt", "SA: ", "盐量: ");
-            RegisterLoc("#mod_deviation_general", "GE: ", "总体: ");
-            RegisterLoc("#mod_deviation_distance", "DI: ", "距离: ");
-            RegisterLoc("#mod_deviation_rotation", "RO: ", "旋转: ");
-            RegisterLoc("#mod_vortex_direction", "DI: ", "方向: ");
-            RegisterLoc("#mod_vortex_angle", "AN: ", "夹角: ");
-            RegisterLoc("#mod_vortex_dist", "DI: ", "距离: ");
-            RegisterLoc("#mod_vortex_edge", "ED: ", "边缘: ");
-            RegisterLoc("#mod_health_status", "HP: ", "血量: ");
+            RegisterLoc("dialog_grind_status", "Grind Status", "研磨信息");
+            RegisterLoc("dialog_stir_status", "Stir Status", "搅拌信息");
+            RegisterLoc("dialog_path_status", "Path Status", "路径信息");
+            RegisterLoc("dialog_ladle_status", "Ladle Status", "加水信息");
+            RegisterLoc("dialog_position_status", "Position Status", "位置信息");
+            RegisterLoc("dialog_deviation_status", "Deviation Status", "偏离信息");
+            RegisterLoc("dialog_vortex_status", "Vortex Status", "漩涡信息");
+            RegisterLoc("dialog_health_status", "Health Status", "血量信息");
+            RegisterLoc("grind_progress", "PR: ", "进度: ");
+            RegisterLoc("stir_stage", "ST: ", "阶段: ");
+            RegisterLoc("stir_progress", "PR: ", "进度: ");
+            RegisterLoc("stir_direction", "DI: ", "方向: ");
+            RegisterLoc("stir_swamp", "SW: ", "沼泽: ");
+            RegisterLoc("closest_potion_path", "PO:", "目标: ");
+            RegisterLoc("closest_general_path", "GE:", "总体: ");
+            RegisterLoc("closest_distance_path", "DI:", "距离: ");
+            RegisterLoc("closest_angle_path", "AN:", "旋转: ");
+            RegisterLoc("closest_potion_ladle", "PO:", "目标: ");
+            RegisterLoc("closest_general_ladle", "GE:", "总体: ");
+            RegisterLoc("closest_distance_ladle", "DI:", "距离: ");
+            RegisterLoc("closest_angle_ladle", "AN:", "旋转: ");
+            RegisterLoc("position_distance", "DI: ", "距离: ");
+            RegisterLoc("position_rotation", "RO: ", "旋转: ");
+            RegisterLoc("position_angle", "AN: ", "方向: ");
+            RegisterLoc("position_salt", "SA: ", "盐量: ");
+            RegisterLoc("deviation_general", "GE: ", "总体: ");
+            RegisterLoc("deviation_distance", "DI: ", "距离: ");
+            RegisterLoc("deviation_rotation", "RO: ", "旋转: ");
+            RegisterLoc("vortex_direction", "DI: ", "方向: ");
+            RegisterLoc("vortex_angle", "AN: ", "夹角: ");
+            RegisterLoc("vortex_dist", "DI: ", "距离: ");
+            RegisterLoc("vortex_edge", "ED: ", "边缘: ");
+            RegisterLoc("health_status", "HP: ", "血量: ");
         }
         public static void SpawnMessageText(string msg)
         {
