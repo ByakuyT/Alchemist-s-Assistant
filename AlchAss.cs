@@ -64,12 +64,9 @@ namespace AlchAss
 
         public static bool directionLine = false;
         public static bool vortexEdgeControl = false;
-        public static bool swampAddFlag = false;
         public static float vortexEdgeOn = float.MaxValue;
         public static float endDirection = 0f;
         public static float swampStir = 0f;
-        public static float swampCnt = 0f;
-        public static float swampAdd = 0f;
         public static Room lab = null;
         public static Sprite spriteOld = null;
         public static SolventDirectionHint solventDirectionHint = null;
@@ -336,7 +333,7 @@ namespace AlchAss
         public static void VortexDistanceEnter()
         {
             if (vortexEdgeControl)
-                vortexEdgeOn = -1;
+                vortexEdgeOn = 0f;
         }
 
         [HarmonyPostfix]
@@ -344,7 +341,7 @@ namespace AlchAss
         public static void VortexDistanceExit()
         {
             if (vortexEdgeControl)
-                vortexEdgeOn = 1;
+                vortexEdgeOn = 1f;
         }
     }
 }
