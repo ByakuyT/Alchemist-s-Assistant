@@ -34,7 +34,7 @@ namespace AlchAss
             RegisterLoc("stir_stage", "ST: ", "阶段: ");
             RegisterLoc("stir_progress", "PR: ", "进度: ");
             RegisterLoc("stir_direction", "DI: ", "方向: ");
-            RegisterLoc("stir_swamp", "SW: ", "沼泽: ");
+            RegisterLoc("stir_swamp", "ZO: ", "区域: ");
             RegisterLoc("closest_potion_path", "PO:", "目标: ");
             RegisterLoc("closest_general_path", "GE:", "总体: ");
             RegisterLoc("closest_distance_path", "DI:", "距离: ");
