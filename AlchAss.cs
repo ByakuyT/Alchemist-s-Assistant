@@ -7,6 +7,7 @@ using HarmonyLib;
 using PotionCraft.DebugObjects.DebugWindows;
 using PotionCraft.LocalizationSystem;
 using PotionCraft.ManagersSystem.RecipeMap;
+using PotionCraft.ManagersSystem.SaveLoad;
 using PotionCraft.ObjectBased;
 using PotionCraft.ObjectBased.Cauldron;
 using PotionCraft.ObjectBased.Mortar;
@@ -132,17 +133,22 @@ namespace AlchAss
                 InfoCalc.VortexEdge();
         }
 
-        public void OnApplicationQuit()
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(SaveLoadManager), "SaveProgressToPool")]
+        public static void SaveWindowsPosition()
         {
-            using StreamWriter writer = new(Path.Combine(Paths.PluginPath, windowPath));
-            writer.WriteLine(grindDebugWindow.transform.position);
-            writer.WriteLine(healthDebugWindow.transform.position);
-            writer.WriteLine(vortexDebugWindow.transform.position);
-            writer.WriteLine(stirDebugWindow.transform.position);
-            writer.WriteLine(positionDebugWindow.transform.position);
-            writer.WriteLine(deviationDebugWindow.transform.position);
-            writer.WriteLine(closestPathDebugWindow.transform.position);
-            writer.WriteLine(closestLadleDebugWindow.transform.position);
+            if (grindDebugWindow != null)
+            {
+                using StreamWriter writer = new(Path.Combine(Paths.PluginPath, windowPath));
+                writer.WriteLine(grindDebugWindow.transform.position);
+                writer.WriteLine(healthDebugWindow.transform.position);
+                writer.WriteLine(vortexDebugWindow.transform.position);
+                writer.WriteLine(stirDebugWindow.transform.position);
+                writer.WriteLine(positionDebugWindow.transform.position);
+                writer.WriteLine(deviationDebugWindow.transform.position);
+                writer.WriteLine(closestPathDebugWindow.transform.position);
+                writer.WriteLine(closestLadleDebugWindow.transform.position);
+            }
         }
 
         [HarmonyPrefix]
