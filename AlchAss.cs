@@ -22,52 +22,56 @@ using PotionCraft.ObjectBased.UIElements.Books.RecipeBook;
 using PotionCraft.Settings;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UIElements;
 //药水瓶半径0.74，效果半径0.79
 namespace AlchAss
 {
-    [BepInPlugin("AlchAss", "Alchemist's Assistant", "2.8.0")]
+    [BepInPlugin("AlchAss", "Alchemist's Assistant", "2.9.0")]
     public class AlchAss : BaseUnityPlugin
     {
-        private static ConfigEntry<bool> enableGrindStatus;
-        private static ConfigEntry<bool> enableHealthStatus;
-        private static ConfigEntry<bool> enableVortexStatus;
-        private static ConfigEntry<bool> enableStirStatus;
-        private static ConfigEntry<bool> enablePositionStatus;
-        private static ConfigEntry<bool> enableDeviationStatus;
-        private static ConfigEntry<bool> enableClosestPathStatus;
-        private static ConfigEntry<bool> enableClosestLadleStatus;
+        public static ConfigEntry<bool> enableGrindStatus;
+        public static ConfigEntry<bool> enableHealthStatus;
+        public static ConfigEntry<bool> enableVortexStatus;
+        public static ConfigEntry<bool> enableStirStatus;
+        public static ConfigEntry<bool> enablePositionStatus;
+        public static ConfigEntry<bool> enableDeviationStatus;
+        public static ConfigEntry<bool> enableClosestPathStatus;
+        public static ConfigEntry<bool> enableClosestLadleStatus;
 
-        private static ConfigEntry<bool> enableShuttingDown;
-        private static ConfigEntry<bool> enableGrindSpeed;
-        private static ConfigEntry<bool> enableStirSpeed;
-        private static ConfigEntry<bool> enableLadleSpeed;
-        private static ConfigEntry<bool> enableHeatSpeed;
-        private static ConfigEntry<bool> enableBrewMore;
-        private static ConfigEntry<bool> enableDirectionLine;
-        private static ConfigEntry<bool> enableGrindAll;
-        private static ConfigEntry<bool> enableVortexEdge;
+        public static ConfigEntry<bool> enableShuttingDown;
+        public static ConfigEntry<bool> enableGrindSpeed;
+        public static ConfigEntry<bool> enableStirSpeed;
+        public static ConfigEntry<bool> enableLadleSpeed;
+        public static ConfigEntry<bool> enableHeatSpeed;
+        public static ConfigEntry<bool> enableBrewMore;
+        public static ConfigEntry<bool> enableDirectionLine;
+        public static ConfigEntry<bool> enableGrindAll;
+        public static ConfigEntry<bool> enableVortexEdge;
 
-        private static DebugWindow grindDebugWindow;
-        private static DebugWindow healthDebugWindow;
-        private static DebugWindow vortexDebugWindow;
-        private static DebugWindow stirDebugWindow;
-        private static DebugWindow positionDebugWindow;
-        private static DebugWindow deviationDebugWindow;
-        private static DebugWindow closestPathDebugWindow;
-        private static DebugWindow closestLadleDebugWindow;
+        public static ConfigEntry<float> windowScale;
 
-        private static Vector2 positionGrindDebugWindow = Vector2.zero;
-        private static Vector2 positionHealthDebugWindow = Vector2.zero;
-        private static Vector2 positionVortexDebugWindow = Vector2.zero;
-        private static Vector2 positionStirDebugWindow = Vector2.zero;
-        private static Vector2 positionPositionDebugWindow = Vector2.zero;
-        private static Vector2 positionDeviationDebugWindow = Vector2.zero;
-        private static Vector2 positionClosestPathDebugWindow = Vector2.zero;
-        private static Vector2 positionClosestLadleDebugWindow = Vector2.zero;
+        public static DebugWindow grindDebugWindow;
+        public static DebugWindow healthDebugWindow;
+        public static DebugWindow vortexDebugWindow;
+        public static DebugWindow stirDebugWindow;
+        public static DebugWindow positionDebugWindow;
+        public static DebugWindow deviationDebugWindow;
+        public static DebugWindow closestPathDebugWindow;
+        public static DebugWindow closestLadleDebugWindow;
+
+        public static Vector2 positionGrindDebugWindow = Vector2.zero;
+        public static Vector2 positionHealthDebugWindow = Vector2.zero;
+        public static Vector2 positionVortexDebugWindow = Vector2.zero;
+        public static Vector2 positionStirDebugWindow = Vector2.zero;
+        public static Vector2 positionPositionDebugWindow = Vector2.zero;
+        public static Vector2 positionDeviationDebugWindow = Vector2.zero;
+        public static Vector2 positionClosestPathDebugWindow = Vector2.zero;
+        public static Vector2 positionClosestLadleDebugWindow = Vector2.zero;
 
         public static bool directionLine = false;
         public static bool vortexEdgeControl = false;
         public static bool endMode = false;
+        public static bool xOy = false;
         public static float vortexEdgeOn = float.MaxValue;
         public static float endDirection = 0f;
         public static float zoneStir = 0f;
@@ -91,6 +95,7 @@ namespace AlchAss
             enableClosestPathStatus = Config.Bind("信息窗口", "路径信息", true, "开启后，显示路径最近点的目标效果和偏差度.");
             enableClosestLadleStatus = Config.Bind("信息窗口", "加水信息", true, "开启后，显示加水最近点的目标效果和偏差度.");
             enableDirectionLine = Config.Bind("信息窗口", "方向提示", true, "开启后，按下 / 键显示当前搅拌方向提示线.");
+            windowScale = Config.Bind("信息窗口", "窗口缩放", 1f, "信息窗口显示的大小比例.");
 
             enableShuttingDown = Config.Bind("操作控制", "允许漩涡急停", true, "开启后，右键点击风箱把手将使药剂热量值变为指定值.");
             enableGrindAll = Config.Bind("操作控制", "允许瞬间研磨", true, "开启后，右键点击研杵把手将使药材研磨度变为指定值.");
@@ -137,6 +142,8 @@ namespace AlchAss
                 InfoCalc.VortexEdge();
             if (enableClosestPathStatus.Value)
                 InfoCalc.EndMode();
+            if (enablePositionStatus.Value)
+                InfoCalc.PositionMode();
         }
 
         [HarmonyPostfix]
