@@ -45,8 +45,6 @@ namespace AlchAss
             RegisterLoc("closest_distance_ladle", "Distance:", "距离: ");
             RegisterLoc("closest_rotation_ladle", "Rotation:", "旋转: ");
 
-            RegisterLoc("position_distance", "Distance: ", "距离: ");
-            RegisterLoc("position_position", "Position: ", "坐标: ");
             RegisterLoc("position_rotation", "Rotation: ", "旋转: ");
             RegisterLoc("position_salt", "Salt: ", "盐量: ");
 
@@ -64,9 +62,10 @@ namespace AlchAss
             RegisterLoc("aopen", "is opened", "已开启");
             RegisterLoc("aclose", "is closed", "已关闭");
 
-            RegisterLoc("aline", "Indicator line", "指示线");
-            RegisterLoc("avortex", "Vortex approaching", "漩涡贴边");
-            RegisterLoc("aend", "End distance mode", "终点距离模式");
+            RegisterLoc("aline", "Indicator line ", "指示线");
+            RegisterLoc("avortex", "Vortex approaching ", "漩涡贴边");
+            RegisterLoc("aend", "End distance mode ", "终点距离模式");
+            RegisterLoc("axoy", "Cartesian coordinate ", "直角坐标");
         }
         public static void SpawnMessageText(string msg)
         {
@@ -93,6 +92,7 @@ namespace AlchAss
             window.ToForeground();
             window.transform.SetParent(AlchAss.lab.transform, false);
             window.transform.localPosition = position;
+            window.transform.localScale *= AlchAss.windowScale.Value;
             return window;
         }
         public static Vector2 StringToVector2(string input)
