@@ -1,7 +1,10 @@
 # Alchemist's Assistant
 
 所有功能都可配置，请在 BepInEx\config 中找到 AlchAss.cfg 并编辑其中内容。
+
 注意本模组和 FasterChores 在变速功能上冲突。
+
+[Nexus 链接](https://www.nexusmods.com/potioncraftalchemistsimulator/mods/47)
 
 ## 功能：
 1. 按住 Z 或 X 键时研磨、搅拌、加水和漩涡移动速度减少至 BepInEx\plugins\AlchAssSpeedBrewConfig.txt 中第一行或第二行的数值分之一；
