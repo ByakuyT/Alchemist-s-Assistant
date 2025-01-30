@@ -19,7 +19,6 @@ using PotionCraft.ObjectBased.RecipeMap.RecipeMapItem.VortexMapItem;
 using PotionCraft.ObjectBased.Stack;
 using PotionCraft.ObjectBased.UIElements;
 using PotionCraft.ObjectBased.UIElements.Books.RecipeBook;
-using PotionCraft.ScriptableObjects;
 using PotionCraft.Settings;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -71,7 +70,7 @@ namespace AlchAss
         public static bool endMode = false;
         public static float vortexEdgeOn = float.MaxValue;
         public static float endDirection = 0f;
-        public static float swampStir = 0f;
+        public static float zoneStir = 0f;
         public static string hoveredItemName = "";
         public static Room lab = null;
         public static Sprite spriteOld = null;
@@ -144,18 +143,15 @@ namespace AlchAss
         [HarmonyPatch(typeof(SaveLoadManager), "SaveProgressToPool")]
         public static void SaveWindowsPosition()
         {
-            if (grindDebugWindow != null)
-            {
-                using StreamWriter writer = new(Path.Combine(Paths.PluginPath, windowPath));
-                writer.WriteLine(grindDebugWindow.transform.position);
-                writer.WriteLine(healthDebugWindow.transform.position);
-                writer.WriteLine(vortexDebugWindow.transform.position);
-                writer.WriteLine(stirDebugWindow.transform.position);
-                writer.WriteLine(positionDebugWindow.transform.position);
-                writer.WriteLine(deviationDebugWindow.transform.position);
-                writer.WriteLine(closestPathDebugWindow.transform.position);
-                writer.WriteLine(closestLadleDebugWindow.transform.position);
-            }
+            using StreamWriter writer = new(Path.Combine(Paths.PluginPath, windowPath));
+            writer.WriteLine(grindDebugWindow != null ? grindDebugWindow.transform.position : "");
+            writer.WriteLine(healthDebugWindow != null ? healthDebugWindow.transform.position : "");
+            writer.WriteLine(vortexDebugWindow != null ? vortexDebugWindow.transform.position : "");
+            writer.WriteLine(stirDebugWindow != null ? stirDebugWindow.transform.position : "");
+            writer.WriteLine(positionDebugWindow != null ? positionDebugWindow.transform.position : "");
+            writer.WriteLine(deviationDebugWindow != null ? deviationDebugWindow.transform.position : "");
+            writer.WriteLine(closestPathDebugWindow != null ? closestPathDebugWindow.transform.position : "");
+            writer.WriteLine(closestLadleDebugWindow != null ? closestLadleDebugWindow.transform.position : "");
         }
 
         [HarmonyPrefix]
