@@ -6,10 +6,12 @@ using BepInEx.Configuration;
 using HarmonyLib;
 using PotionCraft.DebugObjects.DebugWindows;
 using PotionCraft.LocalizationSystem;
+using PotionCraft.ManagersSystem.Cursor;
 using PotionCraft.ManagersSystem.RecipeMap;
 using PotionCraft.ManagersSystem.SaveLoad;
 using PotionCraft.ObjectBased;
 using PotionCraft.ObjectBased.Cauldron;
+using PotionCraft.ObjectBased.InteractiveItem;
 using PotionCraft.ObjectBased.Mortar;
 using PotionCraft.ObjectBased.RecipeMap.RecipeMapItem.IndicatorMapItem;
 using PotionCraft.ObjectBased.RecipeMap.RecipeMapItem.SolventDirectionHint;
@@ -17,13 +19,14 @@ using PotionCraft.ObjectBased.RecipeMap.RecipeMapItem.VortexMapItem;
 using PotionCraft.ObjectBased.Stack;
 using PotionCraft.ObjectBased.UIElements;
 using PotionCraft.ObjectBased.UIElements.Books.RecipeBook;
+using PotionCraft.ScriptableObjects;
 using PotionCraft.Settings;
 using UnityEngine;
 using UnityEngine.InputSystem;
 //药水瓶半径0.74，效果半径0.79
 namespace AlchAss
 {
-    [BepInPlugin("AlchAss", "Alchemist's Assistant", "2.7.0")]
+    [BepInPlugin("AlchAss", "Alchemist's Assistant", "2.8.0")]
     public class AlchAss : BaseUnityPlugin
     {
         private static ConfigEntry<bool> enableGrindStatus;
@@ -65,9 +68,11 @@ namespace AlchAss
 
         public static bool directionLine = false;
         public static bool vortexEdgeControl = false;
+        public static bool endMode = false;
         public static float vortexEdgeOn = float.MaxValue;
         public static float endDirection = 0f;
         public static float swampStir = 0f;
+        public static string hoveredItemName = "";
         public static Room lab = null;
         public static Sprite spriteOld = null;
         public static SolventDirectionHint solventDirectionHint = null;
@@ -131,6 +136,8 @@ namespace AlchAss
                 InfoCalc.GrindAll();
             if (enableVortexEdge.Value)
                 InfoCalc.VortexEdge();
+            if (enableClosestPathStatus.Value)
+                InfoCalc.EndMode();
         }
 
         [HarmonyPostfix]
@@ -348,6 +355,15 @@ namespace AlchAss
         {
             if (vortexEdgeControl)
                 vortexEdgeOn = float.MaxValue;
+        }
+
+        [HarmonyPatch(typeof(CursorManager), "UpdateDebugWindow")]
+        [HarmonyPostfix]
+        public static void UpdateDebugWindowPostfix(InteractiveItem ___hoveredInteractiveItem)
+        {
+            if (enableClosestPathStatus.Value || enableClosestLadleStatus.Value)
+                if (Mouse.current.rightButton.wasPressedThisFrame)
+                    hoveredItemName = ___hoveredInteractiveItem?.transform.name;
         }
     }
 }
