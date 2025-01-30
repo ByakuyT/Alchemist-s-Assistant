@@ -28,6 +28,14 @@ namespace AlchAss
                 Helper.SpawnMessageText(LocalizationManager.GetText("aend") + LocalizationManager.GetText(AlchAss.endMode ? "aopen" : "aclose"));
             }
         }
+        public static void PositionMode()
+        {
+            if (Keyboard.current.spaceKey.wasPressedThisFrame)
+            {
+                AlchAss.xOy = !AlchAss.xOy;
+                Helper.SpawnMessageText(LocalizationManager.GetText("axoy") + LocalizationManager.GetText(AlchAss.xOy ? "aopen" : "aclose"));
+            }
+        }
         public static void DirectionLine()
         {
             if (Keyboard.current.slashKey.wasPressedThisFrame)
@@ -150,12 +158,12 @@ namespace AlchAss
         {
             var Hints = Managers.RecipeMap.path.fixedPathHints;
             var direction = float.MaxValue;
-            var localPosition = Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition;
             var list = Hints.Select((FixedHint fixedHint) => fixedHint.evenlySpacedPointsFixedPhysics.points).SelectMany((Vector3[] points) => points).ToList<Vector3>();
             if (list.Count<Vector3>() > 1)
             {
+                var srtPosition = Managers.RecipeMap.currentMap.referencesContainer.transform.InverseTransformPoint(Managers.RecipeMap.path.thisTransform.TransformPoint(list[0]));
                 var endPosition = Managers.RecipeMap.currentMap.referencesContainer.transform.InverseTransformPoint(Managers.RecipeMap.path.thisTransform.TransformPoint(list[1]));
-                direction = Vector2.SignedAngle(endPosition - localPosition, Vector2.up);
+                direction = Vector2.SignedAngle(endPosition - srtPosition, Vector2.up);
             }
             float deletedGraphicsSegments = Managers.RecipeMap.path.deletedGraphicsSegments;
             float segmentLengthToDeletePhysics = Managers.RecipeMap.path.segmentLengthToDeletePhysics;
@@ -175,21 +183,21 @@ namespace AlchAss
             Vector2 indpos = indicatorContainer.localPosition;
             if (Managers.RecipeMap.currentPotionEffectMapItem == null)
             {
-                var magnitude = indpos.magnitude;
-                var num = Mathf.DeltaAngle(Managers.RecipeMap.indicatorRotation.Value, 0f);
+                var num = Mathf.DeltaAngle(0f, Managers.RecipeMap.indicatorRotation.Value);
                 var num3 = num / 9f * 25f;
-                pos = LocalizationManager.GetText("position_distance") + magnitude.ToString() + "\n" + LocalizationManager.GetText("position_position") + indpos.ToString() + "\n" + LocalizationManager.GetText("position_rotation") + num.ToString() + "'\n" + LocalizationManager.GetText("position_salt") + ((num3 > 0f) ? ("<sprite=\"IconsAtlas\" name=\"SunSalt\"> " + num3.ToString()) : ("<sprite=\"IconsAtlas\" name=\"MoonSalt\"> " + (-num3).ToString()));
+                var posts = AlchAss.xOy ? "x: " + indpos.x.ToString() + "\ny: " + indpos.y.ToString() : "r: " + indpos.magnitude.ToString() + "\nθ: " + Vector2.SignedAngle(Vector2.right, indpos).ToString();
+                pos = posts + "\n" + LocalizationManager.GetText("position_rotation") + num.ToString() + "'\n" + LocalizationManager.GetText("position_salt") + ((num3 > 0f) ? ("<sprite=\"IconsAtlas\" name=\"SunSalt\"> " + num3.ToString()) : ("<sprite=\"IconsAtlas\" name=\"MoonSalt\"> " + (-num3).ToString()));
                 dev = LocalizationManager.GetText("deviation_general") + "\n" + LocalizationManager.GetText("deviation_distance") + "\n" + LocalizationManager.GetText("deviation_rotation");
                 return new Tuple<string, string>(pos, dev);
             }
             var transform = Managers.RecipeMap.currentPotionEffectMapItem.transform;
             Vector2 effpos = transform.localPosition;
-            var num4 = Vector2.Distance(indpos, effpos);
             var deltapos = indpos - effpos;
-            var num5 = Mathf.DeltaAngle(Managers.RecipeMap.indicatorRotation.Value, transform.eulerAngles.z);
+            var num5 = Mathf.DeltaAngle(transform.eulerAngles.z, Managers.RecipeMap.indicatorRotation.Value);
             var num7 = num5 / 9f * 25f;
-            pos = LocalizationManager.GetText("position_distance") + num4.ToString() + "\n" + LocalizationManager.GetText("position_position") + deltapos.ToString() + "\n" + LocalizationManager.GetText("position_rotation") + num5.ToString() + "'\n" + LocalizationManager.GetText("position_salt") + ((num7 > 0f) ? ("<sprite=\"IconsAtlas\" name=\"MoonSalt\"> " + num7.ToString()) : ("<sprite=\"IconsAtlas\" name=\"SunSalt\"> " + (-num7).ToString()));
-            var num8 = num4 * 1800f;
+            var posns = AlchAss.xOy ? "x: " + deltapos.x.ToString() + "\ny: " + deltapos.y.ToString() : "r: " + deltapos.magnitude.ToString() + "\nθ: " + Vector2.SignedAngle(Vector2.right, deltapos).ToString();
+            pos = posns + "\n" + LocalizationManager.GetText("position_rotation") + num5.ToString() + "'\n" + LocalizationManager.GetText("position_salt") + ((num7 > 0f) ? ("<sprite=\"IconsAtlas\" name=\"MoonSalt\"> " + num7.ToString()) : ("<sprite=\"IconsAtlas\" name=\"SunSalt\"> " + (-num7).ToString()));
+            var num8 = deltapos.magnitude * 1800f;
             var num9 = Mathf.Abs(num5) / 3f * 25f;
             var num10 = ((num8 <= 100f) ? 3 : ((num8 <= 600f) ? 2 : 1));
             var num11 = ((num9 <= 100f) ? 3 : ((num9 <= 600f) ? 2 : 1));
@@ -236,7 +244,7 @@ namespace AlchAss
             {
                 var num6 = num * 1800f;
                 var num7 = (num6 <= 100f) ? 3 : ((num6 <= 600f) ? 2 : ((num6 <= 2754f) ? 1 : 0));
-                var num8 = Mathf.Abs(Mathf.DeltaAngle(Managers.RecipeMap.indicatorRotation.Value, clickedEffect.transform.localEulerAngles.z)) / 3f * 25f;
+                var num8 = Mathf.Abs(Mathf.DeltaAngle(clickedEffect.transform.localEulerAngles.z, Managers.RecipeMap.indicatorRotation.Value)) / 3f * 25f;
                 var num9 = (num8 <= 100f) ? 3 : ((num8 <= 600f) ? 2 : 1);
                 var num10 = num6 + num8;
                 var num11 = (num10 <= 100f) ? 3 : ((num10 <= 600f) ? 2 : ((num6 <= 2754f) ? 1 : 0));
@@ -260,7 +268,7 @@ namespace AlchAss
             {
                 var num12 = num2 * 1800f;
                 var num13 = (num12 <= 100f) ? 3 : ((num12 <= 600f) ? 2 : ((num12 <= 2754f) ? 1 : 0));
-                var num14 = Mathf.Abs(Mathf.DeltaAngle(Managers.RecipeMap.indicatorRotation.Value, clickedEffect.transform.localEulerAngles.z)) / 3f * 25f;
+                var num14 = Mathf.Abs(Mathf.DeltaAngle(clickedEffect.transform.localEulerAngles.z, Managers.RecipeMap.indicatorRotation.Value)) / 3f * 25f;
                 var num15 = (num14 <= 100f) ? 3 : ((num14 <= 600f) ? 2 : 1);
                 var num16 = num12 + num14;
                 var num17 = (num16 <= 100f) ? 3 : ((num16 <= 600f) ? 2 : ((num12 <= 2754f) ? 1 : 0));
