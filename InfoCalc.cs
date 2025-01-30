@@ -10,7 +10,6 @@ using PotionCraft.ObjectBased.Bellows;
 using PotionCraft.ObjectBased.Mortar;
 using PotionCraft.ObjectBased.Pestle;
 using PotionCraft.ObjectBased.RecipeMap.Path;
-using PotionCraft.ObjectBased.RecipeMap.RecipeMapItem.PotionEffectMapItem;
 using PotionCraft.ObjectBased.RecipeMap.RecipeMapItem.Zones;
 using PotionCraft.ObjectBased.UIElements.Books.RecipeBook;
 using PotionCraft.Settings;
@@ -21,12 +20,20 @@ namespace AlchAss
 {
     public static class InfoCalc
     {
+        public static void EndMode()
+        {
+            if (Keyboard.current.backslashKey.wasPressedThisFrame)
+            {
+                AlchAss.endMode = !AlchAss.endMode;
+                Helper.SpawnMessageText(LocalizationManager.GetText("aend") + LocalizationManager.GetText(AlchAss.endMode ? "aopen" : "aclose"));
+            }
+        }
         public static void DirectionLine()
         {
             if (Keyboard.current.slashKey.wasPressedThisFrame)
             {
                 AlchAss.directionLine = !AlchAss.directionLine;
-                Helper.SpawnMessageText("指示线已" + (AlchAss.directionLine ? "开启" : "关闭"));
+                Helper.SpawnMessageText(LocalizationManager.GetText("aline") + LocalizationManager.GetText(AlchAss.directionLine ? "aopen" : "aclose"));
                 if (AlchAss.solventDirectionHint != null)
                     Traverse.Create(AlchAss.solventDirectionHint).Method("OnPositionOnMapChanged", Array.Empty<object>()).GetValue();
             }
@@ -42,7 +49,7 @@ namespace AlchAss
                 }
                 else
                     AlchAss.vortexEdgeControl = true;
-                Helper.SpawnMessageText("漩涡贴边已" + (AlchAss.vortexEdgeControl ? "开启" : "关闭"));
+                Helper.SpawnMessageText(LocalizationManager.GetText("avortex") + LocalizationManager.GetText(AlchAss.vortexEdgeControl ? "aopen" : "aclose"));
             }
         }
         public static void CoolDown()
@@ -194,68 +201,73 @@ namespace AlchAss
         }
         public static string PathCalc()
         {
-            var nearestEffects = Helper.GetNearestEffects();
+            var clickedEffect = Managers.RecipeMap.currentMap.referencesContainer.potionEffectsOnMap.FirstOrDefault(effect => effect.name == AlchAss.hoveredItemName);
             var fixedPathHints = Managers.RecipeMap.path.fixedPathHints;
             var num = float.MaxValue;
-            PotionEffectMapItem potionEffectMapItem = null;
-            foreach (var vector in fixedPathHints.Select((FixedHint fixedHint) => fixedHint.evenlySpacedPointsFixedPhysics.points).SelectMany((Vector3[] points) => points))
+            var points = fixedPathHints.Select((FixedHint fixedHint) => fixedHint.evenlySpacedPointsFixedPhysics.points).SelectMany((Vector3[] points) => points).Skip(1);
+            if (AlchAss.endMode)
             {
-                foreach (var MapItem in nearestEffects)
+                if (points.Any())
+                    if (clickedEffect != null)
+                        num = Vector2.Distance(Managers.RecipeMap.currentMap.referencesContainer.transform.InverseTransformPoint(Managers.RecipeMap.path.thisTransform.TransformPoint(points.Last())), clickedEffect.transform.localPosition);
+            }
+            else
+            {
+                var prepos = Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition;
+                foreach (var vector in points)
                 {
-                    if (Managers.RecipeMap.currentMap.referencesContainer.transform == null)
+                    if (clickedEffect == null)
                         break;
-                    var num4 = Vector2.Distance(Managers.RecipeMap.currentMap.referencesContainer.transform.InverseTransformPoint(Managers.RecipeMap.path.thisTransform.TransformPoint(vector)), MapItem.transform.localPosition);
-                    if (num4 < num)
+                    var tmppos = Managers.RecipeMap.currentMap.referencesContainer.transform.InverseTransformPoint(Managers.RecipeMap.path.thisTransform.TransformPoint(vector));
+                    var num4 = float.MaxValue;
+                    var vab = tmppos - prepos;
+                    var len = vab.sqrMagnitude;
+                    if (len == 0)
+                        num4 = Vector2.Distance(clickedEffect.transform.localPosition, prepos);
+                    else
                     {
-                        num = num4;
-                        potionEffectMapItem = MapItem;
+                        var vap = clickedEffect.transform.localPosition - prepos;
+                        var ti = Mathf.Clamp01(Vector2.Dot(vap, vab) / len);
+                        num4 = Vector2.Distance(clickedEffect.transform.localPosition, prepos + ti * vab);
                     }
+                    if (num4 < num)
+                        num = num4;
+                    prepos = tmppos;
                 }
             }
             if (num < float.MaxValue)
             {
                 var num6 = num * 1800f;
-                var num7 = ((num6 <= 100f) ? 3 : ((num6 <= 600f) ? 2 : ((num6 <= 2754f) ? 1 : 0)));
-                var num8 = Mathf.Abs(Mathf.DeltaAngle(Managers.RecipeMap.indicatorRotation.Value, potionEffectMapItem.transform.localEulerAngles.z)) / 3f * 25f;
-                var num9 = ((num8 <= 100f) ? 3 : ((num8 <= 600f) ? 2 : 1));
+                var num7 = (num6 <= 100f) ? 3 : ((num6 <= 600f) ? 2 : ((num6 <= 2754f) ? 1 : 0));
+                var num8 = Mathf.Abs(Mathf.DeltaAngle(Managers.RecipeMap.indicatorRotation.Value, clickedEffect.transform.localEulerAngles.z)) / 3f * 25f;
+                var num9 = (num8 <= 100f) ? 3 : ((num8 <= 600f) ? 2 : 1);
                 var num10 = num6 + num8;
-                var num11 = ((num10 <= 100f) ? 3 : ((num10 <= 600f) ? 2 : ((num6 <= 2754f) ? 1 : 0)));
-                return LocalizationManager.GetText("closest_potion_path") + potionEffectMapItem.Effect.GetLocalizedTitle() + "\n" + LocalizationManager.GetText("closest_general_path") + "<color=red>L" + num11.ToString() + "</color> " + num10.ToString() + "%\n" + LocalizationManager.GetText("closest_distance_path") + "<color=red>L" + num7.ToString() + "</color> " + num6.ToString() + "%\n" + LocalizationManager.GetText("closest_angle_path") + "<color=red>L" + num9.ToString() + "</color> " + num8.ToString() + "%";
+                var num11 = (num10 <= 100f) ? 3 : ((num10 <= 600f) ? 2 : ((num6 <= 2754f) ? 1 : 0));
+                return LocalizationManager.GetText("closest_potion_path") + clickedEffect.Effect.GetLocalizedTitle() + "\n" + LocalizationManager.GetText("closest_general_path") + "<color=red>L" + num11.ToString() + "</color> " + num10.ToString() + "%\n" + LocalizationManager.GetText("closest_distance_path") + "<color=red>L" + num7.ToString() + "</color> " + num6.ToString() + "%\n" + LocalizationManager.GetText("closest_angle_path") + "<color=red>L" + num9.ToString() + "</color> " + num8.ToString() + "%";
             }
             return LocalizationManager.GetText("closest_potion_path") + "\n" + LocalizationManager.GetText("closest_general_path") + "\n" + LocalizationManager.GetText("closest_distance_path") + "\n" + LocalizationManager.GetText("closest_angle_path");
         }
         public static string LadleCalc()
         {
-            var nearestEffects = Helper.GetNearestEffects();
+            var clickedEffect = Managers.RecipeMap.currentMap.referencesContainer.potionEffectsOnMap.FirstOrDefault(effect => effect.name == AlchAss.hoveredItemName);
             var num2 = float.MaxValue;
             var localPosition = Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition;
-            PotionEffectMapItem potionEffectMapItem = null;
-            var num3 = Vector2.Distance(localPosition, Vector2.zero);
-            foreach (var MapItem in nearestEffects)
+            if (clickedEffect != null)
             {
-                if (Managers.RecipeMap.currentMap.referencesContainer.transform == null)
-                    break;
-                var vector2 = MapItem.transform.localPosition;
+                var vector2 = clickedEffect.transform.localPosition;
                 if (Vector2.Angle(localPosition, vector2) <= 90f)
-                    if (Vector2.Distance(vector2, Vector2.zero) <= num3)
-                    {
-                        var num5 = Vector3.Cross(localPosition, vector2).magnitude / localPosition.magnitude;
-                        if (num5 < num2)
-                        {
-                            num2 = num5;
-                            potionEffectMapItem = MapItem;
-                        }
-                    }
+                    if (Vector2.Distance(vector2, Vector2.zero) <= Vector2.Distance(localPosition, Vector2.zero))
+                        num2 = Vector3.Cross(localPosition, vector2).magnitude / localPosition.magnitude;
             }
             if (num2 < float.MaxValue)
             {
                 var num12 = num2 * 1800f;
-                var num13 = ((num12 <= 100f) ? 3 : ((num12 <= 600f) ? 2 : ((num12 <= 2754f) ? 1 : 0)));
-                var num14 = Mathf.Abs(Mathf.DeltaAngle(Managers.RecipeMap.indicatorRotation.Value, potionEffectMapItem.transform.localEulerAngles.z)) / 3f * 25f;
-                var num15 = ((num14 <= 100f) ? 3 : ((num14 <= 600f) ? 2 : 1));
+                var num13 = (num12 <= 100f) ? 3 : ((num12 <= 600f) ? 2 : ((num12 <= 2754f) ? 1 : 0));
+                var num14 = Mathf.Abs(Mathf.DeltaAngle(Managers.RecipeMap.indicatorRotation.Value, clickedEffect.transform.localEulerAngles.z)) / 3f * 25f;
+                var num15 = (num14 <= 100f) ? 3 : ((num14 <= 600f) ? 2 : 1);
                 var num16 = num12 + num14;
-                var num17 = ((num16 <= 100f) ? 3 : ((num16 <= 600f) ? 2 : ((num12 <= 2754f) ? 1 : 0)));
-                return LocalizationManager.GetText("closest_potion_ladle") + potionEffectMapItem.Effect.GetLocalizedTitle() + "\n" + LocalizationManager.GetText("closest_general_ladle") + "<color=red>L" + num17.ToString() + "</color> " + num16.ToString() + "%\n" + LocalizationManager.GetText("closest_distance_ladle") + "<color=red>L" + num13.ToString() + "</color> " + num12.ToString() + "%\n" + LocalizationManager.GetText("closest_angle_ladle") + "<color=red>L" + num15.ToString() + "</color> " + num14.ToString() + "%";
+                var num17 = (num16 <= 100f) ? 3 : ((num16 <= 600f) ? 2 : ((num12 <= 2754f) ? 1 : 0));
+                return LocalizationManager.GetText("closest_potion_ladle") + clickedEffect.Effect.GetLocalizedTitle() + "\n" + LocalizationManager.GetText("closest_general_ladle") + "<color=red>L" + num17.ToString() + "</color> " + num16.ToString() + "%\n" + LocalizationManager.GetText("closest_distance_ladle") + "<color=red>L" + num13.ToString() + "</color> " + num12.ToString() + "%\n" + LocalizationManager.GetText("closest_angle_ladle") + "<color=red>L" + num15.ToString() + "</color> " + num14.ToString() + "%";
             }
             return LocalizationManager.GetText("closest_potion_ladle") + "\n" + LocalizationManager.GetText("closest_general_ladle") + "\n" + LocalizationManager.GetText("closest_distance_ladle") + "\n" + LocalizationManager.GetText("closest_angle_ladle");
         }
