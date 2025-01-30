@@ -1,6 +1,7 @@
 # Alchemist's Assistant
 
-这个模组基于 General Utils 和 FasterChores 两个模组编写，包括 General Utils 的主要功能和修改自 FasterChores 的操作减速功能。所有功能都可配置，请在 BepInEx\config 中找到 AlchAss.cfg 并编辑其中内容。注意本模组和 FasterChores 在变速功能上冲突。
+所有功能都可配置，请在 BepInEx\config 中找到 AlchAss.cfg 并编辑其中内容。
+注意本模组和 FasterChores 在变速功能上冲突。
 
 ## 功能：
 1. 按住 Z 或 X 键时研磨、搅拌、加水和漩涡移动速度减少至 BepInEx\plugins\AlchAssSpeedBrewConfig.txt 中第一行或第二行的数值分之一；
