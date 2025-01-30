@@ -28,38 +28,38 @@ namespace AlchAss
             RegisterLoc("dialog_vortex_status", "Vortex Status", "漩涡信息");
             RegisterLoc("dialog_health_status", "Health Status", "血量信息");
 
-            RegisterLoc("grind_progress", "PR: ", "进度: ");
+            RegisterLoc("grind_progress", "Progress: ", "进度: ");
 
-            RegisterLoc("stir_stage", "ST: ", "阶段: ");
-            RegisterLoc("stir_progress", "PR: ", "进度: ");
-            RegisterLoc("stir_direction", "DI: ", "方向: ");
-            RegisterLoc("stir_swamp", "ZO: ", "区域: ");
+            RegisterLoc("stir_stage", "Stage: ", "阶段: ");
+            RegisterLoc("stir_progress", "Progress: ", "进度: ");
+            RegisterLoc("stir_direction", "Direction: ", "方向: ");
+            RegisterLoc("stir_zone", "Zone: ", "区域: ");
 
-            RegisterLoc("closest_potion_path", "PO:", "目标: ");
-            RegisterLoc("closest_general_path", "GE:", "总体: ");
-            RegisterLoc("closest_distance_path", "DI:", "距离: ");
-            RegisterLoc("closest_angle_path", "AN:", "旋转: ");
+            RegisterLoc("closest_potion_path", "Potion:", "目标: ");
+            RegisterLoc("closest_general_path", "General:", "总体: ");
+            RegisterLoc("closest_distance_path", "Distance:", "距离: ");
+            RegisterLoc("closest_rotation_path", "Rotation:", "旋转: ");
 
-            RegisterLoc("closest_potion_ladle", "PO:", "目标: ");
-            RegisterLoc("closest_general_ladle", "GE:", "总体: ");
-            RegisterLoc("closest_distance_ladle", "DI:", "距离: ");
-            RegisterLoc("closest_angle_ladle", "AN:", "旋转: ");
+            RegisterLoc("closest_potion_ladle", "Potion:", "目标: ");
+            RegisterLoc("closest_general_ladle", "General:", "总体: ");
+            RegisterLoc("closest_distance_ladle", "Distance:", "距离: ");
+            RegisterLoc("closest_rotation_ladle", "Rotation:", "旋转: ");
 
-            RegisterLoc("position_distance", "DI: ", "距离: ");
-            RegisterLoc("position_rotation", "RO: ", "旋转: ");
-            RegisterLoc("position_angle", "AN: ", "方向: ");
-            RegisterLoc("position_salt", "SA: ", "盐量: ");
+            RegisterLoc("position_distance", "Distance: ", "距离: ");
+            RegisterLoc("position_position", "Position: ", "坐标: ");
+            RegisterLoc("position_rotation", "Rotation: ", "旋转: ");
+            RegisterLoc("position_salt", "Salt: ", "盐量: ");
 
-            RegisterLoc("deviation_general", "GE: ", "总体: ");
-            RegisterLoc("deviation_distance", "DI: ", "距离: ");
-            RegisterLoc("deviation_rotation", "RO: ", "旋转: ");
+            RegisterLoc("deviation_general", "General: ", "总体: ");
+            RegisterLoc("deviation_distance", "Distance: ", "距离: ");
+            RegisterLoc("deviation_rotation", "Rotation: ", "旋转: ");
 
-            RegisterLoc("vortex_direction", "DI: ", "方向: ");
-            RegisterLoc("vortex_angle", "AN: ", "夹角: ");
-            RegisterLoc("vortex_dist", "DI: ", "距离: ");
-            RegisterLoc("vortex_edge", "ED: ", "边缘: ");
+            RegisterLoc("vortex_direction", "Direction: ", "方向: ");
+            RegisterLoc("vortex_angle", "Angle: ", "夹角: ");
+            RegisterLoc("vortex_distance", "Distance: ", "距离: ");
+            RegisterLoc("vortex_edge", "Edge: ", "边缘: ");
 
-            RegisterLoc("health_status", "HP: ", "血量: ");
+            RegisterLoc("health_status", "Health: ", "血量: ");
 
             RegisterLoc("aopen", "is opened", "已开启");
             RegisterLoc("aclose", "is closed", "已关闭");
@@ -98,6 +98,8 @@ namespace AlchAss
         public static Vector2 StringToVector2(string input)
         {
             var values = input.Trim('(', ')', ' ').Split(',');
+            if (values.Length < 2)
+                return Vector2.zero;
             return new Vector2(float.Parse(values[0]), float.Parse(values[1]));
         }
         public static bool CanBrewTimes(IRecipeBookPageContent recipePageContent, int count, int times)
