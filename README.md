@@ -4,6 +4,8 @@
 
 注意本模组和 FasterChores 在变速功能上冲突。
 
+如果您有希望实现的其他辅助功能，欢迎联系我。
+
 [Nexus 链接](https://www.nexusmods.com/potioncraftalchemistsimulator/mods/47)
 
 ## 功能：
