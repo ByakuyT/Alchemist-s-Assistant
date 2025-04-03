@@ -1,4 +1,5 @@
-﻿using System.Linq;
+using System;
+using System.Linq;
 using HarmonyLib;
 using PotionCraft.LocalizationSystem;
 using PotionCraft.ManagersSystem;
@@ -70,9 +71,15 @@ namespace AlchAss
         {
             bool[] zone = { ZonePart.GetZonesActivePartsCount(typeof(SwampZonePart)) > 0, ZonePart.GetZonesActivePartsCount(typeof(HealZonePart)) > 0, ZonePart.GetZonesActivePartsCount(typeof(StrongDangerZonePart)) > 0, ZonePart.GetZonesActivePartsCount(typeof(WeakDangerZonePart)) > 0 };
             var post = Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition;
-            for (int i = 0; i < 4; i++)
-                if (zone[i])
-                    AlchAss.zoneLen[i] += (post - AlchAss.prePost).magnitude;
+            if (AlchAss.resetZone)
+            {
+                Array.Clear(AlchAss.zoneLen, 0, AlchAss.zoneLen.Length);
+                AlchAss.resetZone = false;
+            }
+            else
+                for (int i = 0; i < 4; i++)
+                    if (zone[i])
+                        AlchAss.zoneLen[i] += (post - AlchAss.prePost).magnitude;
             AlchAss.prePost = post;
             return LocalizationManager.GetText("zone_swamp") + AlchAss.zoneLen[0] + "\n" + LocalizationManager.GetText("zone_heal") + AlchAss.zoneLen[1] + "\n" + LocalizationManager.GetText("zone_strong") + AlchAss.zoneLen[2] + "\n" + LocalizationManager.GetText("zone_weak") + AlchAss.zoneLen[3];
         }
