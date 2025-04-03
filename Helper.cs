@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using HarmonyLib;
 using PotionCraft.Assemblies.DataBaseSystem.PreparedObjects;
 using PotionCraft.DebugObjects.DebugWindows;
