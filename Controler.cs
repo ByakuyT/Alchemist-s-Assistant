@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using BepInEx;
 using HarmonyLib;
 using PotionCraft.LocalizationSystem;
