@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using BepInEx;
@@ -75,6 +75,7 @@ namespace AlchAss
         public static bool vortexEdgeControl = false;
         public static bool endMode = false;
         public static bool xOy = false;
+        public static bool resetZone = false;
         public static float vortexEdgeOn = float.MaxValue;
         public static float[] zoneLen = new float[4];
         public static Vector3 prePost = Vector3.zero;
@@ -175,7 +176,7 @@ namespace AlchAss
         [HarmonyPatch(typeof(SaveLoadManager), "LoadProgressState")]
         public static void ResetZoneLen()
         {
-            Array.Clear(zoneLen, 0, zoneLen.Length);
+            resetZone = true;
         }
         [HarmonyPrefix]
         [HarmonyPatch(typeof(MovableUIItem), "FixOutOfBoundsCase")]
