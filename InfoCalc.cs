@@ -162,8 +162,8 @@ namespace AlchAss
                 return "";
             var clickedPos = clickedEffect.transform.localPosition;
             var localPosition = Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition;
-            var mindis = Vector3.Cross(localPosition, clickedPos).magnitude / localPosition.magnitude; ;
-            var devpos = mindis * 1800f;
+            var mindis = Vector3.Cross(localPosition, clickedPos).magnitude / localPosition.magnitude;
+            var devpos = localPosition.sqrMagnitude >= clickedPos.sqrMagnitude ? mindis * 1800f : float.NaN;
             var devrot = Mathf.Abs(Mathf.DeltaAngle(Managers.RecipeMap.indicatorRotation.Value, clickedEffect.transform.localEulerAngles.z)) / 3f * 25f;
             var devtot = devpos + devrot;
             var lvlpos = devpos <= 100f ? 3 : devpos <= 600f ? 2 : devpos <= 2754f ? 1 : 0;
