@@ -399,7 +399,7 @@ namespace AlchAss
         {
             if (enableTargetStatus.Value)
                 if (Mouse.current.rightButton.wasPressedThisFrame)
-                    hoveredItemName = ___hoveredInteractiveItem?.transform.name;
+                    hoveredItemName = ___hoveredInteractiveItem != null ? ___hoveredInteractiveItem.transform.name : null;
         }
     }
 }
