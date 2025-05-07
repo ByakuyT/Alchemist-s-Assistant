@@ -31,6 +31,14 @@ namespace AlchAss
                 Helper.SpawnMessageText(LocalizationManager.GetText("axoy") + LocalizationManager.GetText(AlchAss.xOy ? "aopen" : "aclose"));
             }
         }
+        public static void ZoneMode()
+        {
+            if (Keyboard.current.periodKey.wasPressedThisFrame)
+            {
+                AlchAss.zoneMode = (AlchAss.zoneMode + 1) % 4;
+                Helper.SpawnMessageText(LocalizationManager.GetText("azone") + LocalizationManager.GetText(AlchAss.zoneModeName[AlchAss.zoneMode]));
+            }
+        }
         public static void DirectionLine()
         {
             if (Keyboard.current.slashKey.wasPressedThisFrame)
