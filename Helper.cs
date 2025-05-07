@@ -41,10 +41,6 @@ namespace AlchAss
             RegisterLoc("stir_progress", "Stir Progress: ", "阶段进度: ");
             RegisterLoc("stir_direction", "Stir Direction: ", "搅拌方向: ");
             RegisterLoc("ladle_direction", "Ladle Direction: ", "加水方向: ");
-            RegisterLoc("zone_swamp", "Swamp: ", "沼泽总长: ");
-            RegisterLoc("zone_strong", "Strong Danger: ", "骷髅总长: ");
-            RegisterLoc("zone_weak", "Weak Danger: ", "碎骨总长: ");
-            RegisterLoc("zone_heal", "Heal: ", "回复总长: ");
             RegisterLoc("target_id", "Target: ", "目标效果: ");
             RegisterLoc("deviation_general", "General: ", "总体偏离: ");
             RegisterLoc("deviation_position", "Position: ", "位置偏离: ");
@@ -52,13 +48,19 @@ namespace AlchAss
             RegisterLoc("direction", "Direction: ", "目标方向: ");
             RegisterLoc("angle_path", "Path Angle: ", "路径夹角: ");
             RegisterLoc("angle_ladle", "Ladle Angle: ", "加水夹角: ");
+            RegisterLoc("zone", "Displayed Zone: ", "显示区域: ");
+            RegisterLoc("swamp", "Swamp", "沼泽");
+            RegisterLoc("sdanger", "Strong Danger", "骷髅");
+            RegisterLoc("wdanger", "Weak Danger", "碎骨");
+            RegisterLoc("heal", "Heal", "回复");
             RegisterLoc("aline", "Stir indicator mode ", "搅拌示线模式");
             RegisterLoc("avortex", "Vortex auto-stop ", "漩涡制动");
             RegisterLoc("aend", "Boundary mode ", "末端距离模式");
             RegisterLoc("axoy", "Cartesian mode ", "直角坐标模式");
-            RegisterLoc("aopen", "is opened", "已开启");
-            RegisterLoc("aclose", "is closed", "已关闭");
-            RegisterLoc("tooltip", "Deceleration & Batch Brewing: Z / X\nSet Value & Target Selection: Right Click\nStir / Ladle Indicator: /\nProximity / Stir Boundary: \\\nCartesian / Polar Mode: Spacebar\nVortex Auto-stop: '", "减速操作 & 批量制作: Z / X\n定量操作 & 目标选择: 右键\n搅拌 / 加水方向示线: /\n最近 / 搅拌末端距离: \\\n直角 / 极坐标: 空格\n漩涡制动: '");
+            RegisterLoc("aopen", "is Opened", "已开启");
+            RegisterLoc("aclose", "is Closed", "已关闭");
+            RegisterLoc("azone", "Displayed Zone has been switched to: ", "显示区域已切换至: ");
+            RegisterLoc("tooltip", "Deceleration & Batch Brewing: Z / X\nSet Value & Target Selection: Right Click\nStir / Ladle Indicator: /\nProximity / Stir Boundary: \\\nCartesian / Polar Mode: Spacebar\nVortex Auto-stop: '\nZone Switch: .", "减速操作 & 批量制作: Z / X\n定量操作 & 目标选择: 右键\n搅拌 / 加水方向示线: /\n最近 / 搅拌末端距离: \\\n直角 / 极坐标: 空格\n漩涡制动: '\n区域切换: .");
         }
         public static void SpawnMessageText(string msg)
         {
