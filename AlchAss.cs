@@ -6,6 +6,7 @@ using BepInEx.Configuration;
 using HarmonyLib;
 using PotionCraft.DebugObjects.DebugWindows;
 using PotionCraft.LocalizationSystem;
+using PotionCraft.ManagersSystem;
 using PotionCraft.ManagersSystem.Cursor;
 using PotionCraft.ManagersSystem.RecipeMap;
 using PotionCraft.ManagersSystem.SaveLoad;
@@ -25,7 +26,7 @@ using UnityEngine.InputSystem;
 //药水瓶半径0.74，效果半径0.79
 namespace AlchAss
 {
-    [BepInPlugin("AlchAss", "Alchemist's Assistant", "3.0.0")]
+    [BepInPlugin("AlchAss", "Alchemist's Assistant", "3.1.0")]
     public class AlchAss : BaseUnityPlugin
     {
         public static ConfigEntry<bool> enableGrindStatus;
@@ -75,18 +76,19 @@ namespace AlchAss
         public static bool vortexEdgeControl = false;
         public static bool endMode = false;
         public static bool xOy = false;
+        public static int zoneMode = 0;
         public static bool resetZone = false;
         public static float vortexEdgeOn = float.MaxValue;
-        public static float[] zoneLen = new float[4];
-        public static Vector3 prePost = Vector3.zero;
-        public static string hoveredItemName = "";
+        public static object[,] zonePos = new object[4, 4];
+        public static string hoveredItemName = null;
         public static Room lab = null;
         public static Texture2D texture = null;
-        public static SpriteRenderer[] lineRenderer = new SpriteRenderer[3];
-        public static Color[] lineColor = { new(0.75f, 0.1f, 0.1f, 0.75f), new(0.1f, 0.75f, 0.1f, 0.75f), new(0.1f, 0.1f, 0.75f, 0.75f) };
+        public static SpriteRenderer[] lineRenderer = new SpriteRenderer[7];
+        public static Color[] lineColor = { new(0.75f, 0.1f, 0.1f, 0.75f), new(0.1f, 0.75f, 0.1f, 0.75f), new(0.1f, 0.1f, 0.75f, 0.75f), new(0.1f, 0.1f, 0.1f, 0.75f) };
         public static float[] lineDirection = new float[3];
         public static SolventDirectionHint solventDirectionHint = null;
         public static readonly List<DebugWindow> foreground_queue = new();
+        public static readonly string[] zoneModeName = { "swamp", "sdanger", "wdanger", "heal" };
         public static readonly string grindHeatPath = "AlchAssGrindHeatConfig.txt";
         public static readonly string speedBrewPath = "AlchAssSpeedBrewConfig.txt";
         public static readonly string windowPath = "AlchAssWindowConfig.txt";
@@ -97,7 +99,7 @@ namespace AlchAss
             enableVortexStatus = Config.Bind("信息窗口", "漩涡信息", true, "开启后，显示当前位置到所接触的漩涡中心距离和可以接触漩涡的最大距离、加水方向与漩涡方向的夹角和可以加水外拉的最大夹角.");
             enablePositionStatus = Config.Bind("信息窗口", "位置信息", true, "开启后，显示直角坐标或极坐标的位置和旋转量.");
             enableStirStatus = Config.Bind("信息窗口", "移动信息", true, "开启后，显示搅拌阶段、进度、方向和加水方向.");
-            enableZoneStatus = Config.Bind("信息窗口", "区域信息", true, "开启后，显示通过沼泽、骷髅、碎骨和回复区域的总长，读取存档时重置.");
+            enableZoneStatus = Config.Bind("信息窗口", "区域信息", true, "开启后，显示进入沼泽、骷髅、碎骨和回复区域的位置、搅拌阶段和进度，按下 . 键切换显示，读取存档时重置.");
             enableTargetStatus = Config.Bind("信息窗口", "目标信息", true, "开启后，显示目标效果的名称、直角坐标或极坐标的位置、旋转量和目标方向.");
             enableDeviationStatus = Config.Bind("信息窗口", "偏离信息", true, "需要开启目标信息\n开启后，显示目标效果与当前位置的偏差度.");
             enablePathStatus = Config.Bind("信息窗口", "路径信息", true, "需要开启目标信息\n开启后，显示目标效果与路径最近点或搅拌末端的偏差度、目标方向与当前搅拌方向的夹角.");
@@ -112,7 +114,7 @@ namespace AlchAss
             enableLadleSpeed = Config.Bind("操作控制", "允许加水减速", true, "开启后，按住 Z 或 X 键将使加水减速至相应指定比例.");
             enableHeatSpeed = Config.Bind("操作控制", "允许加热减速", true, "开启后，按住 Z 或 X 键将使加热减速至相应指定比例.");
             enableBrewMore = Config.Bind("操作控制", "允许大批炼药", true, "开启后，按住 Z 或 X 键将使炼药数量增加至相应指定比例.");
-            enableDirectionLine = Config.Bind("操作控制", "允许辅助示线", true, "开启后，按下 / 键显示当前搅拌方向、加水方向和目标方向的提示线.");
+            enableDirectionLine = Config.Bind("操作控制", "允许辅助示线", true, "开启后，按下 / 键显示当前搅拌方向、加水方向和目标方向的提示线和进入沼泽、骷髅、碎骨和回复区域的位置标记.");
             if (!enableTargetStatus.Value)
                 enableDeviationStatus.Value = enablePathStatus.Value = enableLadleStatus.Value = false;
             if (!File.Exists(Path.Combine(Paths.PluginPath, grindHeatPath)))
@@ -154,6 +156,8 @@ namespace AlchAss
                 Controler.EndMode();
             if (enablePositionStatus.Value)
                 Controler.PositionMode();
+            if (enableZoneStatus.Value)
+                Controler.ZoneMode();
         }
         [HarmonyPostfix]
         [HarmonyPatch(typeof(SaveLoadManager), "SaveProgressToPool")]
@@ -316,8 +320,8 @@ namespace AlchAss
             ladleDebugWindow?.ShowText(InfoCalc.LadleCalc());
             zoneDebugWindow?.ShowText(InfoCalc.ZoneCalc());
             tooltipDebugWindow?.ShowText(LocalizationManager.GetText("tooltip"));
-            if (AlchAss.solventDirectionHint != null)
-                Traverse.Create(AlchAss.solventDirectionHint).Method("OnPositionOnMapChanged", Array.Empty<object>()).GetValue();
+            if (solventDirectionHint != null)
+                Traverse.Create(solventDirectionHint).Method("OnPositionOnMapChanged", Array.Empty<object>()).GetValue();
         }
         [HarmonyPrefix]
         [HarmonyPatch(typeof(RecipeBookRecipeBrewController), "BrewRecipe")]
@@ -361,20 +365,47 @@ namespace AlchAss
                         lineRenderer[i].color = lineColor[i];
                         lineRenderer[i].size = new Vector2(200f, 0.075f);
                     }
+                for (int i = 3; i < 7; i++)
+                    if (lineRenderer[i] == null)
+                    {
+                        var newLine = new GameObject("Node")
+                        {
+                            layer = __instance.gameObject.layer
+                        };
+                        lineRenderer[i] = newLine.AddComponent<SpriteRenderer>();
+                        lineRenderer[i].sortingLayerName = ___spriteRenderer.sortingLayerName;
+                        lineRenderer[i].sortingOrder = ___spriteRenderer.sortingOrder;
+                        lineRenderer[i].drawMode = SpriteDrawMode.Tiled;
+                        lineRenderer[i].sprite = Sprite.Create(texture, new Rect(0, 0, 1, 1), new Vector2(0.5f, 0.5f), 1.0f, 0, SpriteMeshType.FullRect);
+                        lineRenderer[i].color = lineColor[i - 3];
+                        lineRenderer[i].size = new Vector2(0.25f, 0.25f);
+                        lineRenderer[i].transform.localEulerAngles = new Vector3(0f, 0f, 0f);
+                    }
                 if (directionLine)
                 {
-                    ___spriteRenderer.enabled = false;
+                    if (Keyboard.current.slashKey.wasPressedThisFrame)
+                    {
+                        ___spriteRenderer.enabled = false;
+                        for (int i = 0; i < 3; i++)
+                            lineRenderer[i].enabled = true;
+                    }
                     for (int i = 0; i < 3; i++)
                     {
-                        lineRenderer[i].enabled = true;
                         lineRenderer[i].transform.position = __instance.transform.position;
                         lineRenderer[i].transform.localEulerAngles = new Vector3(0f, 0f, lineDirection[i]);
                     }
+                    for (int i = 3; i < 7; i++)
+                    {
+                        lineRenderer[i].enabled = zonePos[i - 3, 0] != null;
+                        var post = zonePos[i - 3, 0] == null ? Vector3.zero : (Vector3)zonePos[i - 3, 0];
+                        post.y = post.y + __instance.transform.position.y - Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition.y;
+                        lineRenderer[i].transform.position = post;
+                    }
                 }
-                else
+                else if (Keyboard.current.slashKey.wasPressedThisFrame)
                 {
                     ___spriteRenderer.enabled = true;
-                    for (int i = 0; i < 3; i++)
+                    for (int i = 0; i < 7; i++)
                         lineRenderer[i].enabled = false;
                 }
             }
