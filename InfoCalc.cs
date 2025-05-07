@@ -69,19 +69,31 @@ namespace AlchAss
         }
         public static string ZoneCalc()
         {
-            bool[] zone = { ZonePart.GetZonesActivePartsCount(typeof(SwampZonePart)) > 0, ZonePart.GetZonesActivePartsCount(typeof(HealZonePart)) > 0, ZonePart.GetZonesActivePartsCount(typeof(StrongDangerZonePart)) > 0, ZonePart.GetZonesActivePartsCount(typeof(WeakDangerZonePart)) > 0 };
+            bool[] zone = { ZonePart.GetZonesActivePartsCount(typeof(SwampZonePart)) > 0, ZonePart.GetZonesActivePartsCount(typeof(StrongDangerZonePart)) > 0, ZonePart.GetZonesActivePartsCount(typeof(WeakDangerZonePart)) > 0, ZonePart.GetZonesActivePartsCount(typeof(HealZonePart)) > 0 };
             var post = Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition;
+            var stage = Managers.RecipeMap.path.deletedGraphicsSegments;
+            var progr = Managers.RecipeMap.path.segmentLengthToDeletePhysics;
             if (AlchAss.resetZone)
             {
-                Array.Clear(AlchAss.zoneLen, 0, AlchAss.zoneLen.Length);
+                Array.Clear(AlchAss.zonePos, 0, AlchAss.zonePos.Length);
                 AlchAss.resetZone = false;
             }
             else
                 for (int i = 0; i < 4; i++)
-                    if (zone[i])
-                        AlchAss.zoneLen[i] += (post - AlchAss.prePost).magnitude;
-            AlchAss.prePost = post;
-            return LocalizationManager.GetText("zone_swamp") + AlchAss.zoneLen[0] + "\n" + LocalizationManager.GetText("zone_heal") + AlchAss.zoneLen[1] + "\n" + LocalizationManager.GetText("zone_strong") + AlchAss.zoneLen[2] + "\n" + LocalizationManager.GetText("zone_weak") + AlchAss.zoneLen[3];
+                {
+                    if (zone[i] && !(bool)AlchAss.zonePos[i, 3])
+                    {
+                        AlchAss.zonePos[i, 0] = post;
+                        AlchAss.zonePos[i, 1] = stage;
+                        AlchAss.zonePos[i, 2] = progr;
+                    }
+                    AlchAss.zonePos[i, 3] = zone[i];
+                }
+            var poss = AlchAss.zonePos[AlchAss.zoneMode, 0] == null ? Vector3.zero : (Vector3)AlchAss.zonePos[AlchAss.zoneMode, 0];
+            var stag = AlchAss.zonePos[AlchAss.zoneMode, 1] == null ? 0f : (float)AlchAss.zonePos[AlchAss.zoneMode, 1];
+            var prog = AlchAss.zonePos[AlchAss.zoneMode, 2] == null ? 0f : (float)AlchAss.zonePos[AlchAss.zoneMode, 2];
+            var pots = AlchAss.xOy ? "x: " + poss.x.ToString() + "\ny: " + poss.y.ToString() : "r: " + poss.magnitude.ToString() + "\nθ: " + Vector2.SignedAngle(Vector2.right, poss).ToString();
+            return LocalizationManager.GetText("zone") + LocalizationManager.GetText(AlchAss.zoneModeName[AlchAss.zoneMode]) + "\n" + pots + "\n" + LocalizationManager.GetText("stir_stage") + stag.ToString() + "\n" + LocalizationManager.GetText("stir_progress") + prog.ToString();
         }
         public static string TargetCalc()
         {
