@@ -26,7 +26,7 @@ using UnityEngine.InputSystem;
 //药水瓶半径0.74，效果半径0.79
 namespace AlchAss
 {
-    [BepInPlugin("AlchAss", "Alchemist's Assistant", "3.1.0")]
+    [BepInPlugin("AlchAss", "Alchemist's Assistant", "3.1.1")]
     public class AlchAss : BaseUnityPlugin
     {
         public static ConfigEntry<bool> enableGrindStatus;
