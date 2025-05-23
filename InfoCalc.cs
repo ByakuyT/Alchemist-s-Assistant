@@ -81,12 +81,13 @@ namespace AlchAss
             else
                 for (int i = 0; i < 4; i++)
                 {
-                    if (zone[i] && !(bool)AlchAss.zonePos[i, 3])
-                    {
-                        AlchAss.zonePos[i, 0] = post;
-                        AlchAss.zonePos[i, 1] = stage;
-                        AlchAss.zonePos[i, 2] = progr;
-                    }
+                    if (zone[i])
+                        if (AlchAss.zonePos[i, 3] == null || !(bool)AlchAss.zonePos[i, 3])
+                        {
+                            AlchAss.zonePos[i, 0] = post;
+                            AlchAss.zonePos[i, 1] = stage;
+                            AlchAss.zonePos[i, 2] = progr;
+                        }
                     AlchAss.zonePos[i, 3] = zone[i];
                 }
             var poss = AlchAss.zonePos[AlchAss.zoneMode, 0] == null ? Vector3.zero : (Vector3)AlchAss.zonePos[AlchAss.zoneMode, 0];
