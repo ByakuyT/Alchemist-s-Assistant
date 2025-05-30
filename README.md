@@ -8,7 +8,7 @@
 
 ## 📖 简介
 
-炼金师助手是专为《药剂工艺（Potion Craft: Alchemist Simulator）》设计的综合性辅助mod。它通过实时数据分析、精确操作控制、可视化辅助线和智能自动化功能，帮助玩家深入理解游戏机制，提升炼药效率和精确度。如果您有任何建议或意见，欢迎联系我。
+炼金助手是专为《药剂工艺（Potion Craft: Alchemist Simulator）》设计的综合性辅助mod。它通过实时数据分析、精确操作控制、可视化辅助线和智能自动化功能，帮助玩家深入理解游戏机制，提升炼药效率和精确度。如果您有任何建议或意见，欢迎联系我。
 
 [Nexus链接](https://www.nexusmods.com/potioncraftalchemistsimulator/mods/47)
 
@@ -169,8 +169,8 @@
 ## 🚀 快速安装
 
 1. **安装BepInEx**：下载并解压到游戏根目录，运行游戏一次
-2. **安装mod**：将`AlchAss.dll`放入`BepInEx/plugins/`文件夹
-3. **启动游戏**：正常启动，看到"Alchemist's Assistant 加载完成！"提示即表示成功
+2. **安装mod**：将`AlchAss.dll`和`AlchAssEx.dll`放入`BepInEx/plugins/`文件夹
+3. **启动游戏**：正常启动即可
 
 ## 🎯 快捷键一览
 
@@ -189,30 +189,41 @@
 
 ## ⚙️ 配置文件详解
 
-mod会在`BepInEx/config/AlchAss/`文件夹中自动生成配置文件：
-
-- `AlchAssWindowConfig.txt` - 窗口位置配置
-
-> ⚠️ 注意：以下配置参数已移至子模组 **Alchemist's Assistant Extension**，需要单独安装。
-> - `AlchAssFunctionsConfig.txt` - 功能参数配置
+**配置文件类型**：本mod提供两种配置方式
+- **BepInEx原生配置**：存储在`BepInEx/config/org.dtx.alchass.cfg`文件中，包含各功能模块的开关设置，需重启游戏生效
+- **游戏内实时配置**：可在游戏运行时随时修改，立即生效
 
 **双语配置支持**：所有配置文件注释和界面描述均提供中英文对照
 
-配置文件包含以下可调参数 (仅在安装 **Alchemist's Assistant Extension** 后可用)：
+### BepInEx原生配置
+- 文件位置：`BepInEx/config/org.dtx.alchass.cfg`
+- 主要内容：功能模块的开关设置（启用/禁用各种信息窗口和辅助功能）
+- 生效方式：修改后需重启游戏生效
 
-### 🔧 数值设定
+### 游戏内实时配置
+mod会在`BepInEx/config/AlchAss/`文件夹中自动生成以下游戏内实时配置文件：
+
+- `AlchAssWindowConfig.txt` - 窗口位置配置（可在游戏中拖动窗口后自动保存）
+
+> ⚠️ 注意：以下配置参数已移至子模组 **Alchemist's Assistant Extension**，需要单独安装。
+
+- `AlchAssFunctionsConfig.txt` - 功能参数配置（可在游戏中随时修改）
+
+### 功能参数配置 (需安装 Alchemist's Assistant Extension)
+
+#### 🔧 数值设定
 - `HeatValue=100` - 右键风箱时设定的热量值 (0-100)
 - `GrindValue=100` - 右键研杵时设定的研磨度 (0-100)
 
-### ⚡ 减速参数
+#### ⚡ 减速参数
 - `SlowdownFactorZ=10` - Z键减速倍数，数值越大越慢
 - `SlowdownFactorX=100` - X键减速倍数，数值越大越慢
 
-### 📦 批量制作
+#### 📦 批量制作
 - `BrewingMultiplierZ=10` - Z键批量制作倍数
 - `BrewingMultiplierX=100` - X键批量制作倍数
 
-### 🎮 统一控制系统
+#### 🎮 统一控制系统
 - `ControlAreaThreshold=0.05` - 控制区域半径，数值越大制动区域越大
 - `ControlSlowdownStrength=1.35` - 控制减速强度，数值越大减速越剧烈
 - `ControlAsymptoteFactor=0.0015` - 控制减速渐近因子，数值越大减速越平滑
