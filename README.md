@@ -209,7 +209,9 @@ mod会在`BepInEx/config/AlchAss/`文件夹中自动生成以下游戏内实时�
 
 - `AlchAssFunctionsConfig.txt` - 功能参数配置（可在游戏中随时修改）
 
-### 功能参数配置 (需安装 Alchemist's Assistant Extension)
+### 功能参数配置
+
+> ⚠️ 注意：以下配置参数已移至子模组 **Alchemist's Assistant Extension**，需要单独安装。
 
 #### 🔧 数值设定
 - `HeatValue=100` - 右键风箱时设定的热量值 (0-100)
@@ -226,4 +228,4 @@ mod会在`BepInEx/config/AlchAss/`文件夹中自动生成以下游戏内实时�
 #### 🎮 统一控制系统
 - `ControlAreaThreshold=0.05` - 控制区域半径，数值越大制动区域越大
 - `ControlSlowdownStrength=1.35` - 控制减速强度，数值越大减速越剧烈
-- `ControlAsymptoteFactor=0.0015` - 控制减速渐近因子，数值越大减速越平滑
+- `ControlAsymptoteFactor=0.002` - 控制减速渐近因子，数值越大减速越平滑
