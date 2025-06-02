@@ -1,6 +1,6 @@
 # 炼金助手 (Alchemist's Assistant)
 
-[![版本](https://img.shields.io/badge/版本-4.0.0-blue.svg)](https://github.com/user/AlchAss)
+[![版本](https://img.shields.io/badge/版本-4.0.1-blue.svg)](https://github.com/user/AlchAss)
 [![游戏版本](https://img.shields.io/badge/游戏版本-Potion%20Craft-green.svg)](https://store.steampowered.com/app/1210320/Potion_Craft_Alchemist_Simulator/)
 [![平台](https://img.shields.io/badge/平台-BepInEx-orange.svg)](https://github.com/BepInEx/BepInEx)
 
