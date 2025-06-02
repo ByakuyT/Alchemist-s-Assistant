@@ -205,13 +205,13 @@ mod会在`BepInEx/config/AlchAss/`文件夹中自动生成以下游戏内实时�
 
 - `AlchAssWindowConfig.txt` - 窗口位置配置（可在游戏中拖动窗口后自动保存）
 
-> ⚠️ 注意：以下配置参数已移至子模组 **Alchemist's Assistant Extension**，需要单独安装。
+> ⚠️ 注意：以下功能已移至子模组 **Alchemist's Assistant Extension**，需要单独安装。
 
 - `AlchAssFunctionsConfig.txt` - 功能参数配置（可在游戏中随时修改）
 
 ### 功能参数配置
 
-> ⚠️ 注意：以下配置参数已移至子模组 **Alchemist's Assistant Extension**，需要单独安装。
+> ⚠️ 注意：以下功能已移至子模组 **Alchemist's Assistant Extension**，需要单独安装。
 
 #### 🔧 数值设定
 - `HeatValue=100` - 右键风箱时设定的热量值 (0-100)
