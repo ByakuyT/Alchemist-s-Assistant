@@ -3,6 +3,7 @@ using HarmonyLib;
 using PotionCraft.DebugObjects.DebugWindows;
 using PotionCraft.LocalizationSystem;
 using PotionCraft.ManagersSystem.Cursor;
+using PotionCraft.ManagersSystem.Potion;
 using PotionCraft.ManagersSystem.SaveLoad;
 using PotionCraft.ObjectBased;
 using PotionCraft.ObjectBased.InteractiveItem;
@@ -17,7 +18,7 @@ using UnityEngine.InputSystem;
 
 namespace AlchAss
 {
-    [BepInPlugin("AlchAss", "Alchemist's Assistant", "4.1.0")]
+    [BepInPlugin("AlchAss", "Alchemist's Assistant", "4.2.0")]
     public class AlchAss : BaseUnityPlugin
     {
         #region Unity - 生命周期
@@ -49,6 +50,10 @@ namespace AlchAss
                 "信息窗口的显示大小比例 | Display size ratio of info windows");
             Variables.enableDirectionLine = Config.Bind("辅助渲染", "允许辅助示线", true,
                 "按/键显示方向线、区域标记和漩涡圆形 | Press / to show direction lines, zone markers and vortex circles");
+            Variables.lineWidth = Config.Bind("辅助渲染", "线条粗细", 0.075f,
+                "方向线和路径线的粗细 | Width of direction lines and path lines");
+            Variables.pointSize = Config.Bind("辅助渲染", "点大小", 0.15f,
+                "交会点和最近点的大小 | Size of intersection points and closest points");
 
             if (!Variables.enableTargetStatus.Value)
                 Variables.enableDeviationStatus.Value = Variables.enablePathStatus.Value = Variables.enableLadleStatus.Value = false;
@@ -69,7 +74,11 @@ namespace AlchAss
             if (Variables.enableZoneStatus.Value)
                 Functions.ZoneMode();
             if (Variables.enableDirectionLine.Value)
+            {
                 Functions.VortexSelection();
+                Functions.PathRendering();
+                Functions.TargetCircleMode();
+            }
         }
         #endregion
 
@@ -186,6 +195,12 @@ namespace AlchAss
 {Variables.tooltipDebugWindow?.transform.position}
 {Variables.zoneDebugWindow?.transform.position}";
             File.WriteAllText(windowConfigPath, windowPositions);
+        }
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(PotionManager), "ResetPotion")]
+        public static void ResetWhenResetPotion()
+        {
+            Variables.resetWhenLoading = true;
         }
         [HarmonyPostfix]
         [HarmonyPatch(typeof(SaveLoadManager), "LoadProgressState")]

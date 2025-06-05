@@ -64,6 +64,41 @@ namespace AlchAss
             else
                 Variables.selectedVortexIndex = Math.Max(Variables.selectedVortexIndex - 1, 0);
         }
+        public static void PathRendering()
+        {
+            if (Keyboard.current.pKey.wasPressedThisFrame)
+            {
+                if (!Variables.directionLine)
+                    return;
+                Variables.enablePathRendering = !Variables.enablePathRendering;
+                if (Variables.enablePathRendering)
+                {
+                    Depends.HideOriginalPaths();
+                    if (Variables.solventDirectionHint != null)
+                        Traverse.Create(Variables.solventDirectionHint).Method("OnPositionOnMapChanged", Array.Empty<object>()).GetValue();
+                }
+                else
+                {
+                    Depends.ShowOriginalPaths();
+                    for (int i = 0; i < Variables.pathLineRenderer.Length; i++)
+                        Variables.pathLineRenderer[i].enabled = false;
+                }
+                Depends.SpawnMessageText(LocalizationManager.GetText("apath") + LocalizationManager.GetText(Variables.enablePathRendering ? "aopen" : "aclose"));
+            }
+        }
+        public static void TargetCircleMode()
+        {
+            if (Keyboard.current.backspaceKey.wasPressedThisFrame)
+            {
+                if (!Variables.directionLine)
+                    return;
+                Variables.useAngleAdjustedRadius = !Variables.useAngleAdjustedRadius;
+                Variables.targetCircleNeedsUpdate = true;
+                if (Variables.solventDirectionHint != null)
+                    Traverse.Create(Variables.solventDirectionHint).Method("OnPositionOnMapChanged", Array.Empty<object>()).GetValue();
+                Depends.SpawnMessageText(LocalizationManager.GetText("acircle") + LocalizationManager.GetText(Variables.useAngleAdjustedRadius ? "aopen" : "aclose"));
+            }
+        }
         public static void DirectionLine()
         {
             if (Keyboard.current.slashKey.wasPressedThisFrame)
@@ -79,6 +114,8 @@ namespace AlchAss
                         Variables.selectedVortexIndex = 0;
                     }
                 }
+                else
+                    Variables.enablePathRendering = false;
                 Depends.SpawnMessageText(LocalizationManager.GetText("aline") + LocalizationManager.GetText(Variables.directionLine ? "aopen" : "aclose"));
                 if (Variables.solventDirectionHint != null)
                     Traverse.Create(Variables.solventDirectionHint).Method("OnPositionOnMapChanged", Array.Empty<object>()).GetValue();
@@ -224,9 +261,7 @@ namespace AlchAss
                 Variables.closestPointDis[0] = float.MaxValue;
                 return "";
             }
-            var pathHints = Managers.RecipeMap.path.fixedPathHints;
-            var pathPoints = pathHints.Select((FixedHint fixedHint) => fixedHint.evenlySpacedPointsFixedPhysics.points).SelectMany((Vector3[] points) => points).Skip(1);
-            if (!pathPoints.Any())
+            if (!Variables.normalPathSegments.Any() && !Variables.teleportationPathPoints.Any())
             {
                 Variables.closestPoints[0] = null;
                 Variables.closestPointDis[0] = float.MaxValue;
@@ -237,26 +272,49 @@ namespace AlchAss
             var closestPoint = Vector2.zero;
             if (!Variables.endMode)
             {
-                var previousPosition = indicatorPosition;
-                foreach (var point in pathPoints)
+                if (Variables.normalPathSegments.Any())
                 {
-                    Vector2 currentPosition = Managers.RecipeMap.currentMap.referencesContainer.transform.InverseTransformPoint(Managers.RecipeMap.path.thisTransform.TransformPoint(point));
-                    var segmentVector = currentPosition - previousPosition;
-                    var segmentLengthSquared = segmentVector.sqrMagnitude;
-                    var currentClosest = segmentLengthSquared == 0 ? previousPosition : previousPosition + Mathf.Clamp01(Vector2.Dot(Variables.SharedCache.targetPosition - previousPosition, segmentVector) / segmentLengthSquared) * segmentVector;
-                    var currentDistance = Vector2.Distance(Variables.SharedCache.targetPosition, currentClosest);
-                    if (currentDistance < minDistance)
+                    foreach (var segment in Variables.normalPathSegments)
+                        for (int i = 0; i < segment.Length - 1; i++)
                     {
-                        minDistance = currentDistance;
-                        closestPoint = currentClosest;
+                            Vector2 startPosition = Managers.RecipeMap.currentMap.referencesContainer.transform.InverseTransformPoint(Managers.RecipeMap.path.thisTransform.TransformPoint(segment[i]));
+                            Vector2 endPosition = Managers.RecipeMap.currentMap.referencesContainer.transform.InverseTransformPoint(Managers.RecipeMap.path.thisTransform.TransformPoint(segment[i + 1]));
+                            var segmentVector = endPosition - startPosition;
+                        var segmentLengthSquared = segmentVector.sqrMagnitude;
+                            var currentClosest = segmentLengthSquared == 0 ? startPosition : startPosition + Mathf.Clamp01(Vector2.Dot(Variables.SharedCache.targetPosition - startPosition, segmentVector) / segmentLengthSquared) * segmentVector;
+                        var currentDistance = Vector2.Distance(Variables.SharedCache.targetPosition, currentClosest);
+                        if (currentDistance < minDistance)
+                        {
+                            minDistance = currentDistance;
+                            closestPoint = currentClosest;
+                        }
                     }
-                    previousPosition = currentPosition;
                 }
+                if (Variables.teleportationPathPoints.Any())
+                    foreach (var point in Variables.teleportationPathPoints)
+                    {
+                        Vector2 currentPosition = Managers.RecipeMap.currentMap.referencesContainer.transform.InverseTransformPoint(Managers.RecipeMap.path.thisTransform.TransformPoint(point));
+                        var currentDistance = Vector2.Distance(Variables.SharedCache.targetPosition, currentPosition);
+                        if (currentDistance < minDistance)
+                        {
+                            minDistance = currentDistance;
+                            closestPoint = currentPosition;
+                        }
+                    }
             }
             else
             {
-                closestPoint = Managers.RecipeMap.currentMap.referencesContainer.transform.InverseTransformPoint(Managers.RecipeMap.path.thisTransform.TransformPoint(pathPoints.Last()));
-                minDistance = Vector2.Distance(closestPoint, Variables.SharedCache.targetPosition);
+                if (Variables.normalPathSegments.Any())
+                {
+                    var lastSegment = Variables.normalPathSegments.Last();
+                    closestPoint = Managers.RecipeMap.currentMap.referencesContainer.transform.InverseTransformPoint(Managers.RecipeMap.path.thisTransform.TransformPoint(lastSegment.Last()));
+                    minDistance = Vector2.Distance(closestPoint, Variables.SharedCache.targetPosition);
+                }
+                else if (Variables.teleportationPathPoints.Any())
+                {
+                    closestPoint = Managers.RecipeMap.currentMap.referencesContainer.transform.InverseTransformPoint(Managers.RecipeMap.path.thisTransform.TransformPoint(Variables.teleportationPathPoints.Last()));
+                    minDistance = Vector2.Distance(closestPoint, Variables.SharedCache.targetPosition);
+                }
             }
             Variables.closestPoints[0] = closestPoint;
             Variables.closestPointDis[0] = minDistance;
@@ -306,26 +364,94 @@ namespace AlchAss
         {
             Vector2 indicatorPosition = Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition;
             var pathHints = Managers.RecipeMap.path.fixedPathHints;
-            var pathPoints = pathHints.Select((FixedHint fixedHint) => fixedHint.evenlySpacedPointsFixedPhysics.points).SelectMany((Vector3[] points) => points).ToList<Vector3>();
+            int currentPathHintCount = pathHints.Count;
+            int currentPathDataHash = 0;
+            if (currentPathHintCount > 0)
+            {
+                foreach (var hint in pathHints)
+                {
+                    currentPathDataHash ^= hint.GetHashCode();
+                    if (hint.evenlySpacedPointsFixedPhysics?.points != null)
+                        currentPathDataHash ^= hint.evenlySpacedPointsFixedPhysics.points.Length.GetHashCode();
+                    currentPathDataHash ^= hint.GetType().Name.GetHashCode();
+                    if (hint.GetType().Name == "TeleportationFixedHint")
+                    {
+                        var isAvailableProperty = hint.GetType().GetField("isAvailableForTeleportation");
+                        if (isAvailableProperty != null)
+                        {
+                            var isAvailable = (bool)isAvailableProperty.GetValue(hint);
+                            currentPathDataHash ^= isAvailable.GetHashCode();
+                            if (!isAvailable)
+                                currentPathDataHash ^= ("consumed_" + hint.GetHashCode()).GetHashCode();
+                        }
+                    }
+                }
+            }
+            bool pathDataChanged = (currentPathDataHash != Variables.lastPathDataHash);
+            if (pathDataChanged)
+            {
+                Variables.lastPathDataHash = currentPathDataHash;
+                Variables.normalPathSegments.Clear();
+                Variables.teleportationPathPoints.Clear();
+                Variables.ingredientPathGroups.Clear();
+                CollectPathsByIngredient(pathHints);
+                CollectPathPointsForCalculation(pathHints);
+            }
             Variables.vortexIntersectionPoints.Clear();
             var targetVortexes = new List<Variables.VortexData>();
             if (Variables.selectedVortexIndex >= 0 && Variables.selectedVortexIndex < Variables.allVortexData.Count)
                 targetVortexes.Add(Variables.allVortexData[Variables.selectedVortexIndex]);
-            if (pathPoints.Count > 1)
+            Variables.SharedCache.UpdateCache();
+            if (Variables.SharedCache.isValid)
             {
-                var startPosition = Managers.RecipeMap.currentMap.referencesContainer.transform.InverseTransformPoint(Managers.RecipeMap.path.thisTransform.TransformPoint(pathPoints[0]));
-                var endPosition = Managers.RecipeMap.currentMap.referencesContainer.transform.InverseTransformPoint(Managers.RecipeMap.path.thisTransform.TransformPoint(pathPoints[1]));
-                Variables.lineDirection[0] = Vector2.SignedAngle(Vector2.right, endPosition - startPosition);
-                var previousPosition = indicatorPosition;
-                foreach (var point in pathPoints.Skip(1))
+                float[] radiusValues = [1.53f, 1f / 3f, 1f / 18f];
+                foreach (var radius in radiusValues)
+                    targetVortexes.Add(new Variables.VortexData(Variables.SharedCache.targetPosition, radius));
+            }
+            bool directionCalculated = false;
+            if (pathHints.Count > 0)
+            {
+                var firstHint = pathHints[0];
+                bool isFirstTeleportation = firstHint.GetType().Name == "TeleportationFixedHint";
+                bool shouldIncludeFirst = true;
+                if (isFirstTeleportation)
                 {
-                    Vector2 currentPosition = Managers.RecipeMap.currentMap.referencesContainer.transform.InverseTransformPoint(Managers.RecipeMap.path.thisTransform.TransformPoint(point));
+                    var isAvailableProperty = firstHint.GetType().GetField("isAvailableForTeleportation");
+                    if (isAvailableProperty != null)
+                        shouldIncludeFirst = (bool)isAvailableProperty.GetValue(firstHint);
+                }
+                if (shouldIncludeFirst && firstHint.evenlySpacedPointsFixedPhysics?.points != null && firstHint.evenlySpacedPointsFixedPhysics.points.Length >= 2)
+                {
+                    var points = firstHint.evenlySpacedPointsFixedPhysics.points;
+                    Vector3 startPoint, endPoint;
+                    if (isFirstTeleportation)
+                    {
+                        startPoint = points[0];
+                        endPoint = points[points.Length - 1];
+                    }
+                    else
+                    {
+                        startPoint = points[0];
+                        endPoint = points[1];
+                    }
+                    var startPosition = Managers.RecipeMap.currentMap.referencesContainer.transform.InverseTransformPoint(Managers.RecipeMap.path.thisTransform.TransformPoint(startPoint));
+                    var endPosition = Managers.RecipeMap.currentMap.referencesContainer.transform.InverseTransformPoint(Managers.RecipeMap.path.thisTransform.TransformPoint(endPoint));
+                Variables.lineDirection[0] = Vector2.SignedAngle(Vector2.right, endPosition - startPosition);
+                    directionCalculated = true;
+                }
+            }
+            if (Variables.normalPathSegments.Count > 0)
+            {
+                foreach (var segment in Variables.normalPathSegments)
+                    for (int i = 0; i < segment.Length - 1; i++)
+                    {
+                        Vector2 startPosition = Managers.RecipeMap.currentMap.referencesContainer.transform.InverseTransformPoint(Managers.RecipeMap.path.thisTransform.TransformPoint(segment[i]));
+                        Vector2 endPosition = Managers.RecipeMap.currentMap.referencesContainer.transform.InverseTransformPoint(Managers.RecipeMap.path.thisTransform.TransformPoint(segment[i + 1]));
                     foreach (var vortex in targetVortexes)
                     {
-                        var intersections = Depends.GetLineCircleIntersections(previousPosition, currentPosition, vortex.center, vortex.radius);
+                            var intersections = Depends.GetLineCircleIntersections(startPosition, endPosition, vortex.center, vortex.radius);
                         Variables.vortexIntersectionPoints.AddRange(intersections);
                     }
-                    previousPosition = currentPosition;
                 }
             }
             Variables.lineDirection[1] = Vector2.SignedAngle(Vector2.right, -indicatorPosition);
@@ -334,7 +460,17 @@ namespace AlchAss
                 var intersections = Depends.GetLineCircleIntersections(indicatorPosition, Vector2.zero, vortex.center, vortex.radius);
                 Variables.vortexIntersectionPoints.AddRange(intersections);
             }
-            Variables.SharedCache.UpdateCache();
+            if (Variables.teleportationPathPoints.Count > 0)
+            {
+                for (int i = 0; i < Variables.teleportationPathPoints.Count; i++)
+                {
+                    Vector2 point = Managers.RecipeMap.currentMap.referencesContainer.transform.InverseTransformPoint(
+                        Managers.RecipeMap.path.thisTransform.TransformPoint(Variables.teleportationPathPoints[i]));
+                    foreach (var vortex in targetVortexes)
+                        if (Vector2.Distance(point, vortex.center) <= vortex.radius)
+                            Variables.vortexIntersectionPoints.Add(point);
+                }
+            }
             if (Variables.SharedCache.isValid)
                 Variables.lineDirection[2] = Vector2.SignedAngle(Vector2.right, Variables.SharedCache.targetPosition - indicatorPosition);
             if (Variables.selectedVortexIndex >= 0 && Variables.selectedVortexIndex < Variables.allVortexData.Count)
@@ -344,6 +480,98 @@ namespace AlchAss
                 Variables.lineDirection[3] = Vector2.SignedAngle(Vector2.right, direction);
             }
         }
+        public static void CollectPathPointsForCalculation(IList<FixedHint> pathHints)
+        {
+            Variables.normalPathSegments.Clear();
+            List<Vector3> currentNormalSegment = new();
+            bool hasAddedFirstTeleportationPoint = false;
+            foreach (var hint in pathHints)
+            {
+                bool isTeleportation = hint.GetType().Name == "TeleportationFixedHint";
+                bool shouldInclude = true;
+                if (isTeleportation)
+                {
+                    var isAvailableProperty = hint.GetType().GetField("isAvailableForTeleportation");
+                    if (isAvailableProperty != null)
+                    {
+                        var isAvailable = (bool)isAvailableProperty.GetValue(hint);
+                        shouldInclude = isAvailable;
+                    }
+                }
+                if (shouldInclude && hint.evenlySpacedPointsFixedPhysics?.points != null)
+                {
+                    if (isTeleportation)
+                    {
+                        if (currentNormalSegment.Count > 0)
+                        {
+                            Variables.normalPathSegments.Add(currentNormalSegment.ToArray());
+                            currentNormalSegment.Clear();
+                        }
+                        var points = hint.evenlySpacedPointsFixedPhysics.points;
+                        if (points.Length >= 2)
+                        {
+                            if (!hasAddedFirstTeleportationPoint)
+                        {
+                            Variables.teleportationPathPoints.Add(points[0]);
+                            Variables.teleportationPathPoints.Add(points[points.Length - 1]);
+                                hasAddedFirstTeleportationPoint = true;
+                            }
+                            else
+                                Variables.teleportationPathPoints.Add(points[points.Length - 1]);
+                        }
+                    }
+                    else
+                    {
+                        var pointsToAdd = hint.evenlySpacedPointsFixedPhysics.points.Skip(currentNormalSegment.Count == 0 ? 0 : 1);
+                        currentNormalSegment.AddRange(pointsToAdd);
+                    }
+                }
+            }
+            if (currentNormalSegment.Count > 0)
+                Variables.normalPathSegments.Add(currentNormalSegment.ToArray());
+        }
+        public static void CollectPathsByIngredient(IList<FixedHint> pathHints)
+        {
+            if (pathHints == null || pathHints.Count == 0)
+                return;
+            Color[] ingredientColors = { Variables.lineColor[12], Variables.lineColor[13] };
+            int currentIngredientIndex = 0;
+            for (int i = 0; i < pathHints.Count; i++)
+            {
+                var hint = pathHints[i];
+                bool isTeleportation = hint.GetType().Name == "TeleportationFixedHint";
+                bool shouldInclude = true;
+                if (isTeleportation)
+                {
+                    var isAvailableProperty = hint.GetType().GetField("isAvailableForTeleportation");
+                    if (isAvailableProperty != null)
+                    {
+                        var isAvailable = (bool)isAvailableProperty.GetValue(hint);
+                        shouldInclude = isAvailable;
+                    }
+                }
+                if (!shouldInclude || hint.evenlySpacedPointsFixedGraphics?.points == null || hint.evenlySpacedPointsFixedGraphics.points.Length <= 1)
+                    continue;
+                while (Variables.ingredientPathGroups.Count <= currentIngredientIndex)
+                {
+                    var colorIndex = Variables.ingredientPathGroups.Count % ingredientColors.Length;
+                    var newGroup = new Variables.IngredientPathGroup(Variables.ingredientPathGroups.Count, ingredientColors[colorIndex]);
+                    Variables.ingredientPathGroups.Add(newGroup);
+                }
+                var currentGroup = Variables.ingredientPathGroups[currentIngredientIndex];
+                if (isTeleportation)
+                {
+                    var points = hint.evenlySpacedPointsFixedGraphics.points;
+                    var teleportationSegment = new Vector3[] { points[0], points[points.Length - 1] };
+                    currentGroup.teleportationSegments.Add(teleportationSegment);
+                    currentGroup.useDashedLine = true;
+                }
+                else
+                    currentGroup.normalSegments.Add(hint.evenlySpacedPointsFixedGraphics.points);
+                currentIngredientIndex++;
+            }
+        }
         #endregion
     }
 }
+

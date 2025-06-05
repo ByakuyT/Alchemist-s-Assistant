@@ -5,12 +5,15 @@ using PotionCraft.LocalizationSystem;
 using PotionCraft.ManagersSystem;
 using PotionCraft.ManagersSystem.Ingredient;
 using PotionCraft.ManagersSystem.TMP;
+using PotionCraft.ObjectBased.RecipeMap.RecipeMapItem.IndicatorMapItem;
 using PotionCraft.ObjectBased.RecipeMap.RecipeMapItem.SolventDirectionHint;
 using PotionCraft.ObjectBased.RecipeMap.RecipeMapItem.VortexMapItem;
 using PotionCraft.ObjectBased.UIElements.FloatingText;
 using PotionCraft.Settings;
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -55,7 +58,9 @@ namespace AlchAss
             RegisterLoc("angle_ladle", "Ladle Angle: ", "加水夹角: ");
             RegisterLoc("zone", "Zone: ", "显示区域: ");
 
-            RegisterLoc("aline", "Stir indicator ", "搅拌示线");
+            RegisterLoc("aline", "Auxiliary Renderer ", "辅助渲染器");
+            RegisterLoc("apath", "Path Rendering ", "路径渲染");
+            RegisterLoc("acircle", "Rotation Effect ", "旋转影响等级范围");
             RegisterLoc("aend", "Boundary mode ", "末端距离模式");
             RegisterLoc("axoy", "Cartesian mode ", "直角坐标模式");
             RegisterLoc("aopen", "enabled", "已开启");
@@ -168,9 +173,6 @@ namespace AlchAss
                 intersections.Add(lineStart + t2 * d);
             return intersections;
         }
-        #endregion
-
-        #region 漩涡加载
         public static void LoadOrScanVortexData()
         {
             var currentMap = Managers.RecipeMap.currentMap;
@@ -224,7 +226,7 @@ namespace AlchAss
             var currentMap = Managers.RecipeMap.currentMap;
             if (currentMap?.referencesContainer == null)
                 return;
-            var allVortexItems = Object.FindObjectsByType<VortexMapItem>(FindObjectsSortMode.None);
+            var allVortexItems = UnityEngine.Object.FindObjectsByType<VortexMapItem>(FindObjectsSortMode.None);
             var currentMapTransform = currentMap.referencesContainer.transform;
             foreach (var vortex in allVortexItems)
                 if (vortex.transform.IsChildOf(currentMapTransform))
@@ -255,8 +257,7 @@ namespace AlchAss
                 {
                     var newLine = new GameObject("Line") { layer = instance.gameObject.layer };
                     Variables.lineRenderer[i] = newLine.AddComponent<SpriteRenderer>();
-                    SetupSpriteRenderer(Variables.lineRenderer[i], spriteRenderer, Variables.lineColor[i], new Vector2(200f, 0.075f));
-                    Variables.lineRenderer[i].sortingOrder--;
+                    SetupSpriteRenderer(Variables.lineRenderer[i], spriteRenderer, Variables.lineColor[i], new Vector2(200f, Variables.lineWidth.Value));
                 }
             }
             for (int i = 4; i < 10; i++)
@@ -265,8 +266,8 @@ namespace AlchAss
                 {
                     var newNode = new GameObject("Node") { layer = instance.gameObject.layer };
                     Variables.lineRenderer[i] = newNode.AddComponent<SpriteRenderer>();
-                    SetupSpriteRenderer(Variables.lineRenderer[i], spriteRenderer, Variables.lineColor[i], new Vector2(0.2f, 0.2f));
-                    Variables.lineRenderer[i].sortingOrder++;
+                    SetupSpriteRenderer(Variables.lineRenderer[i], spriteRenderer, Variables.lineColor[i], new Vector2(Variables.pointSize.Value, Variables.pointSize.Value));
+                    Variables.lineRenderer[i].sortingOrder += 3;
                 }
             }
         }
@@ -276,6 +277,7 @@ namespace AlchAss
             {
                 Variables.allVortexData.Clear();
                 Variables.currentMapName = null;
+                Variables.hoveredItemName = null;
                 if (Variables.directionLine)
                     LoadOrScanVortexData();
             }
@@ -287,6 +289,11 @@ namespace AlchAss
                     spriteRenderer.enabled = false;
                     for (int i = 0; i < 10; i++)
                         Variables.lineRenderer[i].enabled = true;
+                    Variables.lastPathHintCount = Managers.RecipeMap.path.fixedPathHints.Count;
+                    Variables.targetCircleNeedsUpdate = true;
+                    if (Variables.enablePathRendering)
+                        HideOriginalPaths();
+                    SetPotionTranslucent(true);
                 }
                 var instancePosition = instance.transform.position;
                 var indicatorLocalPosition = Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition;
@@ -319,6 +326,9 @@ namespace AlchAss
                     }
                 }
                 HandleVortexCircleDisplay(instancePosition, indicatorLocalPosition);
+                if (Variables.enablePathRendering)
+                    HandleIngredientPathDisplay(instancePosition, indicatorLocalPosition);
+                HandleTargetEffectCircleDisplay(instancePosition, indicatorLocalPosition);
             }
             else if (Keyboard.current.slashKey.wasPressedThisFrame)
             {
@@ -329,6 +339,14 @@ namespace AlchAss
                     Variables.vortexCircleRenderer[i].enabled = false;
                 for (int i = 0; i < Variables.vortexIntersectionRenderer.Length; i++)
                     Variables.vortexIntersectionRenderer[i].enabled = false;
+                for (int i = 0; i < Variables.pathLineRenderer.Length; i++)
+                    Variables.pathLineRenderer[i].enabled = false;
+                for (int i = 0; i < Variables.targetEffectCircleRenderer.Length; i++)
+                    if (Variables.targetEffectCircleRenderer[i] != null)
+                        Variables.targetEffectCircleRenderer[i].enabled = false;
+                Variables.lastPathHintCount = 0;
+                ShowOriginalPaths();
+                SetPotionTranslucent(false);
             }
         }
         public static void HandleVortexCircleDisplay(Vector3 instancePosition, Vector2 indicatorLocalPosition)
@@ -346,7 +364,7 @@ namespace AlchAss
                     var vortexCircle = new GameObject("VortexCircle") { layer = layer };
                     var renderer = vortexCircle.AddComponent<SpriteRenderer>();
                     renderer.sortingLayerName = Variables.lineRenderer[0].sortingLayerName;
-                    renderer.sortingOrder = Variables.lineRenderer[0].sortingOrder - 1;
+                    renderer.sortingOrder = Variables.lineRenderer[0].sortingOrder + 1;
                     renderer.color = Variables.lineColor[11];
                     Variables.vortexCircleRenderer[i] = renderer;
                     renderer.enabled = false;
@@ -357,20 +375,172 @@ namespace AlchAss
                 var renderer = Variables.vortexCircleRenderer[i];
                 if (i < Variables.allVortexData.Count)
                 {
-                    var vortexData = Variables.allVortexData[i];
-                    renderer.enabled = true;
-                    renderer.transform.position = new Vector3(
-                        vortexData.center.x,
-                        vortexData.center.y + instancePosition.y - indicatorLocalPosition.y,
-                        instancePosition.z);
-                    renderer.sprite = GetVortexSpriteByRadius(vortexData.radius);
-                    renderer.transform.localScale = Vector3.one;
-                    renderer.color = (i == Variables.selectedVortexIndex) ? Variables.lineColor[12] : Variables.lineColor[11];
+                    if (i == Variables.selectedVortexIndex)
+                    {
+                        var vortexData = Variables.allVortexData[i];
+                        renderer.enabled = true;
+                        renderer.transform.position = new Vector3(
+                            vortexData.center.x,
+                            vortexData.center.y + instancePosition.y - indicatorLocalPosition.y,
+                            instancePosition.z);
+                        renderer.sprite = GetVortexSpriteByRadius(vortexData.radius);
+                        renderer.transform.localScale = Vector3.one;
+                        renderer.color = Variables.lineColor[11];
+                    }
+                    else
+                        renderer.enabled = false;
                 }
                 else
                     renderer.enabled = false;
             }
             DisplayVortexIntersectionPoints(instancePosition, indicatorLocalPosition);
+        }
+        public static void HandleIngredientPathDisplay(Vector3 instancePosition, Vector2 indicatorLocalPosition)
+        {
+            var currentPathHintCount = Managers.RecipeMap.path.fixedPathHints.Count;
+            if (currentPathHintCount != Variables.lastPathHintCount)
+            {
+                if (Variables.enablePathRendering)
+                    HideOriginalPaths();
+                Variables.lastPathHintCount = currentPathHintCount;
+            }
+            if (!Variables.enablePathRendering)
+            {
+                for (int i = 0; i < Variables.pathLineRenderer.Length; i++)
+                    Variables.pathLineRenderer[i].enabled = false;
+                return;
+            }
+            if (Variables.ingredientPathGroups.Count == 0)
+            {
+                for (int i = 0; i < Variables.pathLineRenderer.Length; i++)
+                    Variables.pathLineRenderer[i].enabled = false;
+                return;
+            }
+            int totalLineSegments = 0;
+            foreach (var group in Variables.ingredientPathGroups)
+            {
+                totalLineSegments += group.normalSegments.Sum(segment => segment.Length - 1);
+                totalLineSegments += group.teleportationSegments.Count;
+            }
+            if (Variables.pathLineRenderer.Length < totalLineSegments)
+            {
+                var oldRenderers = Variables.pathLineRenderer;
+                Variables.pathLineRenderer = new SpriteRenderer[totalLineSegments];
+                Array.Copy(oldRenderers, Variables.pathLineRenderer, oldRenderers.Length);
+                for (int i = oldRenderers.Length; i < totalLineSegments; i++)
+                {
+                    var layer = Variables.solventDirectionHint?.gameObject.layer ?? 0;
+                    var pathLine = new GameObject("IngredientPathLine") { layer = layer };
+                    var renderer = pathLine.AddComponent<SpriteRenderer>();
+                    SetupSpriteRenderer(renderer, Variables.lineRenderer[0], Color.white, new Vector2(1f, Variables.lineWidth.Value));
+                    renderer.sortingOrder = Variables.lineRenderer[0].sortingOrder + 1;
+                    Variables.pathLineRenderer[i] = renderer;
+                    renderer.enabled = false;
+                }
+            }
+            int rendererIndex = 0;
+            var mapTransform = Managers.RecipeMap.currentMap.referencesContainer.transform;
+            var pathTransform = Managers.RecipeMap.path.thisTransform;
+            foreach (var group in Variables.ingredientPathGroups)
+            {
+                foreach (var segment in group.normalSegments)
+                    for (int pointIdx = 0; pointIdx < segment.Length - 1 && rendererIndex < Variables.pathLineRenderer.Length; pointIdx++)
+                    {
+                        var renderer = Variables.pathLineRenderer[rendererIndex];
+                        var startPoint = mapTransform.InverseTransformPoint(pathTransform.TransformPoint(segment[pointIdx]));
+                        var endPoint = mapTransform.InverseTransformPoint(pathTransform.TransformPoint(segment[pointIdx + 1]));
+                        renderer.enabled = true;
+                        renderer.color = group.pathColor;
+                        var midPoint = (startPoint + endPoint) * 0.5f;
+                        var direction = endPoint - startPoint;
+                        renderer.transform.position = new Vector3(
+                            midPoint.x,
+                            midPoint.y + instancePosition.y - indicatorLocalPosition.y,
+                            instancePosition.z);
+                        renderer.transform.localEulerAngles = new Vector3(0f, 0f, Vector2.SignedAngle(Vector2.right, direction));
+                        renderer.size = new Vector2(direction.magnitude, Variables.lineWidth.Value);
+                        SetupSolidLine(renderer);
+                        rendererIndex++;
+                    }
+                foreach (var segment in group.teleportationSegments)
+                    if (segment.Length >= 2 && rendererIndex < Variables.pathLineRenderer.Length)
+                    {
+                        var renderer = Variables.pathLineRenderer[rendererIndex];
+                        var startPoint = mapTransform.InverseTransformPoint(pathTransform.TransformPoint(segment[0]));
+                        var endPoint = mapTransform.InverseTransformPoint(pathTransform.TransformPoint(segment[1]));
+                        renderer.enabled = true;
+                        renderer.color = group.pathColor;
+                        var midPoint = (startPoint + endPoint) * 0.5f;
+                        var direction = endPoint - startPoint;
+                        renderer.transform.position = new Vector3(
+                            midPoint.x,
+                            midPoint.y + instancePosition.y - indicatorLocalPosition.y,
+                            instancePosition.z);
+                        renderer.transform.localEulerAngles = new Vector3(0f, 0f, Vector2.SignedAngle(Vector2.right, direction));
+                        renderer.size = new Vector2(direction.magnitude, Variables.lineWidth.Value);
+                        SetupDashedLine(renderer, direction.magnitude);
+                        rendererIndex++;
+                    }
+            }
+            for (int i = rendererIndex; i < Variables.pathLineRenderer.Length; i++)
+                Variables.pathLineRenderer[i].enabled = false;
+        }
+        public static void HandleTargetEffectCircleDisplay(Vector3 instancePosition, Vector2 indicatorLocalPosition)
+        {
+            Variables.SharedCache.UpdateCache();
+            if (!Variables.SharedCache.isValid)
+            {
+                for (int i = 0; i < Variables.targetEffectCircleRenderer.Length; i++)
+                    if (Variables.targetEffectCircleRenderer[i] != null)
+                        Variables.targetEffectCircleRenderer[i].enabled = false;
+                return;
+            }
+            if (!Variables.targetCircleNeedsUpdate)
+                return;
+            float[] adjustedRadiusValues = new float[3];
+            if (Variables.useAngleAdjustedRadius)
+            {
+                var angleDelta = Mathf.Abs(Mathf.DeltaAngle(Managers.RecipeMap.indicatorRotation.Value, Variables.SharedCache.targetEffect.transform.localEulerAngles.z));
+                adjustedRadiusValues[0] = 1.53f;
+                adjustedRadiusValues[1] = 1f / 3f - angleDelta / 216f;
+                adjustedRadiusValues[2] = 1f / 18f - angleDelta / 216f;
+            }
+            else
+            {
+                adjustedRadiusValues[0] = 1.53f;
+                adjustedRadiusValues[1] = 1f / 3f;
+                adjustedRadiusValues[2] = 1f / 18f;
+            }
+            Variables.targetCircleNeedsUpdate = false;
+            for (int i = 0; i < Variables.targetEffectCircleRenderer.Length; i++)
+            {
+                if (Variables.targetEffectCircleRenderer[i] == null)
+                {
+                    var layer = Variables.solventDirectionHint?.gameObject.layer ?? 0;
+                    var targetCircle = new GameObject($"TargetEffectCircle_L{3 - i}") { layer = layer };
+                    var renderer = targetCircle.AddComponent<SpriteRenderer>();
+                    renderer.sortingLayerName = Variables.lineRenderer[0].sortingLayerName;
+                    renderer.sortingOrder = Variables.lineRenderer[0].sortingOrder + 1;
+                    renderer.color = Variables.lineColor[11];
+                    Variables.targetEffectCircleRenderer[i] = renderer;
+                    renderer.enabled = false;
+                }
+                var targetRenderer = Variables.targetEffectCircleRenderer[i];
+                if (adjustedRadiusValues[i] < 0f)
+                {
+                    targetRenderer.enabled = false;
+                    continue;
+                }
+                targetRenderer.enabled = true;
+                targetRenderer.transform.position = new Vector3(
+                    Variables.SharedCache.targetPosition.x,
+                    Variables.SharedCache.targetPosition.y + instancePosition.y - indicatorLocalPosition.y,
+                    instancePosition.z);
+                Variables.targetEffectCircleSprite[i] = CreateCircleSpriteForRadius(adjustedRadiusValues[i]);
+                targetRenderer.sprite = Variables.targetEffectCircleSprite[i];
+                targetRenderer.transform.localScale = Vector3.one;
+                targetRenderer.color = Variables.lineColor[11];
+            }
         }
         public static void DisplayVortexIntersectionPoints(Vector3 instancePosition, Vector2 indicatorLocalPosition)
         {
@@ -386,7 +556,8 @@ namespace AlchAss
                     var layer = Variables.solventDirectionHint?.gameObject.layer ?? 0;
                     var intersectionNode = new GameObject("VortexIntersection") { layer = layer };
                     var renderer = intersectionNode.AddComponent<SpriteRenderer>();
-                    SetupSpriteRenderer(renderer, Variables.lineRenderer[3], Variables.lineColor[10], new Vector2(0.2f, 0.2f));
+                    SetupSpriteRenderer(renderer, Variables.lineRenderer[3], Variables.lineColor[10], new Vector2(Variables.pointSize.Value, Variables.pointSize.Value));
+                    renderer.sortingOrder = Variables.lineRenderer[3].sortingOrder + 2;
                     renderer.transform.localEulerAngles = Vector3.zero;
                     Variables.vortexIntersectionRenderer[i] = renderer;
                     renderer.enabled = false;
@@ -433,12 +604,12 @@ namespace AlchAss
         {
             float diameter = radius * 2f;
             int textureSize = 500;
-            float fixedLineThickness = 0.075f;
+            float lineThickness = Variables.lineWidth.Value;
             Texture2D circleTexture = new(textureSize, textureSize);
             Color[] pixels = new Color[textureSize * textureSize];
             Vector2 center = new(textureSize * 0.5f, textureSize * 0.5f);
             float outerRadius = textureSize * 0.5f;
-            float lineThicknessInPixels = (fixedLineThickness / diameter) * textureSize;
+            float lineThicknessInPixels = (lineThickness / diameter) * textureSize;
             float innerRadius = outerRadius - lineThicknessInPixels;
             for (int y = 0; y < textureSize; y++)
                 for (int x = 0; x < textureSize; x++)
@@ -464,6 +635,111 @@ namespace AlchAss
             float pixelsPerUnit = textureSize / diameter;
             return Sprite.Create(circleTexture, new Rect(0, 0, textureSize, textureSize), new Vector2(0.5f, 0.5f), pixelsPerUnit);
         }
+        public static void HideOriginalPaths()
+        {
+            var pathHints = Managers.RecipeMap.path.fixedPathHints;
+            foreach (var hint in pathHints)
+                if (hint != null)
+                {
+                    bool isTeleportation = hint.GetType().Name == "TeleportationFixedHint";
+                    if (!isTeleportation)
+                    {
+                        var allRenderers = hint.GetComponentsInChildren<Renderer>(true);
+                        foreach (var renderer in allRenderers)
+                            renderer.enabled = false;
+                        hint.gameObject.SetActive(false);
+                    }
+                    else
+                    {
+                        var allRenderers = hint.GetComponentsInChildren<Renderer>(true);
+                        foreach (var renderer in allRenderers)
+                            renderer.enabled = false;
+                    }
+                }
+            if (Managers.RecipeMap.path.currentPathHint != null)
+            {
+                bool isCurrentTeleportation = Managers.RecipeMap.path.currentPathHint.GetType().Name == "TeleportationFixedHint";
+                if (!isCurrentTeleportation)
+                {
+                    var allCurrentRenderers = Managers.RecipeMap.path.currentPathHint.GetComponentsInChildren<Renderer>(true);
+                    foreach (var renderer in allCurrentRenderers)
+                        renderer.enabled = false;
+                    Managers.RecipeMap.path.currentPathHint.gameObject.SetActive(false);
+                }
+                else
+                {
+                    var allCurrentRenderers = Managers.RecipeMap.path.currentPathHint.GetComponentsInChildren<Renderer>(true);
+                    foreach (var renderer in allCurrentRenderers)
+                        renderer.enabled = false;
+                }
+            }
+        }
+        public static void ShowOriginalPaths()
+        {
+            var pathHints = Managers.RecipeMap.path.fixedPathHints;
+            foreach (var hint in pathHints)
+                if (hint != null)
+                {
+                    hint.gameObject.SetActive(true);
+                    var allRenderers = hint.GetComponentsInChildren<Renderer>(true);
+                    foreach (var renderer in allRenderers)
+                        renderer.enabled = true;
+                }
+            if (Managers.RecipeMap.path.currentPathHint != null)
+            {
+                Managers.RecipeMap.path.currentPathHint.gameObject.SetActive(true);
+                var allCurrentRenderers = Managers.RecipeMap.path.currentPathHint.GetComponentsInChildren<Renderer>(true);
+                foreach (var renderer in allCurrentRenderers)
+                    renderer.enabled = true;
+            }
+            if (Managers.RecipeMap.path.fixedPathHintsContainer != null)
+            {
+                var containerRenderers = Managers.RecipeMap.path.fixedPathHintsContainer.GetComponentsInChildren<Renderer>(true);
+                foreach (var renderer in containerRenderers)
+                    renderer.enabled = true;
+            }
+            if (Managers.RecipeMap.path.pathHintsContainer != null)
+            {
+                var pathContainerRenderers = Managers.RecipeMap.path.pathHintsContainer.GetComponentsInChildren<Renderer>(true);
+                foreach (var renderer in pathContainerRenderers)
+                    renderer.enabled = true;
+            }
+        }
+        public static void SetPotionTranslucent(bool translucent)
+        {
+            var indicatorMapItems = UnityEngine.Object.FindObjectsByType<IndicatorMapItem>(FindObjectsSortMode.None);
+            foreach (var indicatorMapItem in indicatorMapItems)
+            {
+                if (translucent)
+                {
+                    indicatorMapItem.backgroundSpriteRenderer.enabled = false;
+                    var liquidAnimator = Traverse.Create(indicatorMapItem).Field("liquidColorChangeAnimator").GetValue();
+                    if (liquidAnimator != null)
+                    {
+                        var upperContainer = Traverse.Create(liquidAnimator).Field("upperContainer").GetValue();
+                        var lowerContainer = Traverse.Create(liquidAnimator).Field("lowerContainer").GetValue();
+                        if (upperContainer != null)
+                            Traverse.Create(upperContainer).Method("SetAlpha", 0f).GetValue();
+                        if (lowerContainer != null)
+                            Traverse.Create(lowerContainer).Method("SetAlpha", 0f).GetValue();
+                    }
+                }
+                else
+                {
+                    indicatorMapItem.backgroundSpriteRenderer.enabled = true;
+                    var liquidAnimator = Traverse.Create(indicatorMapItem).Field("liquidColorChangeAnimator").GetValue();
+                    if (liquidAnimator != null)
+                    {
+                        var upperContainer = Traverse.Create(liquidAnimator).Field("upperContainer").GetValue();
+                        var lowerContainer = Traverse.Create(liquidAnimator).Field("lowerContainer").GetValue();
+                        if (upperContainer != null)
+                            Traverse.Create(upperContainer).Method("SetAlpha", 1f).GetValue();
+                        if (lowerContainer != null)
+                            Traverse.Create(lowerContainer).Method("SetAlpha", 1f).GetValue();
+                    }
+                }
+            }
+        }
         public static void SetupSpriteRenderer(SpriteRenderer renderer, SpriteRenderer referenceRenderer, Color color, Vector2 size)
         {
             renderer.sortingLayerName = referenceRenderer.sortingLayerName;
@@ -472,6 +748,35 @@ namespace AlchAss
             renderer.sprite = Sprite.Create(Variables.texture, new Rect(0, 0, 1, 1), new Vector2(0.5f, 0.5f), 1.0f, 0, SpriteMeshType.FullRect);
             renderer.color = color;
             renderer.size = size;
+        }
+        public static void SetupSolidLine(SpriteRenderer renderer)
+        {
+            if (renderer.sprite == null || renderer.sprite.texture != Variables.texture)
+                renderer.sprite = Sprite.Create(Variables.texture, new Rect(0, 0, 1, 1), new Vector2(0.5f, 0.5f), 1.0f, 0, SpriteMeshType.FullRect);
+            renderer.drawMode = SpriteDrawMode.Tiled;
+        }
+        public static void SetupDashedLine(SpriteRenderer renderer, float lineLength)
+        {
+            if (Variables.dashedTexture == null)
+                CreateDashedTexture();
+            renderer.sprite = Variables.dashedSprite;
+            renderer.drawMode = SpriteDrawMode.Tiled;
+            var tilingX = lineLength / 0.3f;
+            renderer.size = new Vector2(lineLength, Variables.lineWidth.Value);
+        }
+        public static void CreateDashedTexture()
+        {
+            int textureWidth = 12;
+            int textureHeight = 1;
+            Variables.dashedTexture = new Texture2D(textureWidth, textureHeight);
+            Color[] pixels = new Color[textureWidth * textureHeight];
+            for (int x = 0; x < textureWidth; x++)
+                pixels[x] = x < 6 ? Color.white : Color.clear;
+            Variables.dashedTexture.SetPixels(pixels);
+            Variables.dashedTexture.Apply();
+            Variables.dashedTexture.filterMode = FilterMode.Point;
+            Variables.dashedTexture.wrapMode = TextureWrapMode.Repeat;
+            Variables.dashedSprite = Sprite.Create(Variables.dashedTexture, new Rect(0, 0, textureWidth, textureHeight), new Vector2(0.5f, 0.5f), textureWidth / 0.3f, 0, SpriteMeshType.FullRect);
         }
         #endregion
     }
