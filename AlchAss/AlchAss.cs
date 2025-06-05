@@ -17,7 +17,7 @@ using UnityEngine.InputSystem;
 
 namespace AlchAss
 {
-    [BepInPlugin("AlchAss", "Alchemist's Assistant", "4.0.1")]
+    [BepInPlugin("AlchAss", "Alchemist's Assistant", "4.1.0")]
     public class AlchAss : BaseUnityPlugin
     {
         #region Unity - 生命周期
@@ -48,7 +48,7 @@ namespace AlchAss
             Variables.windowScale = Config.Bind("信息窗口", "窗口缩放", 0.8f,
                 "信息窗口的显示大小比例 | Display size ratio of info windows");
             Variables.enableDirectionLine = Config.Bind("辅助渲染", "允许辅助示线", true,
-                "按/键显示方向线和区域标记 | Press / to show direction lines and zone markers");
+                "按/键显示方向线、区域标记和漩涡圆形 | Press / to show direction lines, zone markers and vortex circles");
 
             if (!Variables.enableTargetStatus.Value)
                 Variables.enableDeviationStatus.Value = Variables.enablePathStatus.Value = Variables.enableLadleStatus.Value = false;
@@ -68,6 +68,8 @@ namespace AlchAss
                 Functions.PositionMode();
             if (Variables.enableZoneStatus.Value)
                 Functions.ZoneMode();
+            if (Variables.enableDirectionLine.Value)
+                Functions.VortexSelection();
         }
         #endregion
 

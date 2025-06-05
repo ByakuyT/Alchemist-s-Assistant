@@ -67,11 +67,18 @@ namespace AlchAss
         public static Room lab = null;
         public static Texture2D texture = null;
         public static SolventDirectionHint solventDirectionHint = null;
-        public static float[] lineDirection = new float[3];
+        public static float[] lineDirection = new float[4];
         public static float[] closestPointDis = [float.MaxValue, float.MaxValue];
         public static object[,] zonePoints = new object[4, 4];
+        public static Sprite[] circleSprite = new Sprite[3];
         public static Vector2?[] closestPoints = new Vector2?[2];
-        public static SpriteRenderer[] lineRenderer = new SpriteRenderer[9];
+        public static SpriteRenderer[] lineRenderer = new SpriteRenderer[10];
+        public static SpriteRenderer[] vortexCircleRenderer = [];
+        public static SpriteRenderer[] vortexIntersectionRenderer = [];
+        public static List<VortexData> allVortexData = [];
+        public static List<Vector2> vortexIntersectionPoints = [];
+        public static string currentMapName = null;
+        public static int selectedVortexIndex = 0;
         #endregion
 
         #region 只读数据
@@ -86,29 +93,35 @@ namespace AlchAss
 搅拌 / 加水方向示线: /
 最近 / 搅拌末端距离: \
 直角 / 极坐标: 空格
+上一个 / 下一个漩涡: , / .
 漩涡制动: '
 最近点制动: ]
 接近点制动: [
-区域切换: .";
+区域切换: ;";
         public static readonly string englishTooltip = @"Slowdown/Batch: Z/X
 Set Values/Target: Right Click
 Stir/Ladle Lines: /
 Proximity/Boundary: \
 Cartesian/Polar: Space
+Prev/Next Vortex: , / .
 Vortex Control: '
 Closest Control: ]
 Proximity Control: [
-Zone Switch: .";
+Zone Switch: ;";
         public static readonly Color[] lineColor = [
-            new(0.8f, 0.1f, 0.1f, 0.8f),      // 红色 - 搅拌方向线
-            new(0.1f, 0.8f, 0.1f, 0.8f),      // 绿色 - 加水方向线
-            new(0.1f, 0.1f, 0.8f, 0.8f),      // 蓝色 - 目标方向线
-            new(0.3f, 0.3f, 0.3f, 0.9f),      // 深灰 - 沼泽区域点
-            new(0.6f, 0.0f, 0.0f, 0.9f),      // 深红 - 骷髅区域点  
-            new(0.8f, 0.2f, 1.0f, 0.9f),      // 紫色 - 碎骨区域点
-            new(0.2f, 1.0f, 0.2f, 0.9f),      // 亮绿 - 治疗区域点
-            new(1.0f, 0.2f, 0.8f, 1.0f),      // 品红 - 路径最近点
-            new(0.0f, 1.0f, 1.0f, 1.0f)       // 青色 - 加水最近点  
+            new(0.8f, 0.1f, 0.1f, 0.7f),    // 红 - 搅拌方向线
+            new(0.1f, 0.1f, 0.8f, 0.7f),    // 蓝 - 加水方向线
+            new(0.1f, 0.8f, 0.1f, 0.7f),    // 绿 - 目标方向线
+            new(0.4f, 0.4f, 0.1f, 0.7f),    // 橙 - 漩涡方向线
+            new(0.6f, 0.4f, 0.2f, 0.9f),    // 棕 - 沼泽区域点
+            new(0.8f, 0.2f, 0.2f, 0.9f),    // 红 - 骷髅区域点
+            new(0.4f, 0.2f, 0.6f, 0.9f),    // 紫 - 碎骨区域点
+            new(0.2f, 0.8f, 0.2f, 0.9f),    // 绿 - 治疗区域点
+            new(0.8f, 0.3f, 0.8f, 0.9f),    // 粉 - 路径最近点
+            new(0.1f, 0.9f, 0.9f, 0.9f),    // 青 - 加水最近点
+            new(0.1f, 0.6f, 0.6f, 0.9f),    // 青 - 漩涡交会点
+            new(0.5f, 0.1f, 0.5f, 0.7f),    // 紫 - 漩涡范围圈
+            new(0.9f, 0.1f, 0.1f, 0.7f)     // 红 - 选中的漩涡
         ];
         #endregion
 
@@ -133,6 +146,11 @@ Zone Switch: .";
                     targetRotation = Mathf.DeltaAngle(targetEffect.transform.localEulerAngles.z, 0f) / 9f * 25f;
                 }
             }
+        }
+        public class VortexData(Vector2 center, float radius)
+        {
+            public Vector2 center = center;
+            public float radius = radius;
         }
         #endregion
     }

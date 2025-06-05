@@ -19,34 +19,34 @@ namespace AlchAssEx
     [BepInDependency("AlchAss", BepInDependency.DependencyFlags.HardDependency)]
     public class AlchAssEx : BaseUnityPlugin
     {
-        #region Unity - ç”Ÿå‘½å‘¨æœŸ
+        #region Unity - ÉúÃüÖÜÆÚ
         public void Awake()
         {
-            Variables.QuantiHeating = Config.Bind("æ“ä½œæ§åˆ¶", "å…è®¸å®šé‡åŠ çƒ­", true,
-                "å³é”®é£ç®±è®¾ç½®çƒ­é‡å€¼ | Right-click bellows to set heat value");
-            Variables.QuantiGrinding = Config.Bind("æ“ä½œæ§åˆ¶", "å…è®¸å®šé‡ç ”ç£¨", true,
-                "å³é”®ç ”æµè®¾ç½®ç ”ç£¨åº¦ | Right-click pestle to set grinding level");
-            Variables.enableVortexEdgeControl = Config.Bind("æ“ä½œæ§åˆ¶", "å…è®¸æ¼©æ¶¡åˆ¶åŠ¨", true,
-                "æŒ‰'é”®å¯ç”¨æ¼©æ¶¡è¾¹ç¼˜å‡é€Ÿ | Press ' to enable vortex edge slowdown");
-            Variables.enableClosestPointControl = Config.Bind("æ“ä½œæ§åˆ¶", "å…è®¸æœ€è¿‘ç‚¹åˆ¶åŠ¨", true,
-                "æŒ‰]é”®å¯ç”¨æœ€è¿‘ç‚¹å‡é€Ÿ | Press ] to enable closest point slowdown");
-            Variables.enableTargetProximityControl = Config.Bind("æ“ä½œæ§åˆ¶", "å…è®¸ç›®æ ‡æ¥è¿‘ç‚¹åˆ¶åŠ¨", true,
-                "æŒ‰[é”®å¯ç”¨ç›®æ ‡æ¥è¿‘ç‚¹å‡é€Ÿ | Press [ to enable target proximity slowdown");
-            Variables.enableGrindSpeed = Config.Bind("æ“ä½œæ§åˆ¶", "å…è®¸ç ”ç£¨å‡é€Ÿ", true,
-                "æŒ‰Z/Xé”®å‡é€Ÿç ”ç£¨ | Press Z/X to slow down grinding");
-            Variables.enableStirSpeed = Config.Bind("æ“ä½œæ§åˆ¶", "å…è®¸æ…æ‹Œå‡é€Ÿ", true,
-                "æŒ‰Z/Xé”®å‡é€Ÿæ…æ‹Œ | Press Z/X to slow down stirring");
-            Variables.enableLadleSpeed = Config.Bind("æ“ä½œæ§åˆ¶", "å…è®¸åŠ æ°´å‡é€Ÿ", true,
-                "æŒ‰Z/Xé”®å‡é€ŸåŠ æ°´ | Press Z/X to slow down ladling");
-            Variables.enableHeatSpeed = Config.Bind("æ“ä½œæ§åˆ¶", "å…è®¸åŠ çƒ­å‡é€Ÿ", true,
-                "æŒ‰Z/Xé”®å‡é€ŸåŠ çƒ­ | Press Z/X to slow down heating");
-            Variables.enableMassBrewing = Config.Bind("æ“ä½œæ§åˆ¶", "å…è®¸å¤§æ‰¹ç‚¼è¯", true,
-                "æŒ‰Z/Xé”®æ‰¹é‡åˆ¶ä½œè¯å‰‚ | Press Z/X to batch brew potions");
+            Variables.QuantiHeating = Config.Bind("²Ù×÷¿ØÖÆ", "ÔÊĞí¶¨Á¿¼ÓÈÈ", true,
+                "ÓÒ¼ü·çÏäÉèÖÃÈÈÁ¿Öµ | Right-click bellows to set heat value");
+            Variables.QuantiGrinding = Config.Bind("²Ù×÷¿ØÖÆ", "ÔÊĞí¶¨Á¿ÑĞÄ¥", true,
+                "ÓÒ¼üÑĞèÆÉèÖÃÑĞÄ¥¶È | Right-click pestle to set grinding level");
+            Variables.enableVortexEdgeControl = Config.Bind("²Ù×÷¿ØÖÆ", "ÔÊĞíäöÎĞÖÆ¶¯", true,
+                "°´'¼üÆôÓÃäöÎĞ±ßÔµ¼õËÙ | Press ' to enable vortex edge slowdown");
+            Variables.enableClosestPointControl = Config.Bind("²Ù×÷¿ØÖÆ", "ÔÊĞí×î½üµãÖÆ¶¯", true,
+                "°´]¼üÆôÓÃ×î½üµã¼õËÙ | Press ] to enable closest point slowdown");
+            Variables.enableTargetProximityControl = Config.Bind("²Ù×÷¿ØÖÆ", "ÔÊĞíÄ¿±ê½Ó½üµãÖÆ¶¯", true,
+                "°´[¼üÆôÓÃÄ¿±ê½Ó½üµã¼õËÙ | Press [ to enable target proximity slowdown");
+            Variables.enableGrindSpeed = Config.Bind("²Ù×÷¿ØÖÆ", "ÔÊĞíÑĞÄ¥¼õËÙ", true,
+                "°´Z/X¼ü¼õËÙÑĞÄ¥ | Press Z/X to slow down grinding");
+            Variables.enableStirSpeed = Config.Bind("²Ù×÷¿ØÖÆ", "ÔÊĞí½Á°è¼õËÙ", true,
+                "°´Z/X¼ü¼õËÙ½Á°è | Press Z/X to slow down stirring");
+            Variables.enableLadleSpeed = Config.Bind("²Ù×÷¿ØÖÆ", "ÔÊĞí¼ÓË®¼õËÙ", true,
+                "°´Z/X¼ü¼õËÙ¼ÓË® | Press Z/X to slow down ladling");
+            Variables.enableHeatSpeed = Config.Bind("²Ù×÷¿ØÖÆ", "ÔÊĞí¼ÓÈÈ¼õËÙ", true,
+                "°´Z/X¼ü¼õËÙ¼ÓÈÈ | Press Z/X to slow down heating");
+            Variables.enableMassBrewing = Config.Bind("²Ù×÷¿ØÖÆ", "ÔÊĞí´óÅúÁ¶Ò©", true,
+                "°´Z/X¼üÅúÁ¿ÖÆ×÷Ò©¼Á | Press Z/X to batch brew potions");
 
             Depends.UpdateFunctionsConfigCache();
             LocalizationManager.OnInitialize.AddListener(Depends.SetModLocalization);
             Harmony.CreateAndPatchAll(typeof(AlchAssEx));
-            Logger.LogInfo("Alchemist's Assistant Extension åŠ è½½å®Œæˆï¼");
+            Logger.LogInfo("Alchemist's Assistant Extension ¼ÓÔØÍê³É£¡");
         }
         public void Update()
         {
@@ -65,7 +65,7 @@ namespace AlchAssEx
         }
         #endregion
 
-        #region Harmony Patch - æ…¢é€Ÿæ“ä½œ
+        #region Harmony Patch - ÂıËÙ²Ù×÷
         [HarmonyPrefix]
         [HarmonyPatch(typeof(SubstanceGrinding), "TryToGrind")]
         public static void GrindSlowDown(ref float pestleLinearSpeed, ref float pestleAngularSpeed)
@@ -163,7 +163,7 @@ namespace AlchAssEx
         }
         #endregion
 
-        #region Harmony Patch - æ‰¹é‡è°ƒåˆ¶
+        #region Harmony Patch - ÅúÁ¿µ÷ÖÆ
         [HarmonyPrefix]
         [HarmonyPatch(typeof(RecipeBookRecipeBrewController), "BrewRecipe")]
         public static void MassBrewing(ref int count, IRecipeBookPageContent recipePageContent)
@@ -182,7 +182,7 @@ namespace AlchAssEx
         }
         #endregion
 
-        #region Harmony Patch - åˆ¶åŠ¨åŠŸèƒ½
+        #region Harmony Patch - ÖÆ¶¯¹¦ÄÜ
         [HarmonyPostfix]
         [HarmonyPatch(typeof(IndicatorMapItem), "UpdateByCollection")]
         public static void PotionStatus()
@@ -212,7 +212,7 @@ namespace AlchAssEx
         }
         #endregion
 
-        #region Harmony Patch - å·¥å…·æ–¹æ³•
+        #region Harmony Patch - ¹¤¾ß·½·¨
         [HarmonyPostfix]
         [HarmonyPatch(typeof(SaveLoadManager), "LoadProgressState")]
         public static void ResetWhenLoading()

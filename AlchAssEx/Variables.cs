@@ -4,7 +4,7 @@ namespace AlchAssEx
 {
     public static class Variables
     {
-        #region é…ç½®é€‰é¡¹
+        #region ÅäÖÃÑ¡Ïî
         public static ConfigEntry<bool> QuantiHeating;
         public static ConfigEntry<bool> QuantiGrinding;
         public static ConfigEntry<bool> enableVortexEdgeControl;
@@ -17,7 +17,7 @@ namespace AlchAssEx
         public static ConfigEntry<bool> enableMassBrewing;
         #endregion
 
-        #region çŠ¶æ€å˜é‡
+        #region ×´Ì¬±äÁ¿
         public static bool resetWhenLoading = false;
         public static bool vortexEdgeControl = false;
         public static bool closestPointControl = false;
@@ -28,11 +28,11 @@ namespace AlchAssEx
         public static float[] targetProximitySpeed = [float.MaxValue, float.MaxValue, float.MaxValue];
         #endregion
 
-        #region åªè¯»æ•°æ®
+        #region Ö»¶ÁÊı¾İ
         public static readonly string functionPath = "AlchAssFunctionsConfig.txt";
         #endregion
 
-        #region ç¼“å­˜æ•°æ®
+        #region »º´æÊı¾İ
         public static float _cachedHeatValue = 100f;
         public static float _cachedGrindValue = 100f;
         public static float _cachedControlAreaThreshold = 0.05f;

@@ -8,6 +8,7 @@ using System;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using System.Collections.Generic;
 
 namespace AlchAss
 {
@@ -32,17 +33,52 @@ namespace AlchAss
         }
         public static void ZoneMode()
         {
-            if (Keyboard.current.periodKey.wasPressedThisFrame)
+            if (Keyboard.current.semicolonKey.wasPressedThisFrame)
             {
                 Variables.zoneMode = (Variables.zoneMode + 1) % 4;
                 Depends.SpawnMessageText(LocalizationManager.GetText("azone") + LocalizationManager.GetText(Variables.zoneModeName[Variables.zoneMode]));
             }
+        }
+        public static void VortexSelection()
+        {
+            var nextPressed = Keyboard.current.periodKey.wasPressedThisFrame;
+            var prevPressed = Keyboard.current.commaKey.wasPressedThisFrame;
+            if (!nextPressed && !prevPressed)
+                return;
+            if (Variables.allVortexData.Count == 0)
+                return;
+            Variables.VortexData currentSelectedVortex = null;
+            if (Variables.selectedVortexIndex >= 0 && Variables.selectedVortexIndex < Variables.allVortexData.Count)
+                currentSelectedVortex = Variables.allVortexData[Variables.selectedVortexIndex];
+            Vector2 indicatorPosition = Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition;
+            Variables.allVortexData = [.. Variables.allVortexData.OrderBy(v => Vector2.Distance(v.center, indicatorPosition))];
+            if (currentSelectedVortex != null)
+                for (var i = 0; i < Variables.allVortexData.Count; i++)
+                    if (Vector2.Distance(Variables.allVortexData[i].center, currentSelectedVortex.center) < 0.01f)
+                    {
+                        Variables.selectedVortexIndex = i;
+                        break;
+                    }
+            if (nextPressed)
+                Variables.selectedVortexIndex = Math.Min(Variables.selectedVortexIndex + 1, Variables.allVortexData.Count - 1);
+            else
+                Variables.selectedVortexIndex = Math.Max(Variables.selectedVortexIndex - 1, 0);
         }
         public static void DirectionLine()
         {
             if (Keyboard.current.slashKey.wasPressedThisFrame)
             {
                 Variables.directionLine = !Variables.directionLine;
+                if (Variables.directionLine)
+                {
+                    Depends.LoadOrScanVortexData();
+                    if (Variables.allVortexData.Count > 0)
+                    {
+                        Vector2 indicatorPosition = Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition;
+                        Variables.allVortexData = [.. Variables.allVortexData.OrderBy(v => Vector2.Distance(v.center, indicatorPosition))];
+                        Variables.selectedVortexIndex = 0;
+                    }
+                }
                 Depends.SpawnMessageText(LocalizationManager.GetText("aline") + LocalizationManager.GetText(Variables.directionLine ? "aopen" : "aclose"));
                 if (Variables.solventDirectionHint != null)
                     Traverse.Create(Variables.solventDirectionHint).Method("OnPositionOnMapChanged", Array.Empty<object>()).GetValue();
@@ -72,16 +108,29 @@ namespace AlchAss
         }
         public static string VortexCalc()
         {
-            if (Managers.RecipeMap.CurrentVortexMapItem == null)
+            Vector2 vortexCenter;
+            float vortexRadius;
+            float maxDistance;
+            Vector2 indicatorPosition = Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition;
+            if (Managers.RecipeMap.CurrentVortexMapItem != null)
+            {
+                vortexCenter = Managers.RecipeMap.CurrentVortexMapItem.thisTransform.localPosition;
+                vortexRadius = ((CircleCollider2D)Traverse.Create(Managers.RecipeMap.CurrentVortexMapItem).Field("vortexCollider").GetValue()).radius;
+                maxDistance = vortexRadius + Variables.PotionBottleRadius;
+            }
+            else if (Variables.allVortexData.Count > 0 && Variables.selectedVortexIndex >= 0 && Variables.selectedVortexIndex < Variables.allVortexData.Count)
+            {
+                var selectedVortex = Variables.allVortexData[Variables.selectedVortexIndex];
+                vortexCenter = selectedVortex.center;
+                vortexRadius = selectedVortex.radius - Variables.PotionBottleRadius;
+                maxDistance = selectedVortex.radius;
+            }
+            else
                 return "";
-            var vortexCenter = Managers.RecipeMap.CurrentVortexMapItem.thisTransform.localPosition;
-            var indicatorPosition = Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition;
-            var vortexRadius = ((CircleCollider2D)Traverse.Create(Managers.RecipeMap.CurrentVortexMapItem).Field("vortexCollider").GetValue()).radius;
             var distance = (vortexCenter - indicatorPosition).magnitude;
-            var maxDistance = vortexRadius + Variables.PotionBottleRadius;
             var currentAngle = Vector2.SignedAngle(indicatorPosition, indicatorPosition - vortexCenter);
             var rotationLimit = Mathf.Acos(vortexRadius / vortexCenter.magnitude) * Mathf.Rad2Deg;
-            var tangentPoint = Quaternion.Euler(0, 0, -rotationLimit) * (-vortexCenter) / vortexCenter.magnitude * maxDistance;
+            Vector2 tangentPoint = Quaternion.Euler(0, 0, -rotationLimit) * (-vortexCenter) / vortexCenter.magnitude * maxDistance;
             var maxAngle = Vector2.SignedAngle(vortexCenter + tangentPoint, tangentPoint);
             return $@"{LocalizationManager.GetText("vortex_angle")}{currentAngle}'
 {LocalizationManager.GetText("vortex_anglmax")}{maxAngle}'
@@ -258,16 +307,42 @@ namespace AlchAss
             Vector2 indicatorPosition = Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition;
             var pathHints = Managers.RecipeMap.path.fixedPathHints;
             var pathPoints = pathHints.Select((FixedHint fixedHint) => fixedHint.evenlySpacedPointsFixedPhysics.points).SelectMany((Vector3[] points) => points).ToList<Vector3>();
+            Variables.vortexIntersectionPoints.Clear();
+            var targetVortexes = new List<Variables.VortexData>();
+            if (Variables.selectedVortexIndex >= 0 && Variables.selectedVortexIndex < Variables.allVortexData.Count)
+                targetVortexes.Add(Variables.allVortexData[Variables.selectedVortexIndex]);
             if (pathPoints.Count > 1)
             {
                 var startPosition = Managers.RecipeMap.currentMap.referencesContainer.transform.InverseTransformPoint(Managers.RecipeMap.path.thisTransform.TransformPoint(pathPoints[0]));
                 var endPosition = Managers.RecipeMap.currentMap.referencesContainer.transform.InverseTransformPoint(Managers.RecipeMap.path.thisTransform.TransformPoint(pathPoints[1]));
                 Variables.lineDirection[0] = Vector2.SignedAngle(Vector2.right, endPosition - startPosition);
+                var previousPosition = indicatorPosition;
+                foreach (var point in pathPoints.Skip(1))
+                {
+                    Vector2 currentPosition = Managers.RecipeMap.currentMap.referencesContainer.transform.InverseTransformPoint(Managers.RecipeMap.path.thisTransform.TransformPoint(point));
+                    foreach (var vortex in targetVortexes)
+                    {
+                        var intersections = Depends.GetLineCircleIntersections(previousPosition, currentPosition, vortex.center, vortex.radius);
+                        Variables.vortexIntersectionPoints.AddRange(intersections);
+                    }
+                    previousPosition = currentPosition;
+                }
             }
             Variables.lineDirection[1] = Vector2.SignedAngle(Vector2.right, -indicatorPosition);
+            foreach (var vortex in targetVortexes)
+            {
+                var intersections = Depends.GetLineCircleIntersections(indicatorPosition, Vector2.zero, vortex.center, vortex.radius);
+                Variables.vortexIntersectionPoints.AddRange(intersections);
+            }
             Variables.SharedCache.UpdateCache();
             if (Variables.SharedCache.isValid)
                 Variables.lineDirection[2] = Vector2.SignedAngle(Vector2.right, Variables.SharedCache.targetPosition - indicatorPosition);
+            if (Variables.selectedVortexIndex >= 0 && Variables.selectedVortexIndex < Variables.allVortexData.Count)
+            {
+                var selectedVortex = Variables.allVortexData[Variables.selectedVortexIndex];
+                Vector2 direction = (selectedVortex.center - indicatorPosition).normalized;
+                Variables.lineDirection[3] = Vector2.SignedAngle(Vector2.right, direction);
+            }
         }
         #endregion
     }

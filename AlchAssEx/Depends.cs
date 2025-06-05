@@ -1,10 +1,16 @@
+using BepInEx;
+using BepInEx.Configuration;
+using HarmonyLib;
 using PotionCraft.ManagersSystem;
 using PotionCraft.ManagersSystem.Potion.Entities;
 using PotionCraft.ObjectBased.UIElements.Books.RecipeBook;
 using PotionCraft.ScriptableObjects;
+using PotionCraft.LocalizationSystem;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
+using UnityEngine;
 
 namespace AlchAssEx
 {
@@ -53,41 +59,37 @@ ControlAsymptoteFactor=0.002";
         }
         public static void UpdateFunctionsConfigCache()
         {
-            try
+            var configFilePath = Path.Combine(AlchAss.Variables.ConfigDirectory, Variables.functionPath);
+            if (!File.Exists(configFilePath))
             {
-                var configFilePath = Path.Combine(AlchAss.Variables.ConfigDirectory, Variables.functionPath);
-                if (!File.Exists(configFilePath))
-                {
-                    InitializeConfigFile(configFilePath);
-                    return;
-                }
-                var configActions = new Dictionary<string, Action<float>>
-                {
-                    { "SlowdownFactorX", value => Variables._cachedSlowdownFactorX = value },
-                    { "SlowdownFactorZ", value => Variables._cachedSlowdownFactorZ = value },
-                    { "BrewingMultiplierX", value => Variables._cachedBrewingMultiplierX = (int)value },
-                    { "BrewingMultiplierZ", value => Variables._cachedBrewingMultiplierZ = (int)value },
-                    { "HeatValue", value => Variables._cachedHeatValue = value },
-                    { "GrindValue", value => Variables._cachedGrindValue = value },
-                    { "ControlAreaThreshold", value => Variables._cachedControlAreaThreshold = value },
-                    { "ControlSlowdownStrength", value => Variables._cachedControlSlowdownStrength = value },
-                    { "ControlAsymptoteFactor", value => Variables._cachedControlAsymptoteFactor = value }
-                };
-                foreach (var line in File.ReadAllLines(configFilePath))
-                {
-                    if (string.IsNullOrWhiteSpace(line) || line.StartsWith("#"))
-                        continue;
-                    var parts = line.Split('=');
-                    if (parts.Length == 2)
-                    {
-                        var key = parts[0].Trim();
-                        if (float.TryParse(parts[1].Trim(), out var value) && configActions.TryGetValue(key, out var action))
-                            action(value);
-                    }
-                }
-                Variables._functionCacheValid = true;
+                InitializeConfigFile(configFilePath);
+                return;
             }
-            catch { }
+            var configActions = new Dictionary<string, Action<float>>
+            {
+                { "SlowdownFactorX", value => Variables._cachedSlowdownFactorX = value },
+                { "SlowdownFactorZ", value => Variables._cachedSlowdownFactorZ = value },
+                { "BrewingMultiplierX", value => Variables._cachedBrewingMultiplierX = (int)value },
+                { "BrewingMultiplierZ", value => Variables._cachedBrewingMultiplierZ = (int)value },
+                { "HeatValue", value => Variables._cachedHeatValue = value },
+                { "GrindValue", value => Variables._cachedGrindValue = value },
+                { "ControlAreaThreshold", value => Variables._cachedControlAreaThreshold = value },
+                { "ControlSlowdownStrength", value => Variables._cachedControlSlowdownStrength = value },
+                { "ControlAsymptoteFactor", value => Variables._cachedControlAsymptoteFactor = value }
+            };
+            foreach (var line in File.ReadAllLines(configFilePath))
+            {
+                if (string.IsNullOrWhiteSpace(line) || line.StartsWith("#"))
+                    continue;
+                var parts = line.Split('=');
+                if (parts.Length == 2)
+                {
+                    var key = parts[0].Trim();
+                    if (float.TryParse(parts[1].Trim(), out var value) && configActions.TryGetValue(key, out var action))
+                        action(value);
+                }
+            }
+            Variables._functionCacheValid = true;
         }
         #endregion
 
@@ -112,6 +114,13 @@ ControlAsymptoteFactor=0.002";
                 }
             }
             return true;
+        }
+        public static float CalculateControlSpeedFactor(float distance)
+        {
+            var normalizedDistance = distance / Variables._cachedControlAreaThreshold;
+            var baseSpeedFactor = Mathf.Pow(normalizedDistance, Variables._cachedControlSlowdownStrength);
+            var asymptoteCalc = normalizedDistance / (normalizedDistance + Variables._cachedControlAsymptoteFactor);
+            return baseSpeedFactor * asymptoteCalc;
         }
         #endregion
     }

@@ -5,14 +5,12 @@ using PotionCraft.LocalizationSystem;
 using PotionCraft.ManagersSystem;
 using PotionCraft.ManagersSystem.Ingredient;
 using PotionCraft.ManagersSystem.TMP;
-using PotionCraft.ObjectBased.RecipeMap.Path;
 using PotionCraft.ObjectBased.RecipeMap.RecipeMapItem.SolventDirectionHint;
-using PotionCraft.ObjectBased.RecipeMap.RecipeMapItem.Zones;
+using PotionCraft.ObjectBased.RecipeMap.RecipeMapItem.VortexMapItem;
 using PotionCraft.ObjectBased.UIElements.FloatingText;
 using PotionCraft.Settings;
-using System;
+using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -117,7 +115,7 @@ namespace AlchAss
             var ingredientManagerAsset = typeof(Settings<IngredientManagerSettings>).GetProperty("Asset", BindingFlags.Public | BindingFlags.Static).GetValue(null);
             var collectedFloatingTextField = ingredientManagerAsset.GetType().GetProperty("CollectedFloatingText", BindingFlags.NonPublic | BindingFlags.Instance);
             var collectedFloatingText = collectedFloatingTextField.GetValue(ingredientManagerAsset) as CollectedFloatingText;
-            CollectedFloatingText.SpawnNewText(collectedFloatingText.gameObject, cursorPosition, new[] { textContent }, Managers.Game.Cam.transform, false, false);
+            CollectedFloatingText.SpawnNewText(collectedFloatingText.gameObject, cursorPosition, [textContent], Managers.Game.Cam.transform, false, false);
         }
         public static DebugWindow CreateDebugWindow(string windowName, Vector2 windowPosition)
         {
@@ -150,70 +148,165 @@ namespace AlchAss
                 ? $"x: {position.x}\ny: {position.y}"
                 : $"r: {position.magnitude}\nθ: {Vector2.SignedAngle(Vector2.right, position)}";
         }
+        public static List<Vector2> GetLineCircleIntersections(Vector2 lineStart, Vector2 lineEnd, Vector2 circleCenter, float radius)
+        {
+            var intersections = new List<Vector2>();
+            Vector2 d = lineEnd - lineStart;
+            Vector2 f = lineStart - circleCenter;
+            float a = Vector2.Dot(d, d);
+            float b = 2 * Vector2.Dot(f, d);
+            float c = Vector2.Dot(f, f) - radius * radius;
+            float discriminant = b * b - 4 * a * c;
+            if (discriminant < 0)
+                return intersections;
+            float sqrt_discriminant = Mathf.Sqrt(discriminant);
+            float t1 = (-b - sqrt_discriminant) / (2 * a);
+            float t2 = (-b + sqrt_discriminant) / (2 * a);
+            if (t1 >= 0 && t1 <= 1)
+                intersections.Add(lineStart + t1 * d);
+            if (t2 >= 0 && t2 <= 1)
+                intersections.Add(lineStart + t2 * d);
+            return intersections;
+        }
         #endregion
 
-        #region 示线渲染
+        #region 漩涡加载
+        public static void LoadOrScanVortexData()
+        {
+            var currentMap = Managers.RecipeMap.currentMap;
+            if (currentMap?.referencesContainer == null)
+                return;
+            var mapId = currentMap.potionBase.name;
+            var vortexDataPath = Path.Combine(Variables.ConfigDirectory, $"AlchAssVortexData_{mapId}.txt");
+            if (Variables.allVortexData.Count > 0 && Variables.currentMapName == mapId)
+                return;
+            Variables.allVortexData.Clear();
+            Variables.currentMapName = mapId;
+            if (File.Exists(vortexDataPath))
+            {
+                var lines = File.ReadAllLines(vortexDataPath);
+                foreach (var line in lines)
+                {
+                    var parts = line.Split(',');
+                    if (parts.Length == 3)
+                    {
+                        var centerX = float.Parse(parts[0]);
+                        var centerY = float.Parse(parts[1]);
+                        var radius = float.Parse(parts[2]);
+                        Variables.allVortexData.Add(new Variables.VortexData(new Vector2(centerX, centerY), radius));
+                    }
+                }
+                if (Variables.allVortexData.Count > 0)
+                {
+                    SortVortexData();
+                    return;
+                }
+            }
+            ScanAllVortexData();
+            if (Variables.allVortexData.Count > 0)
+            {
+                SortVortexData();
+                SaveVortexData(mapId);
+            }
+        }
+        public static void SortVortexData()
+        {
+            Variables.allVortexData.Sort((a, b) =>
+            {
+                float distanceA = a.center.magnitude;
+                float distanceB = b.center.magnitude;
+                return distanceA.CompareTo(distanceB);
+            });
+            Variables.selectedVortexIndex = 0;
+        }
+        public static void ScanAllVortexData()
+        {
+            var currentMap = Managers.RecipeMap.currentMap;
+            if (currentMap?.referencesContainer == null)
+                return;
+            var allVortexItems = Object.FindObjectsByType<VortexMapItem>(FindObjectsSortMode.None);
+            var currentMapTransform = currentMap.referencesContainer.transform;
+            foreach (var vortex in allVortexItems)
+                if (vortex.transform.IsChildOf(currentMapTransform))
+                {
+                    var center = vortex.thisTransform.localPosition;
+                    var vortexCollider = Traverse.Create(vortex).Field("vortexCollider").GetValue() as CircleCollider2D;
+                    var radius = vortexCollider.radius + Variables.PotionBottleRadius;
+                    Variables.allVortexData.Add(new Variables.VortexData(center, radius));
+                }
+        }
+        public static void SaveVortexData(string mapId)
+        {
+            var vortexDataPath = Path.Combine(Variables.ConfigDirectory, $"AlchAssVortexData_{mapId}.txt");
+            Directory.CreateDirectory(Variables.ConfigDirectory);
+            var lines = new List<string>();
+            foreach (var vortex in Variables.allVortexData)
+                lines.Add($"{vortex.center.x},{vortex.center.y},{vortex.radius}");
+            File.WriteAllLines(vortexDataPath, lines);
+        }
+        #endregion
+
+        #region 辅助渲染
         public static void InitializeLineRenderers(SolventDirectionHint instance, SpriteRenderer spriteRenderer)
         {
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < 4; i++)
             {
                 if (Variables.lineRenderer[i] == null)
                 {
-                    var newLine = new GameObject("SecondLine") { layer = instance.gameObject.layer };
+                    var newLine = new GameObject("Line") { layer = instance.gameObject.layer };
                     Variables.lineRenderer[i] = newLine.AddComponent<SpriteRenderer>();
                     SetupSpriteRenderer(Variables.lineRenderer[i], spriteRenderer, Variables.lineColor[i], new Vector2(200f, 0.075f));
+                    Variables.lineRenderer[i].sortingOrder--;
                 }
             }
-            for (int i = 3; i < 9; i++)
+            for (int i = 4; i < 10; i++)
             {
                 if (Variables.lineRenderer[i] == null)
                 {
                     var newNode = new GameObject("Node") { layer = instance.gameObject.layer };
                     Variables.lineRenderer[i] = newNode.AddComponent<SpriteRenderer>();
                     SetupSpriteRenderer(Variables.lineRenderer[i], spriteRenderer, Variables.lineColor[i], new Vector2(0.2f, 0.2f));
-                    Variables.lineRenderer[i].transform.localEulerAngles = Vector3.zero;
+                    Variables.lineRenderer[i].sortingOrder++;
                 }
             }
         }
-        public static void SetupSpriteRenderer(SpriteRenderer renderer, SpriteRenderer referenceRenderer, Color color, Vector2 size)
-        {
-            renderer.sortingLayerName = referenceRenderer.sortingLayerName;
-            renderer.sortingOrder = referenceRenderer.sortingOrder;
-            renderer.drawMode = SpriteDrawMode.Tiled;
-            renderer.sprite = Sprite.Create(Variables.texture, new Rect(0, 0, 1, 1), new Vector2(0.5f, 0.5f), 1.0f, 0, SpriteMeshType.FullRect);
-            renderer.color = color;
-            renderer.size = size;
-        }
         public static void HandleDirectionLineDisplay(SolventDirectionHint instance, SpriteRenderer spriteRenderer)
         {
+            if (Variables.currentMapName != null && Variables.currentMapName != Managers.RecipeMap.currentMap.potionBase.name)
+            {
+                Variables.allVortexData.Clear();
+                Variables.currentMapName = null;
+                if (Variables.directionLine)
+                    LoadOrScanVortexData();
+            }
             if (Variables.directionLine)
             {
                 Functions.UpdateLineDirections();
                 if (Keyboard.current.slashKey.wasPressedThisFrame)
                 {
                     spriteRenderer.enabled = false;
-                    for (int i = 0; i < 3; i++)
+                    for (int i = 0; i < 10; i++)
                         Variables.lineRenderer[i].enabled = true;
                 }
                 var instancePosition = instance.transform.position;
                 var indicatorLocalPosition = Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition;
-                for (int i = 0; i < 3; i++)
+                for (int i = 0; i < 4; i++)
                 {
                     Variables.lineRenderer[i].transform.position = instancePosition;
                     Variables.lineRenderer[i].transform.localEulerAngles = new Vector3(0f, 0f, Variables.lineDirection[i]);
                 }
-                for (int i = 3; i < 9; i++)
+                for (int i = 4; i < 10; i++)
                 {
                     Vector3? pointPosition = null;
-                    if (i < 7)
+                    if (i < 8)
                     {
-                        var zoneIndex = i - 3;
+                        var zoneIndex = i - 4;
                         if (Variables.zonePoints[zoneIndex, 0] != null)
                             pointPosition = (Vector3)Variables.zonePoints[zoneIndex, 0];
                     }
                     else
                     {
-                        var closestIndex = i - 7;
+                        var closestIndex = i - 8;
                         if (Variables.closestPoints[closestIndex].HasValue)
                             pointPosition = (Vector3)Variables.closestPoints[closestIndex].Value;
                     }
@@ -225,13 +318,160 @@ namespace AlchAss
                         Variables.lineRenderer[i].transform.position = adjustedPosition;
                     }
                 }
+                HandleVortexCircleDisplay(instancePosition, indicatorLocalPosition);
             }
             else if (Keyboard.current.slashKey.wasPressedThisFrame)
             {
                 spriteRenderer.enabled = true;
-                for (int i = 0; i < 9; i++)
+                for (int i = 0; i < 10; i++)
                     Variables.lineRenderer[i].enabled = false;
+                for (int i = 0; i < Variables.vortexCircleRenderer.Length; i++)
+                    Variables.vortexCircleRenderer[i].enabled = false;
+                for (int i = 0; i < Variables.vortexIntersectionRenderer.Length; i++)
+                    Variables.vortexIntersectionRenderer[i].enabled = false;
             }
+        }
+        public static void HandleVortexCircleDisplay(Vector3 instancePosition, Vector2 indicatorLocalPosition)
+        {
+            int requiredCount = Variables.allVortexData.Count;
+            if (Variables.vortexCircleRenderer.Length < requiredCount)
+            {
+                var oldRenderers = Variables.vortexCircleRenderer;
+                Variables.vortexCircleRenderer = new SpriteRenderer[requiredCount];
+                for (int i = 0; i < oldRenderers.Length; i++)
+                    Variables.vortexCircleRenderer[i] = oldRenderers[i];
+                for (int i = oldRenderers.Length; i < requiredCount; i++)
+                {
+                    var layer = Variables.solventDirectionHint?.gameObject.layer ?? 0;
+                    var vortexCircle = new GameObject("VortexCircle") { layer = layer };
+                    var renderer = vortexCircle.AddComponent<SpriteRenderer>();
+                    renderer.sortingLayerName = Variables.lineRenderer[0].sortingLayerName;
+                    renderer.sortingOrder = Variables.lineRenderer[0].sortingOrder - 1;
+                    renderer.color = Variables.lineColor[11];
+                    Variables.vortexCircleRenderer[i] = renderer;
+                    renderer.enabled = false;
+                }
+            }
+            for (int i = 0; i < Variables.vortexCircleRenderer.Length; i++)
+            {
+                var renderer = Variables.vortexCircleRenderer[i];
+                if (i < Variables.allVortexData.Count)
+                {
+                    var vortexData = Variables.allVortexData[i];
+                    renderer.enabled = true;
+                    renderer.transform.position = new Vector3(
+                        vortexData.center.x,
+                        vortexData.center.y + instancePosition.y - indicatorLocalPosition.y,
+                        instancePosition.z);
+                    renderer.sprite = GetVortexSpriteByRadius(vortexData.radius);
+                    renderer.transform.localScale = Vector3.one;
+                    renderer.color = (i == Variables.selectedVortexIndex) ? Variables.lineColor[12] : Variables.lineColor[11];
+                }
+                else
+                    renderer.enabled = false;
+            }
+            DisplayVortexIntersectionPoints(instancePosition, indicatorLocalPosition);
+        }
+        public static void DisplayVortexIntersectionPoints(Vector3 instancePosition, Vector2 indicatorLocalPosition)
+        {
+            int requiredCount = Variables.vortexIntersectionPoints.Count;
+            if (Variables.vortexIntersectionRenderer.Length < requiredCount)
+            {
+                var oldRenderers = Variables.vortexIntersectionRenderer;
+                Variables.vortexIntersectionRenderer = new SpriteRenderer[requiredCount];
+                for (int i = 0; i < oldRenderers.Length; i++)
+                    Variables.vortexIntersectionRenderer[i] = oldRenderers[i];
+                for (int i = oldRenderers.Length; i < requiredCount; i++)
+                {
+                    var layer = Variables.solventDirectionHint?.gameObject.layer ?? 0;
+                    var intersectionNode = new GameObject("VortexIntersection") { layer = layer };
+                    var renderer = intersectionNode.AddComponent<SpriteRenderer>();
+                    SetupSpriteRenderer(renderer, Variables.lineRenderer[3], Variables.lineColor[10], new Vector2(0.2f, 0.2f));
+                    renderer.transform.localEulerAngles = Vector3.zero;
+                    Variables.vortexIntersectionRenderer[i] = renderer;
+                    renderer.enabled = false;
+                }
+            }
+            for (int i = 0; i < Variables.vortexIntersectionRenderer.Length; i++)
+            {
+                var renderer = Variables.vortexIntersectionRenderer[i];
+                if (i < Variables.vortexIntersectionPoints.Count)
+                {
+                    var intersectionPoint = Variables.vortexIntersectionPoints[i];
+                    renderer.enabled = true;
+                    renderer.transform.position = new Vector3(
+                        intersectionPoint.x,
+                        intersectionPoint.y + instancePosition.y - indicatorLocalPosition.y,
+                        instancePosition.z);
+                }
+                else
+                    renderer.enabled = false;
+            }
+        }
+        public static Sprite GetVortexSpriteByRadius(float radius)
+        {
+            if (Mathf.Abs(radius - 1.74f) < 0.1f)
+            {
+                if (Variables.circleSprite[0] == null)
+                    Variables.circleSprite[0] = CreateCircleSpriteForRadius(1.74f);
+                return Variables.circleSprite[0];
+            }
+            else if (Mathf.Abs(radius - 1.99f) < 0.1f)
+            {
+                if (Variables.circleSprite[1] == null)
+                    Variables.circleSprite[1] = CreateCircleSpriteForRadius(1.99f);
+                return Variables.circleSprite[1];
+            }
+            else
+            {
+                if (Variables.circleSprite[2] == null)
+                    Variables.circleSprite[2] = CreateCircleSpriteForRadius(2.39f);
+                return Variables.circleSprite[2];
+            }
+        }
+        public static Sprite CreateCircleSpriteForRadius(float radius)
+        {
+            float diameter = radius * 2f;
+            int textureSize = 500;
+            float fixedLineThickness = 0.075f;
+            Texture2D circleTexture = new(textureSize, textureSize);
+            Color[] pixels = new Color[textureSize * textureSize];
+            Vector2 center = new(textureSize * 0.5f, textureSize * 0.5f);
+            float outerRadius = textureSize * 0.5f;
+            float lineThicknessInPixels = (fixedLineThickness / diameter) * textureSize;
+            float innerRadius = outerRadius - lineThicknessInPixels;
+            for (int y = 0; y < textureSize; y++)
+                for (int x = 0; x < textureSize; x++)
+                {
+                    Vector2 pos = new(x, y);
+                    float distance = Vector2.Distance(pos, center);
+                    if (distance < outerRadius && distance >= innerRadius)
+                    {
+                        float alpha = 1.0f;
+                        if (distance > outerRadius - 1f)
+                            alpha = outerRadius - distance;
+                        else if (distance < innerRadius + 1f)
+                            alpha = distance - innerRadius;
+                        alpha = Mathf.Clamp01(alpha);
+                        pixels[y * textureSize + x] = new Color(1f, 1f, 1f, alpha);
+                    }
+                    else
+                        pixels[y * textureSize + x] = Color.clear;
+                }
+            circleTexture.SetPixels(pixels);
+            circleTexture.Apply();
+            circleTexture.filterMode = FilterMode.Bilinear;
+            float pixelsPerUnit = textureSize / diameter;
+            return Sprite.Create(circleTexture, new Rect(0, 0, textureSize, textureSize), new Vector2(0.5f, 0.5f), pixelsPerUnit);
+        }
+        public static void SetupSpriteRenderer(SpriteRenderer renderer, SpriteRenderer referenceRenderer, Color color, Vector2 size)
+        {
+            renderer.sortingLayerName = referenceRenderer.sortingLayerName;
+            renderer.sortingOrder = referenceRenderer.sortingOrder;
+            renderer.drawMode = SpriteDrawMode.Tiled;
+            renderer.sprite = Sprite.Create(Variables.texture, new Rect(0, 0, 1, 1), new Vector2(0.5f, 0.5f), 1.0f, 0, SpriteMeshType.FullRect);
+            renderer.color = color;
+            renderer.size = size;
         }
         #endregion
     }
