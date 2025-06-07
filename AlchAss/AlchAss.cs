@@ -18,7 +18,7 @@ using UnityEngine.InputSystem;
 
 namespace AlchAss
 {
-    [BepInPlugin("AlchAss", "Alchemist's Assistant", "4.2.0")]
+    [BepInPlugin("AlchAss", "Alchemist's Assistant", "4.2.1")]
     public class AlchAss : BaseUnityPlugin
     {
         #region Unity - 生命周期
@@ -54,6 +54,35 @@ namespace AlchAss
                 "方向线和路径线的粗细 | Width of direction lines and path lines");
             Variables.pointSize = Config.Bind("辅助渲染", "点大小", 0.15f,
                 "交会点和最近点的大小 | Size of intersection points and closest points");
+
+            Variables.colorTargetDirection = Config.Bind("颜色设置", "目标方向线", "0.8,0.1,0.1,1",
+                "目标方向线的颜色 | Color of target direction line");
+            Variables.colorLadleDirection = Config.Bind("颜色设置", "加水方向线", "0.1,0.1,0.8,1",
+                "加水方向线的颜色 | Color of ladle direction line");
+            Variables.colorStirDirection = Config.Bind("颜色设置", "搅拌方向线", "0.1,0.8,0.1,1",
+                "搅拌方向线的颜色 | Color of stir direction line");
+            Variables.colorVortexDirection = Config.Bind("颜色设置", "漩涡方向线", "0.4,0.4,0.1,1",
+                "漩涡方向线的颜色 | Color of vortex direction line");
+            Variables.colorSwampZone = Config.Bind("颜色设置", "沼泽区域点", "0.6,0.4,0.2,1",
+                "沼泽区域标记点的颜色 | Color of swamp zone markers");
+            Variables.colorStrongDangerZone = Config.Bind("颜色设置", "骷髅区域点", "0.8,0.2,0.2,1",
+                "骷髅区域标记点的颜色 | Color of strong danger zone markers");
+            Variables.colorWeakDangerZone = Config.Bind("颜色设置", "碎骨区域点", "0.4,0.2,0.6,1",
+                "碎骨区域标记点的颜色 | Color of weak danger zone markers");
+            Variables.colorHealZone = Config.Bind("颜色设置", "治疗区域点", "0.2,0.8,0.2,1",
+                "治疗区域标记点的颜色 | Color of heal zone markers");
+            Variables.colorPathClosestPoint = Config.Bind("颜色设置", "路径最近点", "0.8,0.3,0.8,1",
+                "路径最近点的颜色 | Color of closest path points");
+            Variables.colorLadleClosestPoint = Config.Bind("颜色设置", "加水最近点", "0.1,0.9,0.9,1",
+                "加水最近点的颜色 | Color of closest ladle points");
+            Variables.colorVortexIntersection = Config.Bind("颜色设置", "漩涡交会点", "0.1,0.6,0.6,1",
+                "漩涡交会点的颜色 | Color of vortex intersection points");
+            Variables.colorVortexCircle = Config.Bind("颜色设置", "漩涡范围圈", "0.5,0.1,0.5,1",
+                "漩涡范围圈的颜色 | Color of vortex range circles");
+            Variables.colorFirstPath = Config.Bind("颜色设置", "第一路径线", "0.0,0.9,1.0,1",
+                "第一条路径线的颜色 | Color of first path line");
+            Variables.colorSecondPath = Config.Bind("颜色设置", "第二路径线", "1.0,0.0,0.9,1",
+                "第二条路径线的颜色 | Color of second path line");
 
             if (!Variables.enableTargetStatus.Value)
                 Variables.enableDeviationStatus.Value = Variables.enablePathStatus.Value = Variables.enableLadleStatus.Value = false;
@@ -172,8 +201,8 @@ namespace AlchAss
                 Variables.texture.SetPixels([Color.white]);
                 Variables.texture.Apply();
             }
-            Depends.InitializeLineRenderers(__instance, ___spriteRenderer);
-            Depends.HandleDirectionLineDisplay(__instance, ___spriteRenderer);
+            Renderers.InitializeLineRenderers(__instance, ___spriteRenderer);
+            Renderers.HandleDirectionLineDisplay(__instance, ___spriteRenderer);
         }
         #endregion
 

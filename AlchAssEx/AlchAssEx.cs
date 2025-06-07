@@ -15,7 +15,7 @@ using UnityEngine.InputSystem;
 
 namespace AlchAssEx
 {
-    [BepInPlugin("AlchAssEx", "Alchemist's Assistant Extension", "4.0.1")]
+    [BepInPlugin("AlchAssEx", "Alchemist's Assistant Extension", "4.2.1")]
     [BepInDependency("AlchAss", BepInDependency.DependencyFlags.HardDependency)]
     public class AlchAssEx : BaseUnityPlugin
     {
