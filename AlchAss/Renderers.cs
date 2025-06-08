@@ -12,13 +12,12 @@ namespace AlchAss
         #region 主要显示
         public static void HandleDirectionLineDisplay(SolventDirectionHint instance, SpriteRenderer spriteRenderer)
         {
-            if (Variables.currentMapName != null && Variables.currentMapName != Managers.RecipeMap.currentMap.potionBase.name)
+            if (Variables.currentMapName != Managers.RecipeMap.currentMap.potionBase.name)
             {
                 Variables.allVortexData.Clear();
                 Variables.currentMapName = null;
                 Variables.hoveredItemName = null;
-                if (Variables.directionLine)
-                    Depends.LoadOrScanVortexData();
+                Depends.LoadOrScanVortexData();
             }
             if (Variables.directionLine)
             {
@@ -38,7 +37,7 @@ namespace AlchAss
                     Variables.lineRenderer[i].transform.position = instancePosition;
                     Variables.lineRenderer[i].transform.localEulerAngles = new Vector3(0f, 0f, Variables.lineDirection[i]);
                 }
-                for (int i = 4; i < 10; i++)
+                for (int i = 4; i < 14; i++)
                 {
                     Vector3? pointPosition = null;
                     if (i < 8)
@@ -47,11 +46,17 @@ namespace AlchAss
                         if (Variables.zonePoints[zoneIndex, 0] != null)
                             pointPosition = (Vector3)Variables.zonePoints[zoneIndex, 0];
                     }
-                    else
+                    else if (i < 10)
                     {
                         var closestIndex = i - 8;
                         if (Variables.closestPoints[closestIndex].HasValue)
                             pointPosition = (Vector3)Variables.closestPoints[closestIndex].Value;
+                    }
+                    else
+                    {
+                        var zoneIndex = i - 10;
+                        if (Variables.zonePoints[zoneIndex, 4] != null)
+                            pointPosition = (Vector3)Variables.zonePoints[zoneIndex, 4];
                     }
                     Variables.lineRenderer[i].enabled = pointPosition.HasValue;
                     if (pointPosition.HasValue)
@@ -69,7 +74,7 @@ namespace AlchAss
             else if (Keyboard.current.slashKey.wasPressedThisFrame)
             {
                 spriteRenderer.enabled = true;
-                for (int i = 0; i < 10; i++)
+                for (int i = 0; i < 14; i++)
                     Variables.lineRenderer[i].enabled = false;
                 for (int i = 0; i < 3; i++)
                     if (Variables.vortexCircleLineRenderer[i] != null)
@@ -390,6 +395,14 @@ namespace AlchAss
                     var newNode = new GameObject("Node") { layer = instance.gameObject.layer };
                     Variables.lineRenderer[i] = newNode.AddComponent<SpriteRenderer>();
                     SetupSpriteRenderer(Variables.lineRenderer[i], spriteRenderer, Variables.LineColor[i], new Vector2(Variables.pointSize.Value, Variables.pointSize.Value));
+                    Variables.lineRenderer[i].sortingOrder += 3;
+                }
+            for (int i = 10; i < 14; i++)
+                if (Variables.lineRenderer[i] == null)
+                {
+                    var newNode = new GameObject("Node") { layer = instance.gameObject.layer };
+                    Variables.lineRenderer[i] = newNode.AddComponent<SpriteRenderer>();
+                    SetupSpriteRenderer(Variables.lineRenderer[i], spriteRenderer, Variables.LineColor[i - 6], new Vector2(Variables.pointSize.Value, Variables.pointSize.Value));
                     Variables.lineRenderer[i].sortingOrder += 3;
                 }
         }

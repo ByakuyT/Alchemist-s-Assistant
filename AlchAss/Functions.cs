@@ -126,12 +126,10 @@ namespace AlchAss
                 Variables.directionLine = !Variables.directionLine;
                 if (Variables.directionLine)
                 {
-                    Depends.LoadOrScanVortexData();
                     if (Variables.allVortexData.Count > 0)
                     {
                         Vector2 indicatorPosition = Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition;
                         Variables.allVortexData = [.. Variables.allVortexData.OrderBy(v => Vector2.Distance(v.center, indicatorPosition))];
-                        Variables.selectedVortexIndex = 0;
                     }
                     Variables.enablePathRendering = Variables.savedEnablePathRendering;
                     Variables.useAngleAdjustedRadius = Variables.savedUseAngleAdjustedRadius;
@@ -253,6 +251,9 @@ namespace AlchAss
                             Variables.zonePoints[i, 1] = currentStage;
                             Variables.zonePoints[i, 2] = currentProgress;
                         }
+                    if (!zoneActive[i])
+                        if (Variables.zonePoints[i, 3] != null && (bool)Variables.zonePoints[i, 3])
+                            Variables.zonePoints[i, 4] = currentPosition;
                     Variables.zonePoints[i, 3] = zoneActive[i];
                 }
             }
@@ -469,7 +470,7 @@ namespace AlchAss
                         }
                     }
             }
-            if(indicatorPosition.sqrMagnitude > 0)
+            if (indicatorPosition.sqrMagnitude > 0)
             {
                 Variables.lineDirection[1] = Vector2.SignedAngle(Vector2.right, -indicatorPosition);
                 Variables.lineRenderer[1].enabled = true;

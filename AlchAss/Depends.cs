@@ -220,7 +220,7 @@ namespace AlchAss
                 float distanceB = b.center.magnitude;
                 return distanceA.CompareTo(distanceB);
             });
-            Variables.selectedVortexIndex = 0;
+            Variables.selectedVortexIndex = -1;
         }
         public static void ScanAllVortexData()
         {

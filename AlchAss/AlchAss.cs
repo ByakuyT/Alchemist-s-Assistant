@@ -18,7 +18,7 @@ using UnityEngine.InputSystem;
 
 namespace AlchAss
 {
-    [BepInPlugin("AlchAss", "Alchemist's Assistant", "4.2.1")]
+    [BepInPlugin("AlchAss", "Alchemist's Assistant", "4.2.2")]
     public class AlchAss : BaseUnityPlugin
     {
         #region Unity - 生命周期
@@ -63,7 +63,7 @@ namespace AlchAss
                 "搅拌方向线的颜色 | Color of stir direction line");
             Variables.colorVortexDirection = Config.Bind("颜色设置", "漩涡方向线", "0.4,0.4,0.1,1",
                 "漩涡方向线的颜色 | Color of vortex direction line");
-            Variables.colorSwampZone = Config.Bind("颜色设置", "沼泽区域点", "0.6,0.4,0.2,1",
+            Variables.colorSwampZone = Config.Bind("颜色设置", "沼泽区域点", "0.2,0.4,0.6,1",
                 "沼泽区域标记点的颜色 | Color of swamp zone markers");
             Variables.colorStrongDangerZone = Config.Bind("颜色设置", "骷髅区域点", "0.8,0.2,0.2,1",
                 "骷髅区域标记点的颜色 | Color of strong danger zone markers");

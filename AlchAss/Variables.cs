@@ -85,6 +85,9 @@ namespace AlchAss
         public static int zoneMode = 0;
 
         public static string hoveredItemName = null;
+        public static string currentMapName = null;
+        public static int lastPathHintCount = 0;
+        public static int selectedVortexIndex = -1;
         public static Room lab = null;
         public static Texture2D texture = null;
         public static Texture2D dashedTexture = null;
@@ -92,10 +95,10 @@ namespace AlchAss
         public static SolventDirectionHint solventDirectionHint = null;
         public static float[] lineDirection = new float[4];
         public static float[] closestPointDis = [float.MaxValue, float.MaxValue];
-        public static object[,] zonePoints = new object[4, 4];
+        public static object[,] zonePoints = new object[4, 5];
         public static Sprite[] targetEffectCircleSprite = new Sprite[3];
         public static Vector2?[] closestPoints = new Vector2?[2];
-        public static SpriteRenderer[] lineRenderer = new SpriteRenderer[10];
+        public static SpriteRenderer[] lineRenderer = new SpriteRenderer[14];
         public static SpriteRenderer[] vortexIntersectionRenderer = [];
         public static SpriteRenderer[] pathLineRenderer = [];
         public static LineRenderer[] pathLineRenderers = [];
@@ -107,9 +110,6 @@ namespace AlchAss
         public static List<Vector3[]> normalPathSegments = [];
         public static List<Vector3> teleportationPathPoints = [];
         public static List<IngredientPathGroup> ingredientPathGroups = [];
-        public static int lastPathHintCount = 0;
-        public static string currentMapName = null;
-        public static int selectedVortexIndex = 0;
         #endregion
 
         #region 只读数据
