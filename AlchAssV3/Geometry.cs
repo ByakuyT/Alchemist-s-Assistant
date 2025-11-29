@@ -376,7 +376,7 @@ namespace AlchAssV3
             {
                 pointsort.Add(points[0]);
                 for (var i = 1; i < points.Count; i++)
-                    if (points[i].Item3 - points[i - 1].Item3 > 1e-5)
+                    if (points[i].Item4 == points[i - 1].Item4 && points[i].Item3 - points[i - 1].Item3 > 1e-5)
                         pointsort.Add(points[i]);
             }
 
