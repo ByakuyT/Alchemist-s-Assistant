@@ -1,0 +1,629 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{D5ADFB1D-CED1-4C8F-BCA1-FAF9A527DC3F}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>AlchAssV3</RootNamespace>
+    <AssemblyName>AlchAssV3</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <LangVersion>latest</LangVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>D:\Program Files %28x86%29\Steam\steamapps\common\Potion Craft\BepInEx\plugins\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>D:\Program Files %28x86%29\Steam\steamapps\common\Potion Craft\BepInEx\plugins\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="0Harmony">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\BepInEx\core\0Harmony.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="BepInEx">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\BepInEx\core\BepInEx.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="DOTween">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\DOTween.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Facepunch.Steamworks.Win64">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\Facepunch.Steamworks.Win64.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="mcs">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\mcs.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Mono.Security">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\Mono.Security.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="netstandard">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\netstandard.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\Newtonsoft.Json.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="PotionCraft.AchievementsSystem">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\PotionCraft.AchievementsSystem.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="PotionCraft.AchievementsSystem.Steam">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\PotionCraft.AchievementsSystem.Steam.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="PotionCraft.BuildModeColliderSnapSystem">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\PotionCraft.BuildModeColliderSnapSystem.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="PotionCraft.ConverterFrom050To051">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\PotionCraft.ConverterFrom050To051.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="PotionCraft.ConverterFrom051To052">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\PotionCraft.ConverterFrom051To052.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="PotionCraft.ConverterFrom052To100">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\PotionCraft.ConverterFrom052To100.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="PotionCraft.ConverterFrom100To101">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\PotionCraft.ConverterFrom100To101.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="PotionCraft.ConverterFrom101To102">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\PotionCraft.ConverterFrom101To102.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="PotionCraft.ConverterFrom102To103">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\PotionCraft.ConverterFrom102To103.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="PotionCraft.ConverterFrom105To110">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\PotionCraft.ConverterFrom105To110.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="PotionCraft.ConverterFrom110To200">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\PotionCraft.ConverterFrom110To200.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="PotionCraft.ConverterFrom200To201">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\PotionCraft.ConverterFrom200To201.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="PotionCraft.ConverterFrom201To202">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\PotionCraft.ConverterFrom201To202.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="PotionCraft.Core">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\PotionCraft.Core.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="PotionCraft.DataBaseSystem">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\PotionCraft.DataBaseSystem.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="PotionCraft.DebugInfoCollectorSystem">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\PotionCraft.DebugInfoCollectorSystem.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="PotionCraft.ErrorCatcher">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\PotionCraft.ErrorCatcher.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="PotionCraft.GamepadNavigation">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\PotionCraft.GamepadNavigation.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="PotionCraft.GamerTagSystem.Steam">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\PotionCraft.GamerTagSystem.Steam.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="PotionCraft.InputSystem">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\PotionCraft.InputSystem.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="PotionCraft.ManagerSystem">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\PotionCraft.ManagerSystem.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="PotionCraft.PrefabInstanceOverrideGuard">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\PotionCraft.PrefabInstanceOverrideGuard.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="PotionCraft.QRCodeSystem">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\PotionCraft.QRCodeSystem.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="PotionCraft.SceneLoader">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\PotionCraft.SceneLoader.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="PotionCraft.Scripts">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\PotionCraft.Scripts.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="PotionCraft.Settings">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\PotionCraft.Settings.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="PotionCraft.ShaderEffects">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\PotionCraft.ShaderEffects.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="PotionCraft.SoundSystem">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\PotionCraft.SoundSystem.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="QFSW.QC">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\QFSW.QC.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="QFSW.QC.Demo">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\QFSW.QC.Demo.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="QFSW.QC.Editor">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\QFSW.QC.Editor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="QFSW.QC.Extras">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\QFSW.QC.Extras.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.ComponentModel.Composition">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Configuration">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Core">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Drawing">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.EnterpriseServices">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.IO.Compression">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.IO.Compression.FileSystem">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Numerics">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Runtime">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Runtime.Serialization">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Security">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.ServiceModel.Internals, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\System.ServiceModel.Internals.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Transactions">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Xml.Linq">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Data.DataSetExtensions">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.CSharp">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Data">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Net.Http">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Xml">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="ThirdParty.DOTween">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\ThirdParty.DOTween.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.2D.Common.Runtime">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\Unity.2D.Common.Runtime.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.2D.SpriteShape.Runtime">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\Unity.2D.SpriteShape.Runtime.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Addressables">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\Unity.Addressables.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.AI.Navigation">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\Unity.AI.Navigation.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Burst">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\Unity.Burst.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Burst.Unsafe">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\Unity.Burst.Unsafe.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.InputSystem">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\Unity.InputSystem.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.InputSystem.ForUI">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\Unity.InputSystem.ForUI.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.InternalAPIEngineBridge.001">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\Unity.InternalAPIEngineBridge.001.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Mathematics">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\Unity.Mathematics.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.MemoryProfiler">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\Unity.MemoryProfiler.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.ResourceManager">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\Unity.ResourceManager.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.ScriptableBuildPipeline">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\Unity.ScriptableBuildPipeline.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.TextMeshPro">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\Unity.TextMeshPro.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Timeline">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\Unity.Timeline.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.AccessibilityModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.AccessibilityModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.AIModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.AIModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.AndroidJNIModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.AndroidJNIModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.AnimationModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.AnimationModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.ARModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.ARModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.AssetBundleModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.AssetBundleModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.AudioModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.AudioModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.ClothModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.ClothModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.ClusterInputModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.ClusterInputModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.ClusterRendererModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.ClusterRendererModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.CommandStateObserverModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.CommandStateObserverModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.ContentLoadModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.ContentLoadModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.CrashReportingModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.CrashReportingModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.DirectorModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.DirectorModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.DSPGraphModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.DSPGraphModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.GameCenterModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.GameCenterModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.GIModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.GIModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.GraphToolsFoundationModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.GraphToolsFoundationModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.GridModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.GridModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.HotReloadModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.HotReloadModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.ImageConversionModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.ImageConversionModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.IMGUIModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.IMGUIModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.InputLegacyModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.InputLegacyModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.InputModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.InputModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.JSONSerializeModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.JSONSerializeModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.LocalizationModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.LocalizationModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.MarshallingModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.MarshallingModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.NVIDIAModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.NVIDIAModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.ParticleSystemModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.ParticleSystemModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.PerformanceReportingModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.PerformanceReportingModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.Physics2DModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.Physics2DModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.PhysicsModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.PhysicsModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.ProfilerModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.ProfilerModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.PropertiesModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.PropertiesModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.RuntimeInitializeOnLoadManagerInitializerModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.RuntimeInitializeOnLoadManagerInitializerModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.ScreenCaptureModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.ScreenCaptureModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.SharedInternalsModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.SharedInternalsModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.SpriteMaskModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.SpriteMaskModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.SpriteShapeModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.SpriteShapeModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.StreamingModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.StreamingModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.SubstanceModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.SubstanceModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.SubsystemsModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.SubsystemsModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.TerrainModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.TerrainModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.TerrainPhysicsModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.TerrainPhysicsModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.TextCoreFontEngineModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.TextCoreFontEngineModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.TextCoreTextEngineModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.TextCoreTextEngineModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.TextRenderingModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.TilemapModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.TilemapModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.TLSModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.TLSModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.UI.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UIElementsModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.UIElementsModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UIModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.UIModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UmbraModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.UmbraModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UnityAnalyticsCommonModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.UnityAnalyticsCommonModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UnityAnalyticsModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.UnityAnalyticsModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UnityConnectModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.UnityConnectModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UnityCurlModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.UnityCurlModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UnityTestProtocolModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.UnityTestProtocolModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UnityWebRequestAssetBundleModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.UnityWebRequestAssetBundleModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UnityWebRequestAudioModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.UnityWebRequestAudioModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UnityWebRequestModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.UnityWebRequestModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UnityWebRequestTextureModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.UnityWebRequestTextureModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UnityWebRequestWWWModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.UnityWebRequestWWWModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.VehiclesModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.VehiclesModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.VFXModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.VFXModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.VideoModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.VideoModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.VirtualTexturingModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.VirtualTexturingModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.VRModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.VRModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.WindModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.WindModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.XRModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\UnityEngine.XRModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="zxing.unity">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Potion Craft\Potion Craft_Data\Managed\zxing.unity.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Calculation.cs" />
+    <Compile Include="Function.cs" />
+    <Compile Include="Geometry.cs" />
+    <Compile Include="Main.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Rendering.cs" />
+    <Compile Include="Variable.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Bins\*.bin" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
