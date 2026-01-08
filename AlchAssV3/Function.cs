@@ -7,16 +7,93 @@ using PotionCraft.ObjectBased;
 using PotionCraft.ObjectBased.InteractiveItem;
 using PotionCraft.ObjectBased.UIElements.FloatingText;
 using PotionCraft.Settings;
+using PotionCraft.LocalizationSystem;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
+using UnityEngine.InputSystem;
+using HarmonyLib;
+using BepInEx.Configuration;
+using System;
+using PotionCraft.Core.ValueContainers;
 
 namespace AlchAssV3
 {
-    internal class Function
+    public static class Function
     {
+        #region Constants
+        /// <summary>
+        /// Retrieves the switch object and associated message key corresponding to the specified switch dictionary key.
+        /// </summary>
+        /// <param name="key">The key identifying the switch for which to retrieve information.</param>
+        /// <param name="sw">When this method returns, contains the switch object associated with the specified key.</param>
+        /// <param name="messageKey">When this method returns, contains the message key string associated with the specified switch.</param>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if the specified key does not correspond to a known switch.</exception>
+        public static void GetSwitchInfo(Variable.SwitchDictionaryKey key,out Variable.BaseSwitch sw, out string messageKey)
+        {
+            switch (key)
+            {
+                case Variable.SwitchDictionaryKey.PathLine:
+                    sw = Variable.SwitchPathLine;
+                    messageKey = "AlchAssV3_message_path_line";
+                    break;
+                case Variable.SwitchDictionaryKey.LadleLine:
+                    sw = Variable.SwitchLadleLine;
+                    messageKey = "AlchAssV3_message_ladle_line";
+                    break;
+                case Variable.SwitchDictionaryKey.TargetLine:
+                    sw = Variable.SwitchTargetLine;
+                    messageKey = "AlchAssV3_message_target_line";
+                    break;
+                case Variable.SwitchDictionaryKey.VortexLine:
+                    sw = Variable.SwitchVortexLine;
+                    messageKey = "AlchAssV3_message_vortex_line";
+                    break;
+                case Variable.SwitchDictionaryKey.PathCurve:
+                    sw = Variable.SwitchPathCurve;
+                    messageKey = "AlchAssV3_message_path_curve";
+                    break;
+                case Variable.SwitchDictionaryKey.VortexCurve:
+                    sw = Variable.SwitchVortexCurve;
+                    messageKey = "AlchAssV3_message_vortex_curve";
+                    break;
+                case Variable.SwitchDictionaryKey.TargetRange:
+                    sw = Variable.SwitchTargetRange;
+                    messageKey = "AlchAssV3_message_target_range";
+                    break;
+                case Variable.SwitchDictionaryKey.VortexRange:
+                    sw = Variable.SwitchVortexRange;
+                    messageKey = "AlchAssV3_message_vortex_range";
+                    break;
+                case Variable.SwitchDictionaryKey.AreaTracking:
+                    sw = Variable.SwitchAreaTracking;
+                    messageKey = "AlchAssV3_message_area_tracking";
+                    break;
+                case Variable.SwitchDictionaryKey.SwampScaling:
+                    sw = Variable.SwitchSwampScaling;
+                    messageKey = "AlchAssV3_message_swamp_scaling";
+                    break;
+                case Variable.SwitchDictionaryKey.Transparency:
+                    sw = Variable.SwitchTransparency;
+                    messageKey = "AlchAssV3_message_transparency";
+                    break;
+                case Variable.SwitchDictionaryKey.PolarMode:
+                    sw = Variable.SwitchPolarMode;
+                    messageKey = "AlchAssV3_message_polar_mode";
+                    break;
+                case Variable.SwitchDictionaryKey.SaltDegreeMode:
+                    sw = Variable.SwitchSaltDegreeMode;
+                    messageKey = "AlchAssV3_message_salt_degree_mode";
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(key), key, null);
+                    break;
+            }
+        }
+        #endregion
+
         #region 窗口与消息
         /// <summary>
         /// 加载调试窗口位置
@@ -31,7 +108,14 @@ namespace AlchAssV3
             var fileData = File.ReadAllText(Variable.WindowConfigPath);
             var windowConfig = JsonConvert.DeserializeObject<Variable.WindowConfigData>(fileData);
             for (int i = 0; i < Variable.DebugWindowPos.Length; i++)
-                Variable.DebugWindowPos[i] = new Vector3(windowConfig.positions[i].x, windowConfig.positions[i].y, 0f);
+                if (i < windowConfig.positions.Length)
+                {
+                    Variable.DebugWindowPos[i] = new Vector3(windowConfig.positions[i].x, windowConfig.positions[i].y, 0f);
+                }
+                else
+                {
+                    Variable.DebugWindowPos[i] = new Vector3(Variable.DefaultWindowConfig.positions[i].x, Variable.DefaultWindowConfig.positions[i].y, 0f);
+                }
         }
 
         /// <summary>
@@ -63,13 +147,14 @@ namespace AlchAssV3
         {
             if (!Variable.EnableWindows[index].Value || Variable.DebugWindows[index] != null)
                 return;
-            var Window = DebugWindow.Init(Variable.DefaultWindowConfig.positions[index].tag, true);
+            var Window = DebugWindow.Init(LocalizationManager.GetText(Variable.DefaultWindowConfig.positions[index].tag), true);
             Variable.ActiveDebugWindows.Add(Window);
             Window.ToForeground();
             Window.transform.SetParent(room.transform, false);
             Window.transform.localPosition = Variable.DebugWindowPos[index];
             Window.transform.localScale *= (float)Variable.WindowScale.Value;
-            Window.transform.Find("Maximized/Head").gameObject.SetActive(false);
+            if (index != 11)
+                Window.transform.Find("Maximized/Head").gameObject.SetActive(false);
             Variable.DebugWindows[index] = Window;
         }
 
@@ -79,6 +164,8 @@ namespace AlchAssV3
         public static void SpawnMessageText(string message)
         {
             var cursorPosition = Managers.Cursor.cursor.transform.position;
+            cursorPosition.x += UnityEngine.Random.Range(-3f, 3f);
+            cursorPosition.y += UnityEngine.Random.Range(-3f, 3f);
             var commonAtlasName = Settings<TMPManagerSettings>.Asset.CommonAtlasName;
             var formattedText = $"<voffset=0.085em><size=81%><sprite=\"{commonAtlasName}\" name=\"SpeechBubble ExclamationMark Icon\"></size>\u202f{message}";
             var textContent = new CollectedFloatingText.FloatingTextContent(formattedText, CollectedFloatingText.FloatingTextContent.Type.Text, 0f);
@@ -95,7 +182,7 @@ namespace AlchAssV3
         /// </summary>
         public static string FormatPosition(Vector2 position)
         {
-            if (Variable.PolarMode)
+            if (Variable.SwitchPolarMode.getState())
                 return $"""
                     r: {position.magnitude}
                     θ: {Vector2.SignedAngle(Vector2.right, position)}°
@@ -107,10 +194,11 @@ namespace AlchAssV3
         }
 
         /// <summary>
-        /// 格式化月盐文本
+        /// 格式化月旋转文本
         /// </summary>
-        public static string FormatMoonSalt(float rotation)
+        public static string FormatRotation(float rotation)
         {
+            if (!Variable.SwitchSaltDegreeMode.getState()) return $"{rotation * 9f / 25f}°";
             if (rotation < 0)
                 return $"<sprite=\"IconsAtlas\" name=\"MoonSalt\"> {-rotation}";
             return $"<sprite=\"IconsAtlas\" name=\"SunSalt\"> {rotation}";
@@ -128,52 +216,164 @@ namespace AlchAssV3
 
         #region 快捷键功能
         /// <summary>
-        /// 极坐标模式开关
+        /// Toggles the application's key mode between "Normal" and "Input" when the Backslash key is pressed.
         /// </summary>
-        public static void UpdatePolarMode()
+        /// <remarks>This method should be called regularly, such as within an input or update loop, to
+        /// detect and respond to the Backslash key press. The key mode is switched only if the current mode is either
+        /// "Normal" or "Input"; other values are ignored.</remarks>
+        public static void UpdateKeyMode()
         {
-            if (Variable.KeyPolarMode.Value.IsDown())
+            if (new KeyboardShortcut(KeyCode.Backslash).IsDown())
             {
-                Variable.PolarMode = !Variable.PolarMode;
-                SpawnMessageText($"极坐标模式{(Variable.PolarMode ? "已开启" : "已关闭")}");
+                switch (Variable.KeyMode)
+                {
+                    case "Normal":
+                        Variable.KeyMode = "Input";
+                        break;
+                    case "Input":
+                        Variable.KeyMode = "Normal";
+                        break;
+                    default:
+                        break;
+                }
             }
         }
 
         /// <summary>
-        /// 渲染元素开关
+        /// Processes keyboard input to update the floating-point input stream and auxiliary line directions when in
+        /// input mode.
         /// </summary>
-        public static void UpdateEnables()
+        /// <remarks>This method should be called regularly (such as once per frame) to capture and
+        /// process user keyboard input for floating-point values. It interprets specific key presses to build numeric
+        /// input, enqueue values, or modify auxiliary line directions. The method only processes input when the key
+        /// mode is set to "Input".</remarks>
+        public static void UpdateFloatInput()
         {
-            for (int i = 0; i < Variable.Enables.Length; i++)
-                if (Variable.Keys[i].Value.IsDown())
+            
+            if (Variable.KeyMode == "Input")
+            {
+                if (new KeyboardShortcut(KeyCode.Alpha0).IsDown())
                 {
-                    Variable.Enables[i] = !Variable.Enables[i];
-                    SpawnMessageText($"{Variable.MessageText[i]}{(Variable.Enables[i] ? "已开启" : "已关闭")}");
+                    Variable.FloatInputStream += "0";
                 }
+                else if (new KeyboardShortcut(KeyCode.Alpha1).IsDown())
+                {
+                    Variable.FloatInputStream += "1";
+                }
+                else if (new KeyboardShortcut(KeyCode.Alpha2).IsDown())
+                {
+                    Variable.FloatInputStream += "2";
+                }
+                else if (new KeyboardShortcut(KeyCode.Alpha3).IsDown())
+                {
+                    Variable.FloatInputStream += "3";
+                }
+                else if (new KeyboardShortcut(KeyCode.Alpha4).IsDown())
+                {
+                    Variable.FloatInputStream += "4";
+                }
+                else if (new KeyboardShortcut(KeyCode.Alpha5).IsDown())
+                {
+                    Variable.FloatInputStream += "5";
+                }
+                else if (new KeyboardShortcut(KeyCode.Alpha6).IsDown())
+                {
+                    Variable.FloatInputStream += "6";
+                }
+                else if (new KeyboardShortcut(KeyCode.Alpha7).IsDown())
+                {
+                    Variable.FloatInputStream += "7";
+                }
+                else if (new KeyboardShortcut(KeyCode.Alpha8).IsDown())
+                {
+                    Variable.FloatInputStream += "8";
+                }
+                else if (new KeyboardShortcut(KeyCode.Alpha9).IsDown())
+                {
+                    Variable.FloatInputStream += "9";
+                }
+                else if (new KeyboardShortcut(KeyCode.Period).IsDown())
+                {
+                    Variable.FloatInputStream += ".";
+                }
+                else if (new KeyboardShortcut(KeyCode.Comma).IsDown())
+                {
+                    Variable.FloatInputStream += "-";
+                }
+                else if (new KeyboardShortcut(KeyCode.Semicolon).IsDown())
+                {
+                    Variable.FloatInput.Enqueue(Variable.IndicatorPosition.x);
+                }
+                else if (new KeyboardShortcut(KeyCode.Quote).IsDown())
+                {
+                    Variable.FloatInput.Enqueue(Variable.IndicatorPosition.y);
+                }
+                else if (new KeyboardShortcut(KeyCode.Backspace).IsDown())
+                {
+                    Variable.FloatInputStream = "";
+                }
+                else if (new KeyboardShortcut(KeyCode.LeftBracket).IsDown())
+                {
+                    Variable.FloatInput = [];
+                    Variable.FloatInputStream = "";
+                }
+                else if (new KeyboardShortcut(KeyCode.RightBracket).IsDown())
+                {
+                    try
+                    {
+                        Variable.FloatInput.Enqueue(double.Parse(Variable.FloatInputStream));
+                    }
+                    catch (System.Exception) { }
+                    finally
+                    {
+                        Variable.FloatInputStream = "";
+                    }
+                }
+                else if (new KeyboardShortcut(KeyCode.Return).IsDown())
+                {
+                    if (Variable.FloatInput.Count >= 2)
+                    {
+                        int index = (int)Variable.FloatInput.Dequeue();
+                        index = Mathf.Min(index, Variable.MaxAuxiliaryLines - 1);
+                        index = Mathf.Max(index, 0);
+                        Variable.AuxiliaryLineDirections[index] = 90 - Variable.FloatInput.Dequeue();
+                    }
+                }
+                else if (new KeyboardShortcut(KeyCode.Return, KeyCode.RightControl).IsDown())
+                {
+                    if (Variable.FloatInput.Count >= 1)
+                    {
+                        int index = (int)Variable.FloatInput.Dequeue();
+                        index = Mathf.Min(index, Variable.MaxAuxiliaryLines - 1);
+                        index = Mathf.Max(index, 0);
+                        Variable.AuxiliaryLineDirections[index] = double.NaN;
+                    }
+                }
+            }
         }
 
         /// <summary>
-        /// 派生渲染元素开关
+        /// Updates the state of all switch controls based on the current key input and key mode.
         /// </summary>
-        public static void UpdateDerivedEnables()
+        /// <remarks>This method toggles the enabled or disabled state of each switch when its associated
+        /// key shortcut is pressed and the key mode is set to "Normal". A message is displayed to indicate the new
+        /// state of each switch. This method should be called in response to user input events where switch state
+        /// changes are expected.</remarks>
+        public static void UpdateSwitches()
         {
-            Variable.DerivedEnables[0] = Variable.Enables[0] && Variable.Enables[4];
-            Variable.DerivedEnables[1] = Variable.Enables[1];
-            Variable.DerivedEnables[2] = Variable.Enables[2];
-            Variable.DerivedEnables[3] = Variable.Enables[3];
-            Variable.DerivedEnables[4] = Variable.Enables[4];
-            Variable.DerivedEnables[5] = Variable.Enables[5];
-            Variable.DerivedEnables[6] = Variable.Enables[6];
-            Variable.DerivedEnables[7] = Variable.Enables[7];
-            Variable.DerivedEnables[8] = Variable.Enables[10];
-            Variable.DerivedEnables[9] = Variable.Enables[4] && Variable.Enables[6];
-            Variable.DerivedEnables[10] = Variable.Enables[1] && Variable.Enables[6];
-            Variable.DerivedEnables[11] = Variable.Enables[4] && Variable.Enables[7];
-            Variable.DerivedEnables[12] = Variable.Enables[1] && Variable.Enables[7];
-            Variable.DerivedEnables[13] = Variable.Enables[4] && Variable.Enables[8];
-            Variable.DerivedEnables[14] = Variable.Enables[1] && Variable.Enables[8];
-            Variable.DerivedEnables[15] = Variable.Enables[5] && Variable.Enables[8];
-            Variable.DerivedEnables[16] = Variable.Enables[4] && Variable.Enables[9];
+            foreach(Variable.SwitchDictionaryKey key in Enum.GetValues(typeof(Variable.SwitchDictionaryKey)))
+            {
+                if (Variable.KeyMode == "Normal")
+                {
+                    GetSwitchInfo(key, out var sw, out var messageKey);
+                    //if (sw.Key.IsDown())
+                    if (Variable.SwitchKeyShortcuts[key].Value.IsDown())
+                    {
+                        sw.state = !sw.state;
+                        SpawnMessageText($"""{LocalizationManager.GetText(messageKey)}{(sw.getState() ? LocalizationManager.GetText("AlchAssV3_enabled") : LocalizationManager.GetText("AlchAssV3_disabled"))}""");
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -181,16 +381,16 @@ namespace AlchAssV3
         /// </summary>
         public static void UpdateSelectEffect(InteractiveItem item)
         {
-            if (Variable.KeySelectEffect.Value.IsDown() && item != null)
+            if (Variable.KeyMode == "Normal" && Variable.SelectEffectKeyShortcut.Value.IsDown() && item != null )
             {
                 var name = item.name;
                 if (name == null)
                     return;
                 Variable.TargetEffect = Managers.RecipeMap.currentMap.referencesContainer.potionEffectsOnMap.FirstOrDefault(item => item.name == name);
                 if (Variable.TargetEffect != null)
-                    SpawnMessageText($"已选中效果: {Variable.TargetEffect.Effect.GetLocalizedTitle()}");
+                    SpawnMessageText($"""{LocalizationManager.GetText("AlchAssV3_popup_selected_effect")}{Variable.TargetEffect.Effect.GetLocalizedTitle()}""");
                 else
-                    SpawnMessageText($"已取消选中效果");
+                    SpawnMessageText($"""{LocalizationManager.GetText("AlchAssV3_subtitle_unselected_effect")}""");
             }
         }
 
@@ -204,29 +404,27 @@ namespace AlchAssV3
             var mapindex = Variable.CurrentMapID == "Water" ? 0 : 1;
             var vortexList = mapindex == 0 ? Variable.Vortex_Water : Variable.Vortex_Oil;
 
-            if (Variable.KeyNextVortex.Value.IsDown())
+            if (Variable.KeyMode == "Normal" && Variable.NextVortexKeyShortcut.Value.IsDown())
             {
                 Variable.VortexIndex[mapindex]++;
                 if (Variable.VortexIndex[mapindex] >= vortexList.Count)
                     Variable.VortexIndex[mapindex] = 0;
-                SpawnMessageText($"已选择第 {Variable.VortexIndex[mapindex] + 1} 个漩涡");
+                SpawnMessageText(string.Format(LocalizationManager.GetText("AlchAssV3_popup_selected_vortex"), Variable.VortexIndex[mapindex] + 1));
             }
 
-            if (Variable.KeyPrevVortex.Value.IsDown())
+            if (Variable.KeyMode == "Normal" && Variable.PrevVortexKeyShortcut.Value.IsDown())
             {
                 Variable.VortexIndex[mapindex]--;
                 if (Variable.VortexIndex[mapindex] < 0)
                     Variable.VortexIndex[mapindex] = vortexList.Count - 1;
-                SpawnMessageText($"已选择第 {Variable.VortexIndex[mapindex] + 1} 个漩涡");
+                SpawnMessageText(string.Format(LocalizationManager.GetText("AlchAssV3_popup_selected_vortex"), Variable.VortexIndex[mapindex] + 1));
             }
-
-            if (Variable.KeyNoneVortex.Value.IsDown())
+            if (Variable.KeyMode == "Normal" && Variable.UnselectVortexKeyShortcut.Value.IsDown())
             {
                 Variable.VortexIndex[mapindex] = -1;
-                SpawnMessageText("已取消漩涡选择");
+                SpawnMessageText(LocalizationManager.GetText("AlchAssV3_popup_unselected_vortex"));
             }
-
-            if (Variable.KeyNearVortex.Value.IsDown())
+            if (Variable.KeyMode == "Normal" && Variable.NearestVortexKeyShortcut.Value.IsDown())
             {
                 var indicatorPos = Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition;
                 var nearestIndex = -1;
@@ -243,7 +441,7 @@ namespace AlchAssV3
                     }
                 }
                 Variable.VortexIndex[mapindex] = nearestIndex;
-                SpawnMessageText($"已选择第 {Variable.VortexIndex[mapindex] + 1} 个漩涡");
+                SpawnMessageText(string.Format(LocalizationManager.GetText("AlchAssV3_popup_selected_vortex"), Variable.VortexIndex[mapindex] + 1));
             }
         }
         #endregion

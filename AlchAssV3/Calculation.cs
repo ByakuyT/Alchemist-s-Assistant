@@ -2,10 +2,12 @@
 using PotionCraft.ManagersSystem;
 using PotionCraft.ObjectBased.Mortar;
 using PotionCraft.ObjectBased.RecipeMap.RecipeMapItem.Zones;
+using PotionCraft.LocalizationSystem;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using PotionCraft.Markers;
 
 namespace AlchAssV3
 {
@@ -17,11 +19,11 @@ namespace AlchAssV3
         /// </summary>
         public static string CalculatePath()
         {
-            string devTotText = "不可用";
-            string devPosText = "不可用";
-            string closestDirText = "不可用";
-            string deltaAngelText = "不可用";
-            string lifeSaltText = "不可用";
+            string devTotText = LocalizationManager.GetText("AlchAssV3_unavailable");
+            string devPosText = LocalizationManager.GetText("AlchAssV3_unavailable");
+            string closestDirText = LocalizationManager.GetText("AlchAssV3_unavailable");
+            string deltaAngleText = LocalizationManager.GetText("AlchAssV3_unavailable");
+            string lifeSaltText = LocalizationManager.GetText("AlchAssV3_unavailable");
 
             if (!float.IsNaN(Variable.ClosestPositions[0].x))
             {
@@ -43,17 +45,17 @@ namespace AlchAssV3
             if (!double.IsNaN(Variable.LineDirections[0]) && !double.IsNaN(Variable.LineDirections[2]))
             {
                 var deltaAng = Mathf.DeltaAngle((float)Variable.LineDirections[0], (float)Variable.LineDirections[2]);
-                deltaAngelText = $"{deltaAng}°";
+                deltaAngleText = $"{deltaAng}°";
             }
 
             if (!double.IsNaN(Variable.DangerDistance[0]))
                 lifeSaltText = Function.FormatLifeSalt(Variable.DangerDistance[0]);
             return $"""
-                总体偏离: {devTotText}
-                位置偏离: {devPosText}
-                近点方向: {closestDirText}
-                目标夹角: {deltaAngelText}
-                血盐需求: {lifeSaltText}
+                {LocalizationManager.GetText("AlchAssV3_subtitle_total_deviation")}{devTotText}
+                {LocalizationManager.GetText("AlchAssV3_subtitle_position_deviation")}{devPosText}
+                {LocalizationManager.GetText("AlchAssV3_subtitle_closest_point_direction")}{closestDirText}
+                {LocalizationManager.GetText("AlchAssV3_subtitle_delta_angle_to_target")}{deltaAngleText}
+                {LocalizationManager.GetText("AlchAssV3_subtitle_life_salt")}{lifeSaltText}
                 """;
         }
 
@@ -62,11 +64,11 @@ namespace AlchAssV3
         /// </summary>
         public static string CalculateLadle()
         {
-            string devTotText = "不可用";
-            string devPosText = "不可用";
-            string closestDirText = "不可用";
-            string deltaAngelText = "不可用";
-            string lifeSaltText = "不可用";
+            string devTotText = LocalizationManager.GetText("AlchAssV3_unavailable");
+            string devPosText = LocalizationManager.GetText("AlchAssV3_unavailable");
+            string closestDirText = LocalizationManager.GetText("AlchAssV3_unavailable");
+            string deltaAngleText = LocalizationManager.GetText("AlchAssV3_unavailable");
+            string lifeSaltText = LocalizationManager.GetText("AlchAssV3_unavailable");
 
             if (!float.IsNaN(Variable.ClosestPositions[1].x))
             {
@@ -87,18 +89,18 @@ namespace AlchAssV3
 
             if (!double.IsNaN(Variable.LineDirections[1]) && !double.IsNaN(Variable.LineDirections[2]))
             {
-                var deltaAng = Mathf.DeltaAngle((float)Variable.LineDirections[1], (float)Variable.LineDirections[2]);
-                deltaAngelText = $"{deltaAng}°";
+                var deltaAngle = Mathf.DeltaAngle((float)Variable.LineDirections[1], (float)Variable.LineDirections[2]);
+                deltaAngleText = $"{deltaAngle}°";
             }
 
             if (!double.IsNaN(Variable.DangerDistance[1]))
                 lifeSaltText = Function.FormatLifeSalt(Variable.DangerDistance[1]);
             return $"""
-                总体偏离: {devTotText}
-                位置偏离: {devPosText}
-                近点方向: {closestDirText}
-                目标夹角: {deltaAngelText}
-                血盐需求: {lifeSaltText}
+                {LocalizationManager.GetText("AlchAssV3_subtitle_total_deviation")}{devTotText}
+                {LocalizationManager.GetText("AlchAssV3_subtitle_position_deviation")}{devPosText}
+                {LocalizationManager.GetText("AlchAssV3_subtitle_closest_point_direction")}{closestDirText}
+                {LocalizationManager.GetText("AlchAssV3_subtitle_delta_angle_to_target")}{deltaAngleText}
+                {LocalizationManager.GetText("AlchAssV3_subtitle_life_salt")}{lifeSaltText}
                 """;
         }
 
@@ -110,12 +112,12 @@ namespace AlchAssV3
             var stage = Managers.RecipeMap.path.deletedGraphicsSegments;
             var progress = Managers.RecipeMap.path.segmentLengthToDeletePhysics;
             var stir = stage + progress;
-            var pathDir = double.IsNaN(Variable.LineDirections[0]) ? "不可用" : $"{(float)Variable.LineDirections[0]}°";
-            var ladleDir = double.IsNaN(Variable.LineDirections[1]) ? "不可用" : $"{(float)Variable.LineDirections[1]}°";
+            var pathDir = double.IsNaN(Variable.LineDirections[0]) ? LocalizationManager.GetText("AlchAssV3_unavailable") : $"{(float)Variable.LineDirections[0]}°";
+            var ladleDir = double.IsNaN(Variable.LineDirections[1]) ? LocalizationManager.GetText("AlchAssV3_unavailable") : $"{(float)Variable.LineDirections[1]}°";
             return $"""
-                搅拌进度: {stir}
-                路径方向: {pathDir}
-                加水方向: {ladleDir}
+                {LocalizationManager.GetText("AlchAssV3_subtitle_stir_progression")}{stir}
+                {LocalizationManager.GetText("AlchAssV3_subtitle_path_direction")}{pathDir}
+                {LocalizationManager.GetText("AlchAssV3_subtitle_pour_direction")}{ladleDir}
                 """;
         }
 
@@ -131,13 +133,13 @@ namespace AlchAssV3
             Vector2 targetPos = Variable.TargetEffect.transform.localPosition;
             var targetRot = Mathf.DeltaAngle(Variable.TargetEffect.transform.localEulerAngles.z, 0f) / 9f * 25f;
             var posText = Function.FormatPosition(targetPos);
-            var rotText = Function.FormatMoonSalt(targetRot);
-            var dirText = double.IsNaN(Variable.LineDirections[2]) ? "不可用" : $"{(float)Variable.LineDirections[2]}°";
+            var rotText = Function.FormatRotation(targetRot);
+            var dirText = double.IsNaN(Variable.LineDirections[2]) ? LocalizationManager.GetText("AlchAssV3_unavailable") : $"{(float)Variable.LineDirections[2]}°";
             return $"""
-                目标效果: {targetId}
+                {LocalizationManager.GetText("AlchAssV3_subtitle_target_effect_id")}{targetId}
                 {posText}
-                旋转盐量: {rotText}
-                目标方向: {dirText}
+                {LocalizationManager.GetText("AlchAssV3_subtitle_rotation_salt")}{rotText}
+                {LocalizationManager.GetText("AlchAssV3_subtitle_target_direction")}{dirText}
                 """;
         }
 
@@ -148,10 +150,10 @@ namespace AlchAssV3
         {
             var rot = Mathf.DeltaAngle(Variable.IndicatorRotation, 0f) / 9f * 25f;
             var posText = Function.FormatPosition(Variable.IndicatorPosition);
-            var rotText = Function.FormatMoonSalt(rot);
+            var rotText = Function.FormatRotation(rot);
             return $"""
                 {posText}
-                旋转盐量: {rotText}
+                {LocalizationManager.GetText("AlchAssV3_subtitle_rotation_salt")}{rotText}
                 """;
         }
 
@@ -173,9 +175,9 @@ namespace AlchAssV3
             var lvlRot = devRot <= 100f ? 3 : devRot <= 600f ? 2 : 1;
             var lvlTot = devTot <= 100f ? 3 : devTot <= 600f ? 2 : devPos <= 2754f ? 1 : 0;
             return $"""
-                总体偏离: <color=red>L{lvlTot}</color> {devTot}%
-                位置偏离: <color=red>L{lvlPos}</color> {devPos}%
-                旋转偏离: <color=red>L{lvlRot}</color> {devRot}%
+                {LocalizationManager.GetText("AlchAssV3_subtitle_total_deviation")}<color=red>L{lvlTot}</color> {devTot}%
+                {LocalizationManager.GetText("AlchAssV3_subtitle_position_deviation")}<color=red>L{lvlPos}</color> {devPos}%
+                {LocalizationManager.GetText("AlchAssV3_subtitle_angle_deviation")}<color=red>L{lvlRot}</color> {devRot}%
                 """;
         }
 
@@ -184,17 +186,19 @@ namespace AlchAssV3
         /// </summary>
         public static string CalculateVortex()
         {
-            Vector2 vortexPos;
-            double maxDis;
-            double dirVortex;
-            var dangerDis = double.NaN;
+            Vector2 vortexPosition;
+            double maxDistance;
+            double vortexDirection = double.NaN;
+            double heatDirection = double.NaN;
+            double dangerDistance = double.NaN;
 
             if (Managers.RecipeMap.CurrentVortexMapItem != null)
             {
-                vortexPos = Managers.RecipeMap.CurrentVortexMapItem.thisTransform.localPosition;
-                maxDis = ((CircleCollider2D)Traverse.Create(Managers.RecipeMap.CurrentVortexMapItem).Field("vortexCollider").GetValue()).radius + Variable.IndicatorRadius;
-                dirVortex = Vector2.SignedAngle(Vector2.right, vortexPos - Variable.IndicatorPosition);
-                dangerDis = Variable.DangerDistance[2];
+                vortexPosition = Managers.RecipeMap.CurrentVortexMapItem.thisTransform.localPosition;
+                maxDistance = ((CircleCollider2D)Traverse.Create(Managers.RecipeMap.CurrentVortexMapItem).Field("vortexCollider").GetValue()).radius + Variable.IndicatorRadius;
+                vortexDirection = Vector2.SignedAngle(Vector2.right, vortexPosition - Variable.IndicatorPosition);
+                heatDirection = GetVortexMoveDirection();
+                dangerDistance = Variable.DangerDistance[2];
             }
             else
             {
@@ -206,20 +210,22 @@ namespace AlchAssV3
                 if (Variable.VortexIndex[mapindex] < 0)
                     return "";
 
-                var selVortex = vortexList[Variable.VortexIndex[mapindex]];
-                vortexPos = new Vector2((float)selVortex.x, (float)selVortex.y);
-                maxDis = selVortex.r;
-                dirVortex = Variable.LineDirections[3];
+                var selectedVortex = vortexList[Variable.VortexIndex[mapindex]];
+                vortexPosition = new Vector2((float)selectedVortex.x, (float)selectedVortex.y);
+                maxDistance = selectedVortex.r;
+                vortexDirection = Variable.LineDirections[3];
             }
 
-            var distance = Vector2.Distance(vortexPos, Variable.IndicatorPosition);
-            var dirText = double.IsNaN(dirVortex) ? "不可用" : $"{(float)dirVortex}°";
-            var lifeSaltText = double.IsNaN(dangerDis) ? "不可用" : Function.FormatLifeSalt(dangerDis);
+            var distance = Vector2.Distance(vortexPosition, Variable.IndicatorPosition);
+            var vortexDirectionText = double.IsNaN(vortexDirection) ? LocalizationManager.GetText("AlchAssV3_unavailable") : $"{(float)vortexDirection}°";
+            var heatDirectionText=double.IsNaN(heatDirection)? LocalizationManager.GetText("AlchAssV3_unavailable") : $"{(float)heatDirection}°";
+            var lifeSaltText = double.IsNaN(dangerDistance) ? LocalizationManager.GetText("AlchAssV3_unavailable") : Function.FormatLifeSalt(dangerDistance);
             return $"""
-                当前距离: {distance}
-                最大距离: {(float)maxDis}
-                漩涡方向: {dirText}
-                血盐需求: {lifeSaltText}
+                {LocalizationManager.GetText("AlchAssV3_subtitle_current_vortex_distance")}{distance}
+                {LocalizationManager.GetText("AlchAssV3_subtitle_maximal_vortex_distance")}{(float)maxDistance}
+                {LocalizationManager.GetText("AlchAssV3_subtitle_vortex_direction")}{vortexDirectionText}
+                {LocalizationManager.GetText("AlchAssV3_subtitle_heat_move_direction")}{heatDirectionText}
+                {LocalizationManager.GetText("AlchAssV3_subtitle_life_salt")}{lifeSaltText}
                 """;
         }
 
@@ -228,7 +234,7 @@ namespace AlchAssV3
         /// </summary>
         public static string CalculateHealth(float health)
         {
-            return $"当前血量: {health * 100f}%";
+            return $"{LocalizationManager.GetText("AlchAssV3_subtitle_current_health")}{health * 100f}%";
         }
 
         /// <summary>
@@ -238,7 +244,166 @@ namespace AlchAssV3
         {
             if (mortar.ContainedStack == null)
                 return "";
-            return $"研磨进度: {mortar.ContainedStack.overallGrindStatus * 100f}%";
+            return $"{LocalizationManager.GetText("AlchAssV3_subtitle_grinding_progression")}{mortar.ContainedStack.overallGrindStatus * 100f}%";
+        }
+
+        /// <summary>
+        /// 计算调试信息
+        /// </summary>
+        public static string CalculateDebug()
+        {
+            //var pathHints=Managers.RecipeMap.path.fixedPathHints;
+            //var _ox = pathHints.Count() == 0 ? -1 : pathHints[0].evenlySpacedPointsFixedPhysics.points[0].x;
+            //var _oy = pathHints.Count() == 0 ? -1 : pathHints[0].evenlySpacedPointsFixedPhysics.points[0].y;
+            //var ox = Managers.RecipeMap.indicator.thisTransform.position.x;
+            //var oy = Managers.RecipeMap.indicator.thisTransform.position.y;
+            var ox2 = Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition.x;
+            var oy2 = Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition.y;
+            var stage = Managers.RecipeMap.path.deletedGraphicsSegments;
+            var progress = Managers.RecipeMap.path.segmentLengthToDeletePhysics;
+            return $"""
+                {Managers.RecipeMap.indicator.thisTransform.localPosition.x}, {Managers.RecipeMap.indicator.thisTransform.localPosition.y}
+                ({ox2}, {oy2})
+                {stage}
+                {progress}
+                """;
+        }
+
+        /// <summary>
+        /// Generates a formatted string representation of the current input and mode variables.
+        /// </summary>
+        /// <remarks>The returned string includes values from the Variable.KeyMode, Variable.FloatInput,
+        /// Variable.FloatInputStage, and Variable.FloatInputStream properties. The format is intended for diagnostic or
+        /// logging purposes and may change if the structure of these variables changes.</remarks>
+        /// <returns>A multi-line string containing the key mode, a comma-separated list of float inputs in brackets, the float
+        /// input stage, and the float input stream.</returns>
+        public static string CalculateIO()
+        {
+            string repr = "";
+            foreach (var floatInput in Variable.FloatInput)
+            {
+                repr += $"{floatInput},";
+            }
+            repr = $"[{repr}]";
+            return $"""
+                {Variable.KeyMode}
+                {repr}
+                {Variable.FloatInputStage}
+                {Variable.FloatInputStream}
+                """;
+        }
+
+
+        /// <summary>
+        /// Retrieves information about a specified hotkey, including its associated switch, display color, and message key.
+        /// </summary>
+        /// <remarks>This method does not throw exceptions for unrecognized keys; in such cases, the out
+        /// parameters may be set to null or default values. The color output is determined by the current state of the
+        /// associated switch.</remarks>
+        /// <param name="key">The key identifying the hotkey for which information is requested.</param>
+        /// <param name="sw">When this method returns, contains the switch associated with the specified hotkey, or null if the key is
+        /// not recognized.</param>
+        /// <param name="color">When this method returns, contains the display color for the hotkey's state. Set to "green" if the switch is
+        /// active; otherwise, "red".</param>
+        /// <param name="messageKey">When this method returns, contains the message key string corresponding to the specified hotkey.</param>
+        private static void GetHotKeyInfo(Variable.SwitchDictionaryKey key, out Variable.Switch sw, out string color, out string messageKey)
+        {
+            sw = key switch
+            {
+                Variable.SwitchDictionaryKey.PathLine => Variable.SwitchPathLine,
+                Variable.SwitchDictionaryKey.LadleLine => Variable.SwitchLadleLine,
+                Variable.SwitchDictionaryKey.TargetLine => Variable.SwitchTargetLine,
+                Variable.SwitchDictionaryKey.VortexLine => Variable.SwitchVortexLine,
+                Variable.SwitchDictionaryKey.PathCurve => Variable.SwitchPathCurve,
+                Variable.SwitchDictionaryKey.VortexCurve => Variable.SwitchVortexCurve,
+                Variable.SwitchDictionaryKey.TargetRange => Variable.SwitchTargetRange,
+                Variable.SwitchDictionaryKey.VortexRange => Variable.SwitchVortexRange,
+                Variable.SwitchDictionaryKey.AreaTracking => Variable.SwitchAreaTracking,
+                Variable.SwitchDictionaryKey.SwampScaling => Variable.SwitchSwampScaling,
+                Variable.SwitchDictionaryKey.Transparency => Variable.SwitchTransparency,
+                Variable.SwitchDictionaryKey.PolarMode => Variable.SwitchPolarMode,
+                Variable.SwitchDictionaryKey.SaltDegreeMode => Variable.SwitchSaltDegreeMode,
+                _ => throw new NotImplementedException()
+            };
+            color = sw.getState() ? "green" : "red";
+            messageKey = key switch
+            {
+                Variable.SwitchDictionaryKey.PathLine => "AlchAssV3_message_path_line",
+                Variable.SwitchDictionaryKey.LadleLine => "AlchAssV3_message_ladle_line",
+                Variable.SwitchDictionaryKey.TargetLine => "AlchAssV3_message_target_line",
+                Variable.SwitchDictionaryKey.VortexLine => "AlchAssV3_message_vortex_line",
+                Variable.SwitchDictionaryKey.PathCurve => "AlchAssV3_message_path_curve",
+                Variable.SwitchDictionaryKey.VortexCurve => "AlchAssV3_message_vortex_curve",
+                Variable.SwitchDictionaryKey.TargetRange => "AlchAssV3_message_target_range",
+                Variable.SwitchDictionaryKey.VortexRange => "AlchAssV3_message_vortex_range",
+                Variable.SwitchDictionaryKey.AreaTracking => "AlchAssV3_message_area_tracking",
+                Variable.SwitchDictionaryKey.SwampScaling => "AlchAssV3_message_swamp_scaling",
+                Variable.SwitchDictionaryKey.Transparency => "AlchAssV3_message_transparency",
+                Variable.SwitchDictionaryKey.PolarMode => "AlchAssV3_message_polar_mode",
+                Variable.SwitchDictionaryKey.SaltDegreeMode => "AlchAssV3_message_salt_degree_mode",
+                _ => throw new NotImplementedException()
+            };
+        }
+
+        /// <summary>
+        /// Generates a formatted string describing the current set of hotkey assignments based on the active key mode
+        /// and context.
+        /// </summary>
+        /// <remarks>The returned string includes color-coded and localized descriptions for each hotkey,
+        /// reflecting the current map, vortex, and effect selection states. The output is intended for display in a
+        /// user interface to inform users of available hotkey actions and their corresponding keys.</remarks>
+        /// <returns>A string containing the hotkey descriptions and their current assignments, formatted for display. The
+        /// content and formatting depend on the current key mode and related state.</returns>
+        public static string CalculateHotkey()
+        {
+            string repr = "";
+            switch (Variable.KeyMode)
+            {
+                case "Normal":
+                    var mapIndex = Variable.CurrentMapID == "Water" ? 0 : Variable.CurrentMapID == "Oil" ? 1 : 2;
+                    repr+= $"""
+                        {LocalizationManager.GetText("AlchAssV3_hotkey_switch_key_mode")}{"Backslash"}{Environment.NewLine}
+                        """;
+                    foreach(Variable.SwitchDictionaryKey key in Enum.GetValues(typeof(Variable.SwitchDictionaryKey)))
+                    {
+                        try
+                        {
+                            GetHotKeyInfo(key, out var sw, out var color, out var messageKey);
+                            repr += $"""
+                            <color={color}>{LocalizationManager.GetText(messageKey)}</color>{Variable.SwitchKeyShortcuts[key].Value.Serialize()}{Environment.NewLine}
+                            """;
+                        }
+                        catch (NotImplementedException)
+                        {
+                            // Ignore unrecognized keys.
+                        }
+                    }
+                    repr+= $"""
+                        <color={(mapIndex == 2 ? "blue" : Variable.VortexIndex[mapIndex] >= 0 ? "green" : "red")}>{LocalizationManager.GetText("AlchAssV3_hotkey_select_prev_vortex")}</color>{Variable.PrevVortexKeyShortcut.Value.Serialize()}
+                        <color={(mapIndex == 2 ? "blue" : Variable.VortexIndex[mapIndex] >= 0 ? "green" : "red")}>{LocalizationManager.GetText("AlchAssV3_hotkey_select_next_vortex")}</color>{Variable.NextVortexKeyShortcut.Value.Serialize()}
+                        <color={(mapIndex == 2 ? "blue" : Variable.VortexIndex[mapIndex] >= 0 ? "green" : "red")}>{LocalizationManager.GetText("AlchAssV3_hotkey_select_near_vortex")}</color>{Variable.NearestVortexKeyShortcut.Value.Serialize()}
+                        <color={(mapIndex == 2 ? "blue" : Variable.VortexIndex[mapIndex] >= 0 ? "red" : "green")}>{LocalizationManager.GetText("AlchAssV3_hotkey_select_no_vortex")}</color>{Variable.UnselectVortexKeyShortcut.Value.Serialize()}
+                        <color={(Variable.TargetEffect == null ? "red" : "green")}>{LocalizationManager.GetText("AlchAssV3_hotkey_select_effect")}</color>{Variable.SelectEffectKeyShortcut.Value.Serialize()}
+                        """;
+                    break;
+                case "Input":
+                    repr = $"""
+                        {LocalizationManager.GetText("AlchAssV3_hotkey_switch_key_mode")}{"Backslash"}
+                        Input number: number keys.
+                        Input decimal dot: Period key.
+                        Input negative sign: Comma key.
+                        Submit number: RightBracket.
+                        Unsubmit all numbers: LeftBracket.
+                        <color={(Variable.FloatInput.Count < 2 ? "red" : "blue")}>Require 2 submitted number, index and angle:</color>
+                        Submit Auxiliary line: Return key.
+                        <color={(Variable.FloatInput.Count < 1 ? "red" : "blue")}>require 1 submitted number, index:</color>
+                        Unsubmit Auxiliary line: Return key + RightControl key.
+                        """;
+                    break;
+                default:
+                    break;
+            }
+            return repr;
         }
         #endregion
 
@@ -292,6 +457,33 @@ namespace AlchAssV3
             return Vector2.SignedAngle(Vector2.right, vortexPos - Variable.IndicatorPosition);
         }
 
+        public static double GetVortexMoveDirection()
+        {
+            // Wine base have no vortex.
+            if (Variable.CurrentMapID == "Wine")
+                return double.NaN;
+            // bottle not currently touch a vortex.
+            var curVortex = Managers.RecipeMap.CurrentVortexMapItem;
+            if (curVortex == null)
+                return double.NaN;
+
+            Vector2 vortexPos = curVortex.thisTransform.localPosition;
+            var maxDis = ((CircleCollider2D)Traverse.Create(curVortex).Field("vortexCollider").GetValue()).radius + Variable.IndicatorRadius;
+            var distance = Vector2.Distance(vortexPos, Variable.IndicatorPosition);
+            if (distance > maxDis + 1e-5)
+                return double.NaN;
+            var v = Variable.IndicatorPosition - vortexPos;
+            var num1 = v.magnitude;
+            if (num1 < 1e-5)
+            {
+                return double.NaN;
+            }
+            var rot = Math.Atan2(num1, Variable.VortexCurveA);
+            var num2 = Vector2.SignedAngle(Vector2.right, v) + rot * 180f / Mathf.PI - 180f;
+            return num2 > 180f ? num2 - 360f : num2 < -180f ? num2 + 360f : num2;
+        }
+
+
         /// <summary>
         /// 生成直线
         /// </summary>
@@ -304,7 +496,9 @@ namespace AlchAssV3
             var rad = theta * Math.PI / 180;
             var dx = Math.Cos(rad);
             var dy = Math.Sin(rad);
-            var yDev = Variable.BaseRenderPosition.y - Variable.IndicatorPosition.y;
+            // Variable.BaseRenderPosition won't update immediately after reload.
+            // var yDev = Variable.BaseRenderPosition.y - Variable.IndicatorPosition.y;
+            var yDev = Variable.CurrentMapID == "Water" ? -130f : Variable.CurrentMapID == "Oil" ? -283f : -391f;
             List<Vector3> points = [];
 
             if (Math.Abs(dx) > 1e-5)
@@ -338,7 +532,7 @@ namespace AlchAssV3
         public static void InitPathCurve(out List<(Vector3, bool)> PathPhysical, out List<(Vector3[], bool)> PathGraphical, out List<Vector2> swamppos)
         {
             PathPhysical = []; PathGraphical = []; swamppos = [];
-            if (!Variable.DerivedEnables[4])
+            if (!Variable.SwitchPathCurve.getState())
                 return;
 
             var pathHints = Managers.RecipeMap.path.fixedPathHints;
@@ -347,7 +541,7 @@ namespace AlchAssV3
 
             var mapTrans = Managers.RecipeMap.currentMap.referencesContainer.transform;
             var pathTrans = Managers.RecipeMap.path.thisTransform;
-            var yDev = Variable.BaseRenderPosition.y - Variable.IndicatorPosition.y;
+            var yDev = Variable.CurrentMapID == "Water" ? -130f : Variable.CurrentMapID == "Oil" ? -283f : -391f;
             var stIn = ZonePart.GetZonesActivePartsCount(typeof(SwampZonePart)) > 0;
             var stSet = Vector3.zero;
 
@@ -360,7 +554,7 @@ namespace AlchAssV3
                 if (points.Count() < 2) continue;
                 if (i == 0) points[0] = Variable.IndicatorPosition;
                 if (isTp) points = [points[0], points[points.Count - 1]];
-                if (Variable.DerivedEnables[16] && Variable.CurrentMapID == "Oil")
+                if (Variable.SwitchSwampScaling.getState() && Variable.CurrentMapID == "Oil")
                 {
                     Geometry.ScalePath(points, stIn, stSet, isTp, out var pointsSc, out var pos, out var edIn, out var edSet);
                     stIn = edIn; stSet = edSet; points = pointsSc;
@@ -379,7 +573,7 @@ namespace AlchAssV3
         public static void InitVortexCurve(out double[] Parameters, out Vector3[] Points)
         {
             Parameters = [double.NaN, double.NaN, double.NaN, double.NaN, double.NaN]; Points = [];
-            if (!Variable.DerivedEnables[5])
+            if (!Variable.SwitchVortexCurve.getState())
                 return;
 
             var curVortex = Managers.RecipeMap.CurrentVortexMapItem;
@@ -398,7 +592,7 @@ namespace AlchAssV3
             var minAng = (maxDis - Variable.MaxVortexDanger) / Variable.VortexCurveA;
             Parameters = [vortexPos.x, vortexPos.y, rot, maxAng, minAng];
 
-            var yDev = Variable.BaseRenderPosition.y - Variable.IndicatorPosition.y;
+            var yDev = Variable.CurrentMapID == "Water" ? -130f : Variable.CurrentMapID == "Oil" ? -283f : -391f;
             Points = new Vector3[Math.Max(10, (int)(distance * 250))];
             for (int i = 0; i < Points.Length; i++)
             {
@@ -411,7 +605,8 @@ namespace AlchAssV3
                 var y_rot = x * Math.Sin(rot) + y * Math.Cos(rot) + vortexPos.y + yDev;
                 Points[i] = new Vector3((float)x_rot, (float)y_rot, 0);
             }
-            Points = [.. Points.AddItem(new Vector3(Variable.IndicatorPosition.x, Variable.BaseRenderPosition.y, 0))];
+            //var yDev = Variable.CurrentMapID == "Water" ? -130f : Variable.CurrentMapID == "Oil" ? -283f : -391f;
+            Points = [.. Points.AddItem(new Vector3(Variable.IndicatorPosition.x, yDev + Variable.IndicatorPosition.y, 0))];
         }
 
         /// <summary>
@@ -420,7 +615,7 @@ namespace AlchAssV3
         public static void InitRange(double rad, double cx, double cy, out Vector3[] Points)
         {
             var r = rad - Variable.LineWidth.Value * 0.5;
-            var yDev = Variable.BaseRenderPosition.y - Variable.IndicatorPosition.y;
+            var yDev = Variable.CurrentMapID == "Water" ? -130f : Variable.CurrentMapID == "Oil" ? -283f : -391f;
             Points = new Vector3[Math.Max(10, (int)(r * 250))];
             for (int i = 0; i < Points.Length; i++)
             {
@@ -472,15 +667,15 @@ namespace AlchAssV3
             }
             var vortexIn = Variable.VortexParameters[3] > Variable.VortexParameters[4];
 
-            var closePathEn = Variable.DerivedEnables[4] && targetVaild;
-            var closeLadleEn = Variable.DerivedEnables[1] && targetVaild;
-            var targetPathEn = Variable.DerivedEnables[9] && targetVaild;
-            var targetLadleEn = Variable.DerivedEnables[10] && targetVaild;
-            var vortexPathEn = Variable.DerivedEnables[11] && vortexVaild;
-            var vortexLadleEn = Variable.DerivedEnables[12] && vortexVaild;
-            var dangerPathEn = Variable.DerivedEnables[13];
-            var dangerLadleEn = Variable.DerivedEnables[14];
-            var dangerVortexEn = Variable.DerivedEnables[15] && vortexIn;
+            var closePathEn = Variable.SwitchPathCurve.getState() && targetVaild;
+            var closeLadleEn = Variable.SwitchLadleLine.getState() && targetVaild;
+            var targetPathEn = Variable.SwitchPathTargetPoint.getState() && targetVaild;
+            var targetLadleEn = Variable.SwitchLadleTargetPoint.getState() && targetVaild;
+            var vortexPathEn = Variable.SwitchPathVortexPoint.getState() && vortexVaild;
+            var vortexLadleEn = Variable.SwitchLadleVortexPoint.getState() && vortexVaild;
+            var dangerPathEn = Variable.SwitchPathDangerPoint.getState();
+            var dangerLadleEn = Variable.SwitchLadleDangerPoint.getState();
+            var dangerVortexEn = Variable.SwitchVortexDangerPoint.getState() && vortexIn;
 
             var lenPath = Variable.PathPhysical.Count() - 1;
             if (lenPath > 0)

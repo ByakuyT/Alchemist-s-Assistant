@@ -2,9 +2,12 @@
 using BepInEx.Configuration;
 using HarmonyLib;
 using PotionCraft.DebugObjects.DebugWindows;
+using PotionCraft.LocalizationSystem;
 using PotionCraft.ManagersSystem;
 using PotionCraft.ManagersSystem.Cursor;
 using PotionCraft.ManagersSystem.SaveLoad;
+using PotionCraft.ManagersSystem.Npc;
+using PotionCraft.QuestSystem;
 using PotionCraft.ObjectBased;
 using PotionCraft.ObjectBased.InteractiveItem;
 using PotionCraft.ObjectBased.Mortar;
@@ -13,12 +16,79 @@ using PotionCraft.ObjectBased.RecipeMap.RecipeMapItem.SolventDirectionHint;
 using PotionCraft.ObjectBased.UIElements;
 using System.IO;
 using UnityEngine;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System;
 
 namespace AlchAssV3
 {
-    [BepInPlugin("AlchAssV3", "Alchemist's Assistant V3", "1.0.0")]
+    [BepInPlugin("AlchAssV3", "Alchemist's Assistant V3", "1.1.0")]
     public class Main : BaseUnityPlugin
     {
+        #region Constants
+
+        public static void BindSwitchKeyInfo(Variable.SwitchDictionaryKey key, out string info, out KeyboardShortcut defaultKeyShortcut)
+        {
+            switch (key)
+            {
+                case Variable.SwitchDictionaryKey.PathLine:
+                    info = "路径方向线";
+                    defaultKeyShortcut = new KeyboardShortcut(KeyCode.Alpha1, KeyCode.LeftControl);
+                    break;
+                case Variable.SwitchDictionaryKey.LadleLine:
+                    info = "加水方向线";
+                    defaultKeyShortcut = new KeyboardShortcut(KeyCode.Alpha2, KeyCode.LeftControl);
+                    break;
+                case Variable.SwitchDictionaryKey.TargetLine:
+                    info = "目标方向线";
+                    defaultKeyShortcut = new KeyboardShortcut(KeyCode.Alpha3, KeyCode.LeftControl);
+                    break;
+                case Variable.SwitchDictionaryKey.VortexLine:
+                    info = "漩涡方向线";
+                    defaultKeyShortcut = new KeyboardShortcut(KeyCode.Alpha4, KeyCode.LeftControl);
+                    break;
+                case Variable.SwitchDictionaryKey.PathCurve:
+                    info = "路径曲线";
+                    defaultKeyShortcut = new KeyboardShortcut(KeyCode.Alpha5, KeyCode.LeftControl);
+                    break;
+                case Variable.SwitchDictionaryKey.VortexCurve:
+                    info = "漩涡曲线";
+                    defaultKeyShortcut = new KeyboardShortcut(KeyCode.Alpha6, KeyCode.LeftControl);
+                    break;
+                case Variable.SwitchDictionaryKey.TargetRange:
+                    info = "目标范围";
+                    defaultKeyShortcut = new KeyboardShortcut(KeyCode.Alpha7, KeyCode.LeftControl);
+                    break;
+                case Variable.SwitchDictionaryKey.VortexRange:
+                    info = "漩涡范围";
+                    defaultKeyShortcut = new KeyboardShortcut(KeyCode.Alpha8, KeyCode.LeftControl);
+                    break;
+                case Variable.SwitchDictionaryKey.AreaTracking:
+                    info = "区域追踪";
+                    defaultKeyShortcut = new KeyboardShortcut(KeyCode.Alpha9, KeyCode.LeftControl);
+                    break;
+                case Variable.SwitchDictionaryKey.SwampScaling:
+                    info = "沼泽收缩";
+                    defaultKeyShortcut = new KeyboardShortcut(KeyCode.Alpha0, KeyCode.LeftControl);
+                    break;
+                case Variable.SwitchDictionaryKey.Transparency:
+                    info = "透明瓶身";
+                    defaultKeyShortcut = new KeyboardShortcut(KeyCode.BackQuote, KeyCode.LeftControl);
+                    break;
+                case Variable.SwitchDictionaryKey.PolarMode:
+                    info = "极坐标模式";
+                    defaultKeyShortcut = new KeyboardShortcut(KeyCode.Alpha6, KeyCode.LeftAlt);
+                    break;
+                case Variable.SwitchDictionaryKey.SaltDegreeMode:
+                    info = "盐度模式";
+                    defaultKeyShortcut = new KeyboardShortcut(KeyCode.Alpha7, KeyCode.LeftAlt);
+                    break;
+                default:
+                    throw new InvalidEnumArgumentException();
+            }
+        }
+        #endregion
+
         #region Unity - 生命周期
         /// <summary>
         /// 游戏初始化时
@@ -34,6 +104,9 @@ namespace AlchAssV3
             Variable.EnableWindows[6] = Config.Bind("窗口设置", "漩涡信息", true);
             Variable.EnableWindows[7] = Config.Bind("窗口设置", "血量信息", true);
             Variable.EnableWindows[8] = Config.Bind("窗口设置", "研磨信息", true);
+            Variable.EnableWindows[9] = Config.Bind("窗口设置", "调试信息", true);
+            Variable.EnableWindows[10] = Config.Bind("窗口设置", "IO信息", true);
+            Variable.EnableWindows[11] = Config.Bind("窗口设置", "快捷键信息", true);
 
             Variable.Colors[0] = Config.Bind("颜色设置", "路径方向线", new Color(0.1f, 0.8f, 0.1f));
             Variable.Colors[1] = Config.Bind("颜色设置", "加水方向线", new Color(0.1f, 0.1f, 0.8f));
@@ -48,24 +121,19 @@ namespace AlchAssV3
             Variable.Colors[10] = Config.Bind("颜色设置", "交会点", new Color(0.1f, 0.6f, 0.6f));
             Variable.Colors[11] = Config.Bind("颜色设置", "失败点", new Color(0.8f, 0.0f, 0.2f));
 
-            Variable.Keys[0] = Config.Bind("快捷键设置", "路径方向线", new KeyboardShortcut(KeyCode.Alpha1, KeyCode.LeftControl));
-            Variable.Keys[1] = Config.Bind("快捷键设置", "加水方向线", new KeyboardShortcut(KeyCode.Alpha2, KeyCode.LeftControl));
-            Variable.Keys[2] = Config.Bind("快捷键设置", "目标方向线", new KeyboardShortcut(KeyCode.Alpha3, KeyCode.LeftControl));
-            Variable.Keys[3] = Config.Bind("快捷键设置", "漩涡方向线", new KeyboardShortcut(KeyCode.Alpha4, KeyCode.LeftControl));
-            Variable.Keys[4] = Config.Bind("快捷键设置", "路径曲线", new KeyboardShortcut(KeyCode.Alpha5, KeyCode.LeftControl));
-            Variable.Keys[5] = Config.Bind("快捷键设置", "漩涡曲线", new KeyboardShortcut(KeyCode.Alpha6, KeyCode.LeftControl));
-            Variable.Keys[6] = Config.Bind("快捷键设置", "目标范围", new KeyboardShortcut(KeyCode.Alpha7, KeyCode.LeftControl));
-            Variable.Keys[7] = Config.Bind("快捷键设置", "漩涡范围", new KeyboardShortcut(KeyCode.Alpha8, KeyCode.LeftControl));
-            Variable.Keys[8] = Config.Bind("快捷键设置", "区域追踪", new KeyboardShortcut(KeyCode.Alpha9, KeyCode.LeftControl));
-            Variable.Keys[9] = Config.Bind("快捷键设置", "沼泽收缩", new KeyboardShortcut(KeyCode.Alpha0, KeyCode.LeftControl));
-            Variable.Keys[10] = Config.Bind("快捷键设置", "透明瓶身", new KeyboardShortcut(KeyCode.BackQuote, KeyCode.LeftControl));
+            // switch keys
+            foreach (Variable.SwitchDictionaryKey key in Enum.GetValues(typeof(Variable.SwitchDictionaryKey)))
+            {
+                BindSwitchKeyInfo(key, out string info, out KeyboardShortcut defaultKeyShortcut);
+                Variable.SwitchKeyShortcuts[key] = Config.Bind("快捷键设置", info, defaultKeyShortcut);
+            }
 
-            Variable.KeyPrevVortex = Config.Bind("快捷键设置", "上一个漩涡", new KeyboardShortcut(KeyCode.Alpha1, KeyCode.LeftAlt));
-            Variable.KeyNextVortex = Config.Bind("快捷键设置", "下一个漩涡", new KeyboardShortcut(KeyCode.Alpha2, KeyCode.LeftAlt));
-            Variable.KeyNearVortex = Config.Bind("快捷键设置", "选择最近漩涡", new KeyboardShortcut(KeyCode.Alpha3, KeyCode.LeftAlt));
-            Variable.KeyNoneVortex = Config.Bind("快捷键设置", "取消漩涡选择", new KeyboardShortcut(KeyCode.Alpha4, KeyCode.LeftAlt));
-            Variable.KeySelectEffect = Config.Bind("快捷键设置", "选择效果", new KeyboardShortcut(KeyCode.Alpha5, KeyCode.LeftAlt));
-            Variable.KeyPolarMode = Config.Bind("快捷键设置", "极坐标模式", new KeyboardShortcut(KeyCode.Alpha6, KeyCode.LeftAlt));
+            // non-switch keys
+            Variable.PrevVortexKeyShortcut = Config.Bind("快捷键设置", "上一个漩涡", new KeyboardShortcut(KeyCode.Alpha1, KeyCode.LeftAlt));
+            Variable.NextVortexKeyShortcut = Config.Bind("快捷键设置", "下一个漩涡", new KeyboardShortcut(KeyCode.Alpha2, KeyCode.LeftAlt));
+            Variable.NearestVortexKeyShortcut = Config.Bind("快捷键设置", "选择最近漩涡", new KeyboardShortcut(KeyCode.Alpha3, KeyCode.LeftAlt));
+            Variable.UnselectVortexKeyShortcut = Config.Bind("快捷键设置", "取消漩涡选择", new KeyboardShortcut(KeyCode.Alpha4, KeyCode.LeftAlt));
+            Variable.SelectEffectKeyShortcut = Config.Bind("快捷键设置", "选择效果", new KeyboardShortcut(KeyCode.Alpha5, KeyCode.LeftAlt));
 
             Variable.LineWidth = Config.Bind("其他设置", "渲染线宽", 0.075);
             Variable.NodeSize = Config.Bind("其他设置", "渲染点大小", 0.15);
@@ -75,7 +143,7 @@ namespace AlchAssV3
             Function.LoadDebugWindowPos();
             Function.LoadFromBin();
             Rendering.CreateMaterialAndSprites();
-
+            LocalizationManager.OnInitialize.AddListener(Localization.SetAllLocalizations);
             Harmony.CreateAndPatchAll(typeof(Main));
             Logger.LogInfo("Alchemist's Assistant V3 插件已加载");
         }
@@ -85,9 +153,9 @@ namespace AlchAssV3
         /// </summary>
         public void Update()
         {
-            Function.UpdateEnables();
-            Function.UpdateDerivedEnables();
-            Function.UpdatePolarMode();
+            Function.UpdateKeyMode();
+            Function.UpdateFloatInput();
+            Function.UpdateSwitches();
             Function.UpdateSelectVortex();
         }
         #endregion
@@ -118,10 +186,11 @@ namespace AlchAssV3
             Calculation.InitVortexCurve(out Variable.VortexParameters, out Variable.VortexGraphical);
             Calculation.InitPoints(___health, out Variable.ClosestPositions, out Variable.DefeatPositions, out Variable.DangerPositions, out Variable.IntersectionPositions, out Variable.DangerDistance);
 
-            Variable.LineDirections[0] = Variable.DerivedEnables[0] ? Calculation.GetPathLineDirection() : double.NaN;
-            Variable.LineDirections[1] = Variable.DerivedEnables[1] ? Calculation.GetLadleLineDirection() : double.NaN;
-            Variable.LineDirections[2] = Variable.DerivedEnables[2] ? Calculation.GetTargetLineDirection() : double.NaN;
-            Variable.LineDirections[3] = Variable.DerivedEnables[3] ? Calculation.GetVortexLineDirection() : double.NaN;
+            Variable.LineDirections[0] = Variable.SwitchPathDirection.getState() ? Calculation.GetPathLineDirection() : double.NaN;
+            Variable.LineDirections[1] = Variable.SwitchLadleLine.getState() ? Calculation.GetLadleLineDirection() : double.NaN;
+            Variable.LineDirections[2] = Variable.SwitchTargetLine.getState() ? Calculation.GetTargetLineDirection() : double.NaN;
+            Variable.LineDirections[3] = Variable.SwitchVortexLine.getState() ? Calculation.GetVortexLineDirection() : double.NaN;
+            Variable.LineDirections[4] = Variable.SwitchVortexCurve.getState() ? Calculation.GetVortexMoveDirection() : double.NaN;
 
             Variable.DebugWindows[0]?.ShowText(Calculation.CalculatePath());
             Variable.DebugWindows[1]?.ShowText(Calculation.CalculateLadle());
@@ -131,6 +200,10 @@ namespace AlchAssV3
             Variable.DebugWindows[5]?.ShowText(Calculation.CalculateDeviation());
             Variable.DebugWindows[6]?.ShowText(Calculation.CalculateVortex());
             Variable.DebugWindows[7]?.ShowText(Calculation.CalculateHealth(___health));
+
+            Variable.DebugWindows[9]?.ShowText(Calculation.CalculateDebug());
+            Variable.DebugWindows[10]?.ShowText(Calculation.CalculateIO());
+            Variable.DebugWindows[11]?.ShowText(Calculation.CalculateHotkey());
 
             Rendering.SetTransparency();
             Rendering.SetNodeRenderers();
@@ -202,5 +275,7 @@ namespace AlchAssV3
                     Function.InitDebugWindow(i, __instance);
         }
         #endregion
+
+        //PotionCraft.Settings.Settings<int>
     }
 }
