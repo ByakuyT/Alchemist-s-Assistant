@@ -1,10 +1,8 @@
-﻿using BepInEx;
-using BepInEx.Configuration;
+﻿using BepInEx.Configuration;
 using PotionCraft.DebugObjects.DebugWindows;
 using PotionCraft.ObjectBased.RecipeMap.RecipeMapItem.PotionEffectMapItem;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using UnityEngine;
 
 namespace System.Runtime.CompilerServices
@@ -17,152 +15,184 @@ namespace AlchAssV3
     internal class Variable
     {
         #region 配置数据
-        public static ConfigEntry<double> LineWidth;
-        public static ConfigEntry<double> NodeSize;
-        public static ConfigEntry<double> WindowScale;
-        public static ConfigEntry<KeyboardShortcut> KeyPolarMode;
-        public static ConfigEntry<KeyboardShortcut> KeySelectEffect;
-        public static ConfigEntry<KeyboardShortcut> KeyNextVortex;
-        public static ConfigEntry<KeyboardShortcut> KeyPrevVortex;
-        public static ConfigEntry<KeyboardShortcut> KeyNearVortex;
-        public static ConfigEntry<KeyboardShortcut> KeyNoneVortex;
+        public static ConfigEntry<KeyboardShortcut> KeyWindow;
+        public static ConfigEntry<KeyboardShortcut> KeyEffect;
+        public static ConfigEntry<KeyboardShortcut> KeyVortex;
+        public static ConfigEntry<KeyboardShortcut> KeyCustom;
 
-        // 0 - Path; 1 - Ladle; 2 - Move; 3 - Target; 4 - Position; 5 - Deviation; 6 - Vortex; 7 - Health; 8 - Grind
-        public static ConfigEntry<bool>[] EnableWindows = new ConfigEntry<bool>[9];
-        // 0 - PathLine; 1 - LadleLine; 2 - TargetLine; 3 - VortexLine; 4 - PathCurveOdd; 5 - PathCurveEven; 6 - VortexCurve
-        // 7 - Range; 8 - ClosestPoint; 9 - DangerPoint; 10 - IntersectionPoint; 11 - DefeatPoint
-        public static ConfigEntry<Color>[] Colors = new ConfigEntry<Color>[12];
-        // 0 - PathLine; 1 - LadleLine; 2 - TargetLine; 3 - VortexLine; 4 - PathCurve; 5 - VortexCurve
-        // 6 - TargetRange; 7 - VortexRange; 8 - DangerRange; 9 - SwampScale; 10 - Transparency
-        public static ConfigEntry<KeyboardShortcut>[] Keys = new ConfigEntry<KeyboardShortcut>[11];
+        public static ConfigEntry<float> LineWidth;
+        public static ConfigEntry<float> NodeSize;
+        public static ConfigEntry<float> WindowScale;
+
+        public static ConfigEntry<Color> ColorVortex;
+        public static ConfigEntry<Color> ColorRange;
+        public static ConfigEntry<Color> ColorClosest;
+        public static ConfigEntry<Color> ColorDanger;
+        public static ConfigEntry<Color> ColorIntersection;
+        public static ConfigEntry<Color> ColorDefeat;
+        public static ConfigEntry<Color> ColorCustomNormal;
+        public static ConfigEntry<Color> ColorCustomHover;
+        public static ConfigEntry<Color>[] ColorPaths = new ConfigEntry<Color>[2];
+        public static ConfigEntry<Color>[] ColorLines = new ConfigEntry<Color>[5];
+        // 0 - 路径切向线; 1 - 加水方向线; 2 - 效果径向线; 3 - 漩涡径向线; 4 - 漩涡切向线
+
+        public static ConfigEntry<Rect> WindowRectConfig;
+        public static ConfigEntry<Vector3>[] WindowPositions = new ConfigEntry<Vector3>[9];
+        // 0 - 路径; 1 - 加水; 2 - 移动; 3 - 效果; 4 - 位置; 5 - 偏离; 6 - 漩涡; 7 - 血量; 8 - 研磨
         #endregion
 
         #region 只读数据
-        public static readonly int BaseLayer = 8;
-        public static readonly int BaseSortingOrder = 1;
-        public static readonly double IndicatorRadius = 0.74;
-        public static readonly double VortexCurveA = 1 / (2 * Math.PI);
-        public static readonly double MaxVortexDanger = 1.55;
-        public static readonly string BaseSortingLayerName = "RecipeMapIndicator";
-        public static readonly string ConfigPath = Path.Combine(Path.GetDirectoryName(Paths.PluginPath), "config/AlchAssV3");
-        public static readonly string WindowConfigPath = Path.Combine(Path.GetDirectoryName(Paths.PluginPath), "config/AlchAssV3/WindowConfig.json");
-        public static readonly WindowConfigData DefaultWindowConfig = new()
-        {
-            positions =
-            [
-                new() { tag = "路径信息", x = -12.5f, y = -2.3f },
-                new() { tag = "加水信息", x = -12.5f, y = -4.6f },
-                new() { tag = "移动信息", x = -9.9f, y = -5.2f },
-                new() { tag = "目标信息", x = -4.9f, y = -4.6f },
-                new() { tag = "位置信息", x = -2.4f, y = -5.2f },
-                new() { tag = "偏离信息", x = -7.5f, y = -5.2f },
-                new() { tag = "漩涡信息", x = 7.6f, y = -4.9f },
-                new() { tag = "血量信息", x = 10.0f, y = -4.9f },
-                new() { tag = "研磨信息", x = 10.0f, y = -5.9f },
-            ]
-        };
-
-        public static readonly string[] MessageText =
-        [
-            "路径方向线",
-            "加水方向线",
-            "目标方向线",
-            "漩涡方向线",
-            "路径曲线",
-            "漩涡曲线",
-            "目标范围",
-            "漩涡范围",
-            "区域追踪",
-            "沼泽收缩",
-            "透明瓶身",
-        ];
-        #endregion
-
-        #region 信息窗口
-        // 0 - Path; 1 - Ladle; 2 - Move; 3 - Target; 4 - Position; 5 - Deviation; 6 - Vortex; 7 - Health; 8 - Grind
-        public static Vector3[] DebugWindowPos = new Vector3[9];
-        public static DebugWindow[] DebugWindows = new DebugWindow[9];
-        public static List<DebugWindow> ActiveDebugWindows = [];
+        public static readonly double VortexA = 1 / (2 * Math.PI);
+        public static readonly Font Font = Font.CreateDynamicFontFromOSFont("Microsoft YaHei", 16);
+        public static readonly Dictionary<string, int> MapId = new() { { "Water", 0 }, { "Oil", 1 }, { "Wine", 2 } };
+        public static readonly string[] WindowTags = ["路径", "加水", "移动", "效果", "位置", "偏离", "漩涡", "血量", "研磨"];
         #endregion
 
         #region 渲染材质
+        public static Texture2D WindowTexture;
         public static Material SolidMaterial;
         public static Material DashedMaterial;
-        public static Sprite SquareSprite;
         public static Sprite RoundSprite;
+        public static Sprite SquareSprite;
 
         public static LineRenderer VortexCurve;
         public static LineRenderer VortexRange;
-        public static LineRenderer[] Lines = new LineRenderer[4];
-        public static LineRenderer[] TargetRanges = new LineRenderer[2];
-        public static SpriteRenderer[] TargetDisks = new SpriteRenderer[2];
-        public static SpriteRenderer[] ClosestPoints = new SpriteRenderer[2];
-        public static SpriteRenderer[] DefeatPoints = new SpriteRenderer[3];
+        public static LineRenderer IndicatorRange;
+        public static LineRenderer IndicatorDirection;
+        public static LineRenderer EffectRangeOuter;
+        public static LineRenderer EffectRangeMiddle;
+        public static LineRenderer[] Lines = new LineRenderer[5];
+        // 0 - 路径切向线; 1 - 加水方向线; 2 - 效果径向线; 3 - 漩涡径向线; 4 - 漩涡切向线
         public static List<LineRenderer> PathCurves = [];
+        public static List<LineRenderer> CustomLines = [];
+
+        public static SpriteRenderer BaseLadleRenderer;
+        public static SpriteRenderer EffectDiskMiddle;
+        public static SpriteRenderer EffectDiskInner;
+        public static SpriteRenderer[] ClosestPoints = new SpriteRenderer[2];
+        // 0 - 路径; 1 - 加水
+        public static SpriteRenderer[] DefeatPoints = new SpriteRenderer[3];
+        // 0 - 路径; 1 - 加水; 2 - 漩涡
         public static List<SpriteRenderer> SwampPoints = [];
-        public static List<SpriteRenderer>[] IntersectionPoints = [[], [], [], []];
         public static List<SpriteRenderer>[] DangerPoints = [[], [], []];
+        // 0 - 路径; 1 - 加水; 2 - 漩涡
+        public static List<SpriteRenderer>[] IntersectionPoints = [[], [], [], []];
+        // 0 - 路径和效果; 1 - 路径和漩涡; 2 - 加水和效果; 3 - 加水和漩涡
+        #endregion
+
+        #region 窗口样式
+        public static GUIStyle WindowStyle;
+        public static GUIStyle CategoryStyle;
+        public static GUIStyle ToggleStyle;
+        public static GUIStyle ButtonStyle;
+        public static GUIStyle TextFieldStyle;
+        public static GUIStyle TextFieldErrorStyle;
+        public static GUIStyle LabelStyle;
+        public static GUIStyle DeleteButtonStyle;
+        public static GUIStyle SliderStyle;
         #endregion
 
         #region 功能开关
-        public static bool PolarMode = false;
+        public static bool ShowWindow = false;
+        public static bool IsResizing = false;
+        public static bool EnableExpand = true;
+        public static bool DisplayExpand = true;
+        public static bool ActionExpand = true;
+        public static bool CustomListExpand = true;
 
-        // 0 - PathLine; 1 - LadleLine; 2 - TargetLine; 3 - VortexLine; 4 - PathCurve; 5 - VortexCurve
-        // 6 - TargetRange; 7 - VortexRange; 8 - DangerRange; 9 - SwampScale; 10 - Transparency
-        public static bool[] Enables = [false, false, false, false, false, false, false, false, false, false, false];
-        // 0 - PathLine; 1 - LadleLine; 2 - TargetLine; 3 - VortexLine; 4 - PathCurve; 5 - VortexCurve
-        // 6 - TargetRange; 7 - VortexRange; 8 - Transparency; 9 - PathTargetPoint; 10 - LadleTargetPoint
-        // 11 - PathVortexPoint; 12 - LadleVortexPoint; 13 - PathDangerPoint; 14 - LadleDangerPoint; 15 - VortexDangerPoint; 16 - SwampPoint
-        public static bool[] DerivedEnables = [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false];
+        public static bool EnablePathLine = false;
+        public static bool EnableLadleLine = false;
+        public static bool EnableEffectLine = false;
+        public static bool EnableVortexLine = false;
+        public static bool EnableTangentLine = false;
+        public static bool EnableCustomLine = false;
+        public static bool EnablePathCurve = false;
+        public static bool EnableVortexCurve = false;
+        public static bool EnableEffectRange = false;
+        public static bool EnableVortexRange = false;
+        public static bool EnableDangerSimulation = false;
+        public static bool EnableSwampSimulation = false;
+        public static bool EnableTransparency = false;
+
+        public static bool DoCustomLine = false;
+        public static bool DoPathCurve = false;
+        public static bool DoVortexCurve = false;
+        public static bool DoEffectRange = false;
+        public static bool DoVortexRange = false;
+        public static bool DoTransparency = false;
+        public static bool DoPathEffectPoint = false;
+        public static bool DoLadleEffectPoint = false;
+        public static bool DoPathVortexPoint = false;
+        public static bool DoLadleVortexPoint = false;
+        public static bool DoPathDangerPoint = false;
+        public static bool DoLadleDangerPoint = false;
+        public static bool DoVortexDangerPoint = false;
+        public static bool DoSwampPoint = false;
+        public static bool[] DoLines = [false, false, false, false, false];
+        // 0 - 路径切向线; 1 - 加水方向线; 2 - 效果径向线; 3 - 漩涡径向线; 4 - 漩涡切向线
+
+        public static bool DisplaySalt = false;
+        public static bool DisplayStage = false;
+        public static bool DisplayOffset = false;
+        public static bool DisplayPolar = false;
         #endregion
 
-        #region 缓存数据
-        public static List<Vortex> Vortex_Water = [];
-        public static List<Vortex> Vortex_Oil = [];
-        public static List<Shape> Strong_Water = [];
-        public static List<Shape> Strong_Oil = [];
-        public static List<Shape> Strong_Wine = [];
-        public static List<Shape> Weak_Wine = [];
-        public static List<Shape> Heal_Wine = [];
-        public static List<Shape> Swamp_Oil = [];
-        public static List<Node> Strong_Water_BVH = [];
-        public static List<Node> Strong_Oil_BVH = [];
-        public static List<Node> Strong_Wine_BVH = [];
-        public static List<Node> Weak_Wine_BVH = [];
-        public static List<Node> Heal_Wine_BVH = [];
-        public static List<Node> Swamp_Oil_BVH = [];
+        #region 文件数据
+        public static List<Shape> WeakWine = [];
+        public static List<Shape> HealWine = [];
+        public static List<Shape> SwampOil = [];
+        public static List<Shape>[] Strongs = [[], [], []];
+        // 0 - 水; 1 - 油; 2 - 酒
 
-        public static Vector3[] VortexGraphical;
-        public static List<(Vector3, bool)> PathPhysical = [];
-        public static List<(Vector3[], bool)> PathGraphical = [];
+        public static List<Node> WeakWineBVH = [];
+        public static List<Node> HealWineBVH = [];
+        public static List<Node> SwampOilBVH = [];
+        public static List<Node>[] StrongBVHs = [[], [], []];
+        // 0 - 水; 1 - 油; 2 - 酒
+
+        public static List<Vortex>[] Vortexs = [[], []];
+        // 0 - 水; 1 - 油
         #endregion
 
         #region 状态数据
-        public static float IndicatorRotation;
-        public static string CurrentMapID;
-        public static Vector2 IndicatorPosition;
-        public static Vector2 BaseRenderPosition;
-        public static SpriteRenderer BaseLadleRenderer;
-        public static PotionEffectMapItem TargetEffect;
-
-        // 0 - Water; 1 - Oil
+        public static int TargetLineIndex = -1;
         public static int[] VortexIndex = [-1, -1];
-        // 0 - Water; 1 - Oil; 2 - Wine
-        public static double[] DangerDistance = [double.NaN, double.NaN, double.NaN];
-        // 0 - PositionX; 1 - PositionY; 2 - Rotation; 3 - MaxAngle; 4 - MinAngle
-        public static double[] VortexParameters = [double.NaN, double.NaN, double.NaN, double.NaN, double.NaN];
-        // 0 - Path; 1 - Ladle; 2 - Target; 3 - Vortex
-        public static double[] LineDirections = [double.NaN, double.NaN, double.NaN, double.NaN];
-        // 0 - Path; 1 - Ladle
-        public static Vector2[] ClosestPositions = [new Vector2(float.NaN, float.NaN), new Vector2(float.NaN, float.NaN)];
-        // 0 - Path; 1 - Ladle; 2 - Vortex
-        public static Vector2[] DefeatPositions = [new Vector2(float.NaN, float.NaN), new Vector2(float.NaN, float.NaN), new Vector2(float.NaN, float.NaN)];
-        // 0 - Path
+        // 0 - 水; 1 - 油
+        public static double VortexX;
+        public static double VortexY;
+        public static double VortexRotation;
+        public static double VortexMaxAngle;
+        public static double VortexMinAngle;
+        public static double DangerDistancePath;
+        public static double DangerDistanceLadle;
+        public static double DangerDistanceVortex;
+        public static double[] LineDirections = new double[5];
+        // 0 - 路径切向线; 1 - 加水方向线; 2 - 效果径向线; 3 - 漩涡径向线; 4 - 漩涡切向线
+
+        public static List<float> CustomLineDirections = [];
+        public static List<bool> CustomLineHovers = [];
+        public static List<(string, bool)> Inputs = [];
+
+        public static Vector2 LastMousePosition;
+        public static Vector2 ScrollPosition;
+        public static Vector3 Offset;
+        public static Vector2[] ClosestPositions = new Vector2[2];
+        // 0 - 路径; 1 - 加水
+        public static Vector2[] DefeatPositions = new Vector2[3];
+        // 0 - 路径; 1 - 加水; 2 - 漩涡
+        public static Vector3[] VortexGraphical;
         public static List<Vector2> SwampPositions = [];
-        // 0 - Path; 1 - Ladle; 2 - Vortex
         public static List<Vector2>[] DangerPositions = [[], [], []];
-        // 0 - PathTarget; 1 - LadleTarget; 2 - PathVortex; 3 - LadleVortex
+        // 0 - 路径; 1 - 加水; 2 - 漩涡
         public static List<Vector2>[] IntersectionPositions = [[], [], [], []];
+        // 0 - 路径和效果; 1 - 路径和漩涡; 2 - 加水和效果; 3 - 加水和漩涡
+        public static List<(Vector3, bool)> PathPhysical = [];
+        public static List<(Vector3[], bool)> PathGraphical = [];
+
+        public static Rect WindowRect = new(200, 200, 400, 400);
+        public static PotionEffectMapItem TargetEffect;
+        public static DebugWindow[] DebugWindows = new DebugWindow[9];
+        // 0 - 路径; 1 - 加水; 2 - 移动; 3 - 效果; 4 - 位置; 5 - 偏离; 6 - 漩涡; 7 - 血量; 8 - 研磨
         #endregion
 
         #region 辅助结构
@@ -194,18 +224,6 @@ namespace AlchAssV3
                 double MinX, double MinY, double MaxX, double MaxY,
                 int[] Items
             ) : Node(MinX, MinY, MaxX, MaxY);
-        }
-
-        [Serializable]
-        public struct WindowConfigData
-        {
-            [Serializable]
-            public struct PositionData
-            {
-                public string tag;
-                public float x, y;
-            }
-            public PositionData[] positions;
         }
         #endregion
     }

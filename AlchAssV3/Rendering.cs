@@ -1,6 +1,4 @@
-﻿using HarmonyLib;
-using PotionCraft.ManagersSystem;
-using PotionCraft.ObjectBased.RecipeMap.RecipeMapItem.IndicatorMapItem;
+﻿using PotionCraft.ManagersSystem;
 using System.Linq;
 using UnityEngine;
 
@@ -54,7 +52,6 @@ namespace AlchAssV3
         /// </summary>
         public static Sprite CreateRoundSprite()
         {
-            var diameter = Variable.LineWidth.Value * 2;
             var textureSize = 500;
             var circleTexture = new Texture2D(textureSize, textureSize);
             var pixels = new Color[textureSize * textureSize];
@@ -73,7 +70,7 @@ namespace AlchAssV3
             circleTexture.SetPixels(pixels);
             circleTexture.Apply();
             circleTexture.filterMode = FilterMode.Bilinear;
-            var pixelsPerUnit = textureSize / (float)diameter;
+            var pixelsPerUnit = textureSize / (Variable.LineWidth.Value * 2);
             return Sprite.Create(circleTexture, new Rect(0, 0, textureSize, textureSize), new Vector2(0.5f, 0.5f), pixelsPerUnit);
         }
 
@@ -93,15 +90,14 @@ namespace AlchAssV3
         /// </summary>
         public static void InitLineRenderer(ref LineRenderer curve)
         {
-            var obj = new GameObject("Renderer") { layer = Variable.BaseLayer };
+            var obj = new GameObject("Renderer") { layer = 8 };
             curve = obj.AddComponent<LineRenderer>();
 
             curve.textureMode = LineTextureMode.Tile;
             curve.useWorldSpace = true;
-            curve.startWidth = (float)Variable.LineWidth.Value;
-            curve.endWidth = (float)Variable.LineWidth.Value;
-            curve.sortingLayerName = Variable.BaseSortingLayerName;
-            curve.sortingOrder = Variable.BaseSortingOrder;
+            curve.startWidth = Variable.LineWidth.Value;
+            curve.endWidth = Variable.LineWidth.Value;
+            curve.sortingLayerName = "RecipeMapIndicator";
             curve.positionCount = 0;
             curve.enabled = false;
         }
@@ -111,22 +107,22 @@ namespace AlchAssV3
         /// </summary>
         public static void InitSpriteRenderer(ref SpriteRenderer sprite)
         {
-            var obj = new GameObject("Renderer") { layer = Variable.BaseLayer };
+            var obj = new GameObject("Renderer") { layer = 8 };
             sprite = obj.AddComponent<SpriteRenderer>();
 
             sprite.drawMode = SpriteDrawMode.Simple;
             sprite.maskInteraction = SpriteMaskInteraction.None;
             sprite.spriteSortPoint = SpriteSortPoint.Center;
-            sprite.sortingLayerName = Variable.BaseSortingLayerName;
-            sprite.sortingOrder = Variable.BaseSortingOrder + 1;
+            sprite.sortingLayerName = "RecipeMapIndicator";
             sprite.enabled = false;
         }
 
         /// <summary>
         /// 更新曲线渲染器
         /// </summary>
-        public static void UpdateLineRenderer(Material material, Color color, ref LineRenderer curve, Vector3[] points, bool loop)
+        public static void UpdateLineRenderer(Material material, Color color, ref LineRenderer curve, Vector3[] points, bool loop, int order)
         {
+            curve.sortingOrder = order;
             curve.loop = loop;
             curve.material = material;
             curve.startColor = color;
@@ -139,8 +135,9 @@ namespace AlchAssV3
         /// <summary>
         /// 更新精灵渲染器
         /// </summary>
-        public static void UpdateSpriteRenderer(Sprite material, Color color, ref SpriteRenderer sprite, Vector3 pos, float scale)
+        public static void UpdateSpriteRenderer(Sprite material, Color color, ref SpriteRenderer sprite, Vector3 pos, float scale, int order)
         {
+            sprite.sortingOrder = order;
             sprite.sprite = material;
             sprite.transform.position = pos;
             sprite.transform.localScale = new Vector3(scale, scale, 1);
@@ -151,89 +148,47 @@ namespace AlchAssV3
 
         #region 渲染对象
         /// <summary>
-        /// 渲染透明瓶身
-        /// </summary>
-        public static void SetTransparency()
-        {
-            if (!Variable.Keys[10].Value.IsDown())
-                return;
-
-            var indicatorMapItems = Object.FindObjectsByType<IndicatorMapItem>(FindObjectsSortMode.None);
-            foreach (var indicatorMapItem in indicatorMapItems)
-            {
-                if (!Variable.DerivedEnables[8])
-                {
-                    var liquidAnimator = Traverse.Create(indicatorMapItem).Field("liquidColorChangeAnimator").GetValue();
-                    if (liquidAnimator != null)
-                    {
-                        var upperContainer = Traverse.Create(liquidAnimator).Field("upperContainer").GetValue();
-                        var lowerContainer = Traverse.Create(liquidAnimator).Field("lowerContainer").GetValue();
-                        if (upperContainer != null)
-                            Traverse.Create(upperContainer).Method("SetAlpha", 0f).GetValue();
-                        if (lowerContainer != null)
-                            Traverse.Create(lowerContainer).Method("SetAlpha", 0f).GetValue();
-                    }
-                    indicatorMapItem.backgroundSpriteRenderer.enabled = false;
-                }
-                else
-                {
-                    var liquidAnimator = Traverse.Create(indicatorMapItem).Field("liquidColorChangeAnimator").GetValue();
-                    if (liquidAnimator != null)
-                    {
-                        var upperContainer = Traverse.Create(liquidAnimator).Field("upperContainer").GetValue();
-                        var lowerContainer = Traverse.Create(liquidAnimator).Field("lowerContainer").GetValue();
-                        if (upperContainer != null)
-                            Traverse.Create(upperContainer).Method("SetAlpha", 1f).GetValue();
-                        if (lowerContainer != null)
-                            Traverse.Create(lowerContainer).Method("SetAlpha", 1f).GetValue();
-                    }
-                    indicatorMapItem.backgroundSpriteRenderer.enabled = true;
-                }
-            }
-        }
-
-        /// <summary>
         /// 渲染点
         /// </summary>
         public static void SetNodeRenderers()
         {
-            bool[] ClosestEnables = [Variable.DerivedEnables[4], Variable.DerivedEnables[1]];
-            bool[] IntersectionEnables = [Variable.DerivedEnables[9], Variable.DerivedEnables[10], Variable.DerivedEnables[11], Variable.DerivedEnables[12]];
-            bool[] DangerEnables = [Variable.DerivedEnables[13], Variable.DerivedEnables[14], Variable.DerivedEnables[15]];
-            var yDev = new Vector2(0, Variable.BaseRenderPosition.y - Variable.IndicatorPosition.y);
+            bool[] ClosestEnables = [Variable.DoPathCurve, Variable.DoLines[1]];
+            bool[] IntersectionEnables = [Variable.DoPathEffectPoint, Variable.DoLadleEffectPoint, Variable.DoPathVortexPoint, Variable.DoLadleVortexPoint];
+            bool[] DangerEnables = [Variable.DoPathDangerPoint, Variable.DoLadleDangerPoint, Variable.DoVortexDangerPoint];
+            var mapTrans = Managers.RecipeMap.currentMap.referencesContainer.transform;
 
-            for (int i = 0; i < 2; i++)
+            for (var i = 0; i < 2; i++)
             {
                 if (ClosestEnables[i] && !float.IsNaN(Variable.ClosestPositions[i].x))
                 {
-                    var posDev = Variable.ClosestPositions[i] + yDev;
+                    var posDev = mapTrans.TransformPoint(Variable.ClosestPositions[i]);
                     if (Variable.ClosestPoints[i] == null)
                         InitSpriteRenderer(ref Variable.ClosestPoints[i]);
-                    UpdateSpriteRenderer(Variable.SquareSprite, Variable.Colors[8].Value, ref Variable.ClosestPoints[i], posDev, (float)Variable.NodeSize.Value);
+                    UpdateSpriteRenderer(Variable.SquareSprite, Variable.ColorClosest.Value, ref Variable.ClosestPoints[i], posDev, (float)Variable.NodeSize.Value, 4);
                 }
                 else if (Variable.ClosestPoints[i] != null)
                     Object.Destroy(Variable.ClosestPoints[i].gameObject);
             }
 
-            for (int i = 0; i < 4; i++)
+            for (var i = 0; i < 4; i++)
             {
                 if (IntersectionEnables[i] && Variable.IntersectionPositions[i].Count > 0)
                 {
-                    for (int j = 0; j < Variable.IntersectionPositions[i].Count; j++)
+                    for (var j = 0; j < Variable.IntersectionPositions[i].Count; j++)
                     {
-                        var posDev = Variable.IntersectionPositions[i][j] + yDev;
+                        var posDev = mapTrans.TransformPoint(Variable.IntersectionPositions[i][j]);
 
                         if (Variable.IntersectionPoints[i].Count <= j)
                         {
                             var point = new SpriteRenderer();
                             InitSpriteRenderer(ref point);
-                            UpdateSpriteRenderer(Variable.SquareSprite, Variable.Colors[10].Value, ref point, posDev, (float)Variable.NodeSize.Value);
+                            UpdateSpriteRenderer(Variable.SquareSprite, Variable.ColorIntersection.Value, ref point, posDev, (float)Variable.NodeSize.Value, 4);
                             Variable.IntersectionPoints[i].Add(point);
                         }
                         else
                         {
                             var point = Variable.IntersectionPoints[i][j];
-                            UpdateSpriteRenderer(Variable.SquareSprite, Variable.Colors[10].Value, ref point, posDev, (float)Variable.NodeSize.Value);
+                            UpdateSpriteRenderer(Variable.SquareSprite, Variable.ColorIntersection.Value, ref point, posDev, (float)Variable.NodeSize.Value, 4);
                             Variable.IntersectionPoints[i][j] = point;
                         }
                     }
@@ -252,35 +207,35 @@ namespace AlchAssV3
                 }
             }
 
-            for (int i = 0; i < 3; i++)
+            for (var i = 0; i < 3; i++)
             {
                 if (DangerEnables[i] && !float.IsNaN(Variable.DefeatPositions[i].x))
                 {
-                    var posDev = Variable.DefeatPositions[i] + yDev;
+                    var posDev = mapTrans.TransformPoint(Variable.DefeatPositions[i]);
                     if (Variable.DefeatPoints[i] == null)
                         InitSpriteRenderer(ref Variable.DefeatPoints[i]);
-                    UpdateSpriteRenderer(Variable.SquareSprite, Variable.Colors[11].Value, ref Variable.DefeatPoints[i], posDev, (float)Variable.NodeSize.Value);
+                    UpdateSpriteRenderer(Variable.SquareSprite, Variable.ColorDefeat.Value, ref Variable.DefeatPoints[i], posDev, (float)Variable.NodeSize.Value, 4);
                 }
                 else if (Variable.DefeatPoints[i] != null)
                     Object.Destroy(Variable.DefeatPoints[i].gameObject);
 
                 if (DangerEnables[i] && Variable.DangerPositions[i].Count > 0)
                 {
-                    for (int j = 0; j < Variable.DangerPositions[i].Count; j++)
+                    for (var j = 0; j < Variable.DangerPositions[i].Count; j++)
                     {
-                        var posDev = Variable.DangerPositions[i][j] + yDev;
+                        var posDev = mapTrans.TransformPoint(Variable.DangerPositions[i][j]);
 
                         if (Variable.DangerPoints[i].Count <= j)
                         {
                             var point = new SpriteRenderer();
                             InitSpriteRenderer(ref point);
-                            UpdateSpriteRenderer(Variable.SquareSprite, Variable.Colors[10].Value, ref point, posDev, (float)Variable.NodeSize.Value);
+                            UpdateSpriteRenderer(Variable.SquareSprite, Variable.ColorIntersection.Value, ref point, posDev, (float)Variable.NodeSize.Value, 4);
                             Variable.DangerPoints[i].Add(point);
                         }
                         else
                         {
                             var point = Variable.DangerPoints[i][j];
-                            UpdateSpriteRenderer(Variable.SquareSprite, Variable.Colors[10].Value, ref point, posDev, (float)Variable.NodeSize.Value);
+                            UpdateSpriteRenderer(Variable.SquareSprite, Variable.ColorIntersection.Value, ref point, posDev, (float)Variable.NodeSize.Value, 4);
                             Variable.DangerPoints[i][j] = point;
                         }
                     }
@@ -299,23 +254,23 @@ namespace AlchAssV3
                 }
             }
 
-            if (Variable.DerivedEnables[16] && Variable.SwampPositions.Count > 0)
+            if (Variable.DoSwampPoint && Variable.SwampPositions.Count > 0)
             {
-                for (int i = 0; i < Variable.SwampPositions.Count; i++)
+                for (var i = 0; i < Variable.SwampPositions.Count; i++)
                 {
-                    var posDev = Variable.SwampPositions[i] + yDev;
+                    var posDev = mapTrans.TransformPoint(Variable.SwampPositions[i]);
 
                     if (Variable.SwampPoints.Count <= i)
                     {
                         var point = new SpriteRenderer();
                         InitSpriteRenderer(ref point);
-                        UpdateSpriteRenderer(Variable.SquareSprite, Variable.Colors[10].Value, ref point, posDev, (float)Variable.NodeSize.Value);
+                        UpdateSpriteRenderer(Variable.SquareSprite, Variable.ColorIntersection.Value, ref point, posDev, (float)Variable.NodeSize.Value, 4);
                         Variable.SwampPoints.Add(point);
                     }
                     else
                     {
                         var point = Variable.SwampPoints[i];
-                        UpdateSpriteRenderer(Variable.SquareSprite, Variable.Colors[10].Value, ref point, posDev, (float)Variable.NodeSize.Value);
+                        UpdateSpriteRenderer(Variable.SquareSprite, Variable.ColorIntersection.Value, ref point, posDev, (float)Variable.NodeSize.Value, 4);
                         Variable.SwampPoints[i] = point;
                     }
                 }
@@ -339,18 +294,18 @@ namespace AlchAssV3
         /// </summary>
         public static void SetLineRenderers()
         {
-            Variable.BaseLadleRenderer.enabled = !Variable.DerivedEnables[1];
+            Variable.BaseLadleRenderer.enabled = !Variable.DoLines[1];
 
-            for (int i = 0; i < 4; i++)
+            for (var i = 0; i < 5; i++)
             {
-                if (Variable.DerivedEnables[i])
+                if (Variable.DoLines[i])
                 {
                     Calculation.InitLine(Variable.LineDirections[i], out var points);
                     if (points.Length == 2)
                     {
                         if (Variable.Lines[i] == null)
                             InitLineRenderer(ref Variable.Lines[i]);
-                        UpdateLineRenderer(Variable.SolidMaterial, Variable.Colors[i].Value, ref Variable.Lines[i], points, false);
+                        UpdateLineRenderer(Variable.SolidMaterial, Variable.ColorLines[i].Value, ref Variable.Lines[i], points, false, 3);
                     }
                     else if (Variable.Lines[i] != null)
                         Object.Destroy(Variable.Lines[i].gameObject);
@@ -361,32 +316,74 @@ namespace AlchAssV3
         }
 
         /// <summary>
+        /// 渲染自定义直线
+        /// </summary>
+        public static void SetCustomLineRenderers()
+        {
+            if (Variable.DoCustomLine && Variable.CustomLineDirections.Count > 0)
+            {
+                for (var i = 0; i < Variable.CustomLineDirections.Count; i++)
+                {
+                    Calculation.InitLine(Variable.CustomLineDirections[i], out var points);
+                    var color = Variable.CustomLineHovers[i] || Variable.TargetLineIndex == i ? Variable.ColorCustomHover.Value : Variable.ColorCustomNormal.Value;
+                    var order = Variable.CustomLineHovers[i] || Variable.TargetLineIndex == i ? 6 : 5;
+
+                    if (Variable.CustomLines.Count <= i)
+                    {
+                        var line = new LineRenderer();
+                        InitLineRenderer(ref line);
+                        UpdateLineRenderer(Variable.SolidMaterial, color, ref line, points, false, order);
+                        Variable.CustomLines.Add(line);
+                    }
+                    else
+                    {
+                        var line = Variable.CustomLines[i];
+                        UpdateLineRenderer(Variable.SolidMaterial, color, ref line, points, false, order);
+                        Variable.CustomLines[i] = line;
+                    }
+                }
+
+                while (Variable.CustomLines.Count > Variable.CustomLineDirections.Count)
+                {
+                    Object.Destroy(Variable.CustomLines.Last().gameObject);
+                    Variable.CustomLines.RemoveAt(Variable.CustomLines.Count - 1);
+                }
+            }
+            else
+            {
+                foreach (var line in Variable.CustomLines)
+                    Object.Destroy(line.gameObject);
+                Variable.CustomLines.Clear();
+            }
+        }
+
+        /// <summary>
         /// 渲染曲线
         /// </summary>
         public static void SetCurveRenderers()
         {
-            HideOriginalPaths(!Variable.DerivedEnables[4]);
+            HideOriginalPaths(!Variable.DoPathCurve);
 
-            if (Variable.DerivedEnables[4] && Variable.PathGraphical.Count > 0)
+            if (Variable.DoPathCurve && Variable.PathGraphical.Count > 0)
             {
-                for (int i = 0; i < Variable.PathGraphical.Count; i++)
+                for (var i = 0; i < Variable.PathGraphical.Count; i++)
                 {
                     var points = Variable.PathGraphical[i].Item1;
                     var isTp = Variable.PathGraphical[i].Item2;
                     var material = isTp ? Variable.DashedMaterial : Variable.SolidMaterial;
-                    var color = i % 2 == 0 ? Variable.Colors[5].Value : Variable.Colors[4].Value;
+                    var color = Variable.ColorPaths[i % 2].Value;
 
                     if (Variable.PathCurves.Count <= i)
                     {
                         var curve = new LineRenderer();
                         InitLineRenderer(ref curve);
-                        UpdateLineRenderer(material, color, ref curve, points, false);
+                        UpdateLineRenderer(material, color, ref curve, points, false, 2);
                         Variable.PathCurves.Add(curve);
                     }
                     else
                     {
                         var curve = Variable.PathCurves[i];
-                        UpdateLineRenderer(material, color, ref curve, points, false);
+                        UpdateLineRenderer(material, color, ref curve, points, false, 2);
                         Variable.PathCurves[i] = curve;
                     }
                 }
@@ -399,16 +396,16 @@ namespace AlchAssV3
             }
             else
             {
-                foreach (var line in Variable.PathCurves)
-                    Object.Destroy(line.gameObject);
+                foreach (var curve in Variable.PathCurves)
+                    Object.Destroy(curve.gameObject);
                 Variable.PathCurves.Clear();
             }
 
-            if (Variable.DerivedEnables[5] && Variable.VortexGraphical.Length >= 2)
+            if (Variable.DoVortexCurve && Variable.VortexGraphical.Length >= 2)
             {
                 if (Variable.VortexCurve == null)
                     InitLineRenderer(ref Variable.VortexCurve);
-                UpdateLineRenderer(Variable.SolidMaterial, Variable.Colors[6].Value, ref Variable.VortexCurve, Variable.VortexGraphical, false);
+                UpdateLineRenderer(Variable.SolidMaterial, Variable.ColorVortex.Value, ref Variable.VortexCurve, Variable.VortexGraphical, false, 2);
             }
             else if (Variable.VortexCurve != null)
                 Object.Destroy(Variable.VortexCurve.gameObject);
@@ -419,87 +416,105 @@ namespace AlchAssV3
         /// </summary>
         public static void SetRangeRenderers()
         {
-            if (Variable.DerivedEnables[6] && Variable.TargetEffect != null)
+            if (Variable.DoEffectRange && Variable.TargetEffect != null)
             {
-                Vector2 targetPos = Variable.TargetEffect.transform.localPosition;
-                var targetRot = Variable.TargetEffect.transform.localEulerAngles.z;
-                var devRot = Mathf.Abs(Mathf.DeltaAngle(Variable.IndicatorRotation, targetRot));
-                var yDev = Variable.BaseRenderPosition.y - Variable.IndicatorPosition.y;
-                var posDev = new Vector2(targetPos.x, targetPos.y + yDev);
+                Vector2 effectPos = Variable.TargetEffect.transform.localPosition;
+                var effectRot = Variable.TargetEffect.transform.localEulerAngles.z;
+                var indRot = Managers.RecipeMap.indicatorRotation.Value;
+                var devRot = Mathf.Abs(Mathf.DeltaAngle(indRot, effectRot));
+                var mapTrans = Managers.RecipeMap.currentMap.referencesContainer.transform;
+                var posDev = mapTrans.TransformPoint(effectPos);
                 double[] rads = [1.53, 1.0 / 3.0 - devRot / 216.0, 1.0 / 18.0 - devRot / 216.0];
 
-                Calculation.InitRange(rads[0], targetPos.x, targetPos.y, out var pointsOut);
-                if (Variable.TargetRanges[0] == null)
-                    InitLineRenderer(ref Variable.TargetRanges[0]);
-                UpdateLineRenderer(Variable.SolidMaterial, Variable.Colors[7].Value, ref Variable.TargetRanges[0], pointsOut, true);
+                Calculation.InitRange(rads[0], effectPos.x, effectPos.y, out var pointsOut);
+                if (Variable.EffectRangeOuter == null)
+                    InitLineRenderer(ref Variable.EffectRangeOuter);
+                UpdateLineRenderer(Variable.SolidMaterial, Variable.ColorRange.Value, ref Variable.EffectRangeOuter, pointsOut, true, 1);
 
                 if (rads[1] > Variable.LineWidth.Value)
                 {
-                    if (Variable.TargetDisks[0] != null)
-                        Object.Destroy(Variable.TargetDisks[0].gameObject);
-                    Calculation.InitRange(rads[1], targetPos.x, targetPos.y, out var pointsMid);
-                    if (Variable.TargetRanges[1] == null)
-                        InitLineRenderer(ref Variable.TargetRanges[1]);
-                    UpdateLineRenderer(Variable.SolidMaterial, Variable.Colors[7].Value, ref Variable.TargetRanges[1], pointsMid, true);
+                    if (Variable.EffectDiskMiddle != null)
+                        Object.Destroy(Variable.EffectDiskMiddle.gameObject);
+                    Calculation.InitRange(rads[1], effectPos.x, effectPos.y, out var pointsMid);
+                    if (Variable.EffectRangeMiddle == null)
+                        InitLineRenderer(ref Variable.EffectRangeMiddle);
+                    UpdateLineRenderer(Variable.SolidMaterial, Variable.ColorRange.Value, ref Variable.EffectRangeMiddle, pointsMid, true, 1);
                 }
                 else if (rads[1] > 0)
                 {
                     var scale = rads[1] / Variable.LineWidth.Value;
-                    if (Variable.TargetRanges[1] != null)
-                        Object.Destroy(Variable.TargetRanges[1].gameObject);
-                    if (Variable.TargetDisks[0] == null)
-                        InitSpriteRenderer(ref Variable.TargetDisks[0]);
-                    UpdateSpriteRenderer(Variable.RoundSprite, Variable.Colors[7].Value, ref Variable.TargetDisks[0], posDev, (float)scale);
+                    if (Variable.EffectRangeMiddle != null)
+                        Object.Destroy(Variable.EffectRangeMiddle.gameObject);
+                    if (Variable.EffectDiskMiddle == null)
+                        InitSpriteRenderer(ref Variable.EffectDiskMiddle);
+                    UpdateSpriteRenderer(Variable.RoundSprite, Variable.ColorRange.Value, ref Variable.EffectDiskMiddle, posDev, (float)scale, 1);
                 }
                 else
                 {
-                    if (Variable.TargetRanges[1] != null)
-                        Object.Destroy(Variable.TargetRanges[1].gameObject);
-                    if (Variable.TargetDisks[0] != null)
-                        Object.Destroy(Variable.TargetDisks[0].gameObject);
+                    if (Variable.EffectRangeMiddle != null)
+                        Object.Destroy(Variable.EffectRangeMiddle.gameObject);
+                    if (Variable.EffectDiskMiddle != null)
+                        Object.Destroy(Variable.EffectDiskMiddle.gameObject);
                 }
 
                 if (rads[2] > 0)
                 {
                     var scale = rads[2] / Variable.LineWidth.Value;
-                    if (Variable.TargetDisks[1] == null)
-                        InitSpriteRenderer(ref Variable.TargetDisks[1]);
-                    UpdateSpriteRenderer(Variable.RoundSprite, Variable.Colors[7].Value, ref Variable.TargetDisks[1], posDev, (float)scale);
+                    if (Variable.EffectDiskInner == null)
+                        InitSpriteRenderer(ref Variable.EffectDiskInner);
+                    UpdateSpriteRenderer(Variable.RoundSprite, Variable.ColorRange.Value, ref Variable.EffectDiskInner, posDev, (float)scale, 1);
                 }
-                else if (Variable.TargetDisks[1] != null)
-                    Object.Destroy(Variable.TargetDisks[1].gameObject);
+                else if (Variable.EffectDiskInner != null)
+                    Object.Destroy(Variable.EffectDiskInner.gameObject);
             }
             else
             {
-                foreach (var line in Variable.TargetRanges)
-                    if (line != null)
-                        Object.Destroy(line.gameObject);
-                foreach (var sprite in Variable.TargetDisks)
-                    if (sprite != null)
-                        Object.Destroy(sprite.gameObject);
+                if (Variable.EffectRangeOuter != null) Object.Destroy(Variable.EffectRangeOuter.gameObject);
+                if (Variable.EffectRangeMiddle != null) Object.Destroy(Variable.EffectRangeMiddle.gameObject);
+                if (Variable.EffectDiskMiddle != null) Object.Destroy(Variable.EffectDiskMiddle.gameObject);
+                if (Variable.EffectDiskInner != null) Object.Destroy(Variable.EffectDiskInner.gameObject);
             }
 
-            if (Variable.DerivedEnables[7] && Variable.CurrentMapID != "Wine")
+            var mapindex = Variable.MapId[Managers.RecipeMap.currentMap.potionBase.name];
+            if (Variable.DoVortexRange && mapindex != 2 && Variable.VortexIndex[mapindex] >= 0)
             {
-                var mapindex = Variable.CurrentMapID == "Water" ? 0 : 1;
-                var vortexList = mapindex == 0 ? Variable.Vortex_Water : Variable.Vortex_Oil;
-                if (Variable.VortexIndex[mapindex] >= 0)
-                {
-                    var selVortex = vortexList[Variable.VortexIndex[mapindex]];
-                    Calculation.InitRange(selVortex.r, selVortex.x, selVortex.y, out var points);
-                    if (Variable.VortexRange == null)
-                        InitLineRenderer(ref Variable.VortexRange);
-                    UpdateLineRenderer(Variable.SolidMaterial, Variable.Colors[7].Value, ref Variable.VortexRange, points, true);
-                }
-                else if (Variable.VortexRange != null)
-                    Object.Destroy(Variable.VortexRange.gameObject);
+                var selVortex = Variable.Vortexs[mapindex][Variable.VortexIndex[mapindex]];
+                Calculation.InitRange(selVortex.r, selVortex.x, selVortex.y, out var points);
+                if (Variable.VortexRange == null)
+                    InitLineRenderer(ref Variable.VortexRange);
+                UpdateLineRenderer(Variable.SolidMaterial, Variable.ColorRange.Value, ref Variable.VortexRange, points, true, 1);
             }
             else if (Variable.VortexRange != null)
                 Object.Destroy(Variable.VortexRange.gameObject);
         }
-        #endregion
 
-        #region 隐藏原生对象
+        public static void SetIndicatorRenderers()
+        {
+            HideOriginalIndicator(!Variable.DoTransparency);
+
+            if (Variable.DoTransparency)
+            {
+                var indPos = Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition + Variable.Offset;
+                var indRot = -Managers.RecipeMap.indicatorRotation.Value * Mathf.Deg2Rad;
+                var mapTrans = Managers.RecipeMap.currentMap.referencesContainer.transform;
+                Vector3 delta = new(0.74f * Mathf.Sin(indRot), 0.74f * Mathf.Cos(indRot));
+                Vector3[] linePoints = [mapTrans.TransformPoint(indPos), mapTrans.TransformPoint(indPos + delta)];
+                Calculation.InitRange(0.74, indPos.x, indPos.y, out var points);
+                if (Variable.IndicatorRange == null)
+                {
+                    InitLineRenderer(ref Variable.IndicatorRange);
+                    InitLineRenderer(ref Variable.IndicatorDirection);
+                }
+                UpdateLineRenderer(Variable.SolidMaterial, Variable.ColorRange.Value, ref Variable.IndicatorRange, points, true, 1);
+                UpdateLineRenderer(Variable.SolidMaterial, Variable.ColorRange.Value, ref Variable.IndicatorDirection, linePoints, false, 1);
+            }
+            else if (Variable.IndicatorRange != null)
+            {
+                Object.Destroy(Variable.IndicatorRange.gameObject);
+                Object.Destroy(Variable.IndicatorDirection.gameObject);
+            }
+        }
+
         /// <summary>
         /// 隐藏原生路径
         /// </summary>
@@ -513,6 +528,16 @@ namespace AlchAssV3
                     foreach (var renderer in renderers)
                         renderer.enabled = hide;
                 }
+        }
+
+        /// <summary>
+        /// 隐藏原生药瓶
+        /// </summary>
+        public static void HideOriginalIndicator(bool hide)
+        {
+            var renderers = Managers.RecipeMap.indicator.GetComponentsInChildren<Renderer>(true);
+            foreach (var renderer in renderers)
+                renderer.enabled = hide;
         }
         #endregion
     }

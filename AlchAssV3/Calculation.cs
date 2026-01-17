@@ -28,7 +28,7 @@ namespace AlchAssV3
                 Vector2 targetPos = Variable.TargetEffect.transform.localPosition;
                 var targetRot = Variable.TargetEffect.transform.localEulerAngles.z;
                 var devPos = Vector2.Distance(targetPos, Variable.ClosestPositions[0]) * 1800f;
-                var devRot = Mathf.Abs(Mathf.DeltaAngle(Variable.IndicatorRotation, targetRot)) / 3f * 25f;
+                var devRot = Mathf.Abs(Mathf.DeltaAngle(Managers.RecipeMap.indicatorRotation.Value, targetRot)) / 3f * 25f;
                 var devTot = devPos + devRot;
 
                 var lvlPos = devPos <= 100f ? 3 : devPos <= 600f ? 2 : devPos <= 2754f ? 1 : 0;
@@ -46,14 +46,14 @@ namespace AlchAssV3
                 deltaAngelText = $"{deltaAng}°";
             }
 
-            if (!double.IsNaN(Variable.DangerDistance[0]))
-                lifeSaltText = Function.FormatLifeSalt(Variable.DangerDistance[0]);
+            if (!double.IsNaN(Variable.DangerDistancePath))
+                lifeSaltText = Function.FormatLifeSalt(Variable.DangerDistancePath);
             return $"""
                 总体偏离: {devTotText}
                 位置偏离: {devPosText}
                 近点方向: {closestDirText}
                 目标夹角: {deltaAngelText}
-                血盐需求: {lifeSaltText}
+                加血需求: {lifeSaltText}
                 """;
         }
 
@@ -73,7 +73,7 @@ namespace AlchAssV3
                 Vector2 targetPos = Variable.TargetEffect.transform.localPosition;
                 var targetRot = Variable.TargetEffect.transform.localEulerAngles.z;
                 var devPos = Vector2.Distance(targetPos, Variable.ClosestPositions[1]) * 1800f;
-                var devRot = Mathf.Abs(Mathf.DeltaAngle(Variable.IndicatorRotation, targetRot)) / 3f * 25f;
+                var devRot = Mathf.Abs(Mathf.DeltaAngle(Managers.RecipeMap.indicatorRotation.Value, targetRot)) / 3f * 25f;
                 var devTot = devPos + devRot;
 
                 var lvlPos = devPos <= 100f ? 3 : devPos <= 600f ? 2 : devPos <= 2754f ? 1 : 0;
@@ -91,14 +91,14 @@ namespace AlchAssV3
                 deltaAngelText = $"{deltaAng}°";
             }
 
-            if (!double.IsNaN(Variable.DangerDistance[1]))
-                lifeSaltText = Function.FormatLifeSalt(Variable.DangerDistance[1]);
+            if (!double.IsNaN(Variable.DangerDistanceLadle))
+                lifeSaltText = Function.FormatLifeSalt(Variable.DangerDistanceLadle);
             return $"""
                 总体偏离: {devTotText}
                 位置偏离: {devPosText}
                 近点方向: {closestDirText}
                 目标夹角: {deltaAngelText}
-                血盐需求: {lifeSaltText}
+                加血需求: {lifeSaltText}
                 """;
         }
 
@@ -109,20 +109,26 @@ namespace AlchAssV3
         {
             var stage = Managers.RecipeMap.path.deletedGraphicsSegments;
             var progress = Managers.RecipeMap.path.segmentLengthToDeletePhysics;
-            var stir = stage + progress;
             var pathDir = double.IsNaN(Variable.LineDirections[0]) ? "不可用" : $"{(float)Variable.LineDirections[0]}°";
             var ladleDir = double.IsNaN(Variable.LineDirections[1]) ? "不可用" : $"{(float)Variable.LineDirections[1]}°";
+            if (Variable.DisplayStage)
+                return $"""
+                搅拌阶段: {stage}
+                阶段进度: {progress}
+                路径方向: {pathDir}
+                加水方向: {ladleDir}
+                """;
             return $"""
-                搅拌进度: {stir}
+                搅拌进度: {stage + progress}
                 路径方向: {pathDir}
                 加水方向: {ladleDir}
                 """;
         }
 
         /// <summary>
-        /// 计算目标信息
+        /// 计算效果信息
         /// </summary>
-        public static string CalculateTarget()
+        public static string CalculateEffect()
         {
             if (Variable.TargetEffect == null)
                 return "";
@@ -135,8 +141,8 @@ namespace AlchAssV3
             var dirText = double.IsNaN(Variable.LineDirections[2]) ? "不可用" : $"{(float)Variable.LineDirections[2]}°";
             return $"""
                 目标效果: {targetId}
-                {posText}
-                旋转盐量: {rotText}
+                坐标位置: {posText}
+                旋转角度: {rotText}
                 目标方向: {dirText}
                 """;
         }
@@ -146,12 +152,16 @@ namespace AlchAssV3
         /// </summary>
         public static string CalculatePosition()
         {
-            var rot = Mathf.DeltaAngle(Variable.IndicatorRotation, 0f) / 9f * 25f;
-            var posText = Function.FormatPosition(Variable.IndicatorPosition);
-            var rotText = Function.FormatMoonSalt(rot);
+            var indPos = Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition + Variable.Offset;
+            var offPos = Managers.RecipeMap.indicator.thisTransform.localPosition;
+            var indRot = Managers.RecipeMap.indicatorRotation.Value;
+            var posText = Function.FormatPosition(indPos);
+            var offText = Function.FormatPosition(offPos);
+            var rotText = Function.FormatMoonSalt(indRot);
             return $"""
-                {posText}
-                旋转盐量: {rotText}
+                坐标位置: {posText}
+                碰撞偏离: {offText}
+                旋转角度: {rotText}
                 """;
         }
 
@@ -165,8 +175,11 @@ namespace AlchAssV3
 
             Vector2 targetPos = Variable.TargetEffect.transform.localPosition;
             var targetRot = Variable.TargetEffect.transform.localEulerAngles.z;
-            var devPos = Vector2.Distance(targetPos, Variable.IndicatorPosition) * 1800f;
-            var devRot = Mathf.Abs(Mathf.DeltaAngle(Variable.IndicatorRotation, targetRot)) / 3f * 25f;
+            var indPos = Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition + Variable.Offset;
+            var indRot = Managers.RecipeMap.indicatorRotation.Value;
+
+            var devPos = Vector2.Distance(targetPos, indPos) * 1800f;
+            var devRot = Mathf.Abs(Mathf.DeltaAngle(indRot, targetRot)) / 3f * 25f;
             var devTot = devPos + devRot;
 
             var lvlPos = devPos <= 100f ? 3 : devPos <= 600f ? 2 : devPos <= 2754f ? 1 : 0;
@@ -188,38 +201,35 @@ namespace AlchAssV3
             double maxDis;
             double dirVortex;
             var dangerDis = double.NaN;
+            Vector2 indPos = Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition + Variable.Offset;
 
             if (Managers.RecipeMap.CurrentVortexMapItem != null)
             {
                 vortexPos = Managers.RecipeMap.CurrentVortexMapItem.thisTransform.localPosition;
-                maxDis = ((CircleCollider2D)Traverse.Create(Managers.RecipeMap.CurrentVortexMapItem).Field("vortexCollider").GetValue()).radius + Variable.IndicatorRadius;
-                dirVortex = Vector2.SignedAngle(Vector2.right, vortexPos - Variable.IndicatorPosition);
-                dangerDis = Variable.DangerDistance[2];
+                maxDis = ((CircleCollider2D)Traverse.Create(Managers.RecipeMap.CurrentVortexMapItem).Field("vortexCollider").GetValue()).radius + 0.74;
+                dirVortex = Vector2.SignedAngle(Vector2.right, vortexPos - indPos);
+                dangerDis = Variable.DangerDistanceVortex;
             }
             else
             {
-                if (Variable.CurrentMapID == "Wine")
+                var mapindex = Variable.MapId[Managers.RecipeMap.currentMap.potionBase.name];
+                if (mapindex == 2 || Variable.VortexIndex[mapindex] < 0)
                     return "";
 
-                var mapindex = Variable.CurrentMapID == "Water" ? 0 : 1;
-                var vortexList = mapindex == 0 ? Variable.Vortex_Water : Variable.Vortex_Oil;
-                if (Variable.VortexIndex[mapindex] < 0)
-                    return "";
-
-                var selVortex = vortexList[Variable.VortexIndex[mapindex]];
+                var selVortex = Variable.Vortexs[mapindex][Variable.VortexIndex[mapindex]];
                 vortexPos = new Vector2((float)selVortex.x, (float)selVortex.y);
                 maxDis = selVortex.r;
                 dirVortex = Variable.LineDirections[3];
             }
 
-            var distance = Vector2.Distance(vortexPos, Variable.IndicatorPosition);
+            var distance = Vector2.Distance(vortexPos, indPos);
             var dirText = double.IsNaN(dirVortex) ? "不可用" : $"{(float)dirVortex}°";
             var lifeSaltText = double.IsNaN(dangerDis) ? "不可用" : Function.FormatLifeSalt(dangerDis);
             return $"""
                 当前距离: {distance}
                 最大距离: {(float)maxDis}
                 漩涡方向: {dirText}
-                血盐需求: {lifeSaltText}
+                加血需求: {lifeSaltText}
                 """;
         }
 
@@ -244,52 +254,88 @@ namespace AlchAssV3
 
         #region 渲染信息计算
         /// <summary>
+        /// 更新偏移
+        /// </summary>
+        public static void UpdateOffset()
+        {
+            if (Variable.DisplayOffset)
+                Variable.Offset = Managers.RecipeMap.indicator.thisTransform.localPosition;
+            else
+                Variable.Offset = Vector3.zero;
+        }
+
+        /// <summary>
         /// 计算路径方向
         /// </summary>
-        public static double GetPathLineDirection()
+        public static void GetPathLineDirection()
         {
-            if (Variable.PathPhysical.Count < 2)
-                return double.NaN;
-            Vector2 pathPos = Variable.PathPhysical[1].Item1;
-            return Vector2.SignedAngle(Vector2.right, pathPos - Variable.IndicatorPosition);
+            if (!Variable.DoLines[0] || Variable.PathPhysical.Count < 2)
+                Variable.LineDirections[0] = double.NaN;
+            else
+                Variable.LineDirections[0] = Vector2.SignedAngle(Vector2.right, Variable.PathPhysical[1].Item1 - Variable.PathPhysical[0].Item1);
         }
 
         /// <summary>
         /// 计算加水方向
         /// </summary>
-        public static double GetLadleLineDirection()
+        public static void GetLadleLineDirection()
         {
-            return Vector2.SignedAngle(Vector2.right, -Variable.IndicatorPosition);
+            if (!Variable.DoLines[1])
+                Variable.LineDirections[1] = double.NaN;
+            else
+                Variable.LineDirections[1] = Vector2.SignedAngle(Vector2.right, -Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition);
         }
 
         /// <summary>
         /// 计算目标方向
         /// </summary>
-        public static double GetTargetLineDirection()
+        public static void GetTargetLineDirection()
         {
-            if (Variable.TargetEffect == null)
-                return double.NaN;
-
-            Vector2 targetPos = Variable.TargetEffect.transform.localPosition;
-            return Vector2.SignedAngle(Vector2.right, targetPos - Variable.IndicatorPosition);
+            if (!Variable.DoLines[2] || Variable.TargetEffect == null)
+                Variable.LineDirections[2] = double.NaN;
+            else
+            {
+                var targetPos = Variable.TargetEffect.transform.localPosition;
+                var indPos = Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition + Variable.Offset;
+                Variable.LineDirections[2] = Vector2.SignedAngle(Vector2.right, targetPos - indPos);
+            }
         }
 
         /// <summary>
         /// 计算漩涡方向
         /// </summary>
-        public static double GetVortexLineDirection()
+        public static void GetVortexLineDirection()
         {
-            if (Variable.CurrentMapID == "Wine")
-                return double.NaN;
+            if (!Variable.DoLines[3])
+                Variable.LineDirections[3] = double.NaN;
+            else
+            {
+                var mapindex = Variable.MapId[Managers.RecipeMap.currentMap.potionBase.name];
+                if (mapindex == 2 || Variable.VortexIndex[mapindex] < 0)
+                    Variable.LineDirections[3] = double.NaN;
+                else
+                {
+                    var selVortex = Variable.Vortexs[mapindex][Variable.VortexIndex[mapindex]];
+                    var vortexPos = new Vector3((float)selVortex.x, (float)selVortex.y);
+                    var indPos = Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition + Variable.Offset;
+                    Variable.LineDirections[3] = Vector2.SignedAngle(Vector2.right, vortexPos - indPos);
+                }
+            }
+        }
 
-            var mapindex = Variable.CurrentMapID == "Water" ? 0 : 1;
-            var vortexList = mapindex == 0 ? Variable.Vortex_Water : Variable.Vortex_Oil;
-            if (Variable.VortexIndex[mapindex] < 0)
-                return double.NaN;
-
-            var selVortex = vortexList[Variable.VortexIndex[mapindex]];
-            var vortexPos = new Vector2((float)selVortex.x, (float)selVortex.y);
-            return Vector2.SignedAngle(Vector2.right, vortexPos - Variable.IndicatorPosition);
+        /// <summary>
+        /// 计算漩涡切线
+        /// </summary>
+        public static void GetTangentLineDirection()
+        {
+            if (!Variable.DoLines[4] || double.IsNaN(Variable.VortexX))
+                Variable.LineDirections[4] = double.NaN;
+            else
+            {
+                var dir = Variable.VortexMaxAngle + Variable.VortexRotation + Math.Atan(Variable.VortexMaxAngle);
+                var dirdeg = dir * 180 / Math.PI;
+                Variable.LineDirections[4] = dirdeg % 360;
+            }
         }
 
         /// <summary>
@@ -304,30 +350,31 @@ namespace AlchAssV3
             var rad = theta * Math.PI / 180;
             var dx = Math.Cos(rad);
             var dy = Math.Sin(rad);
-            var yDev = Variable.BaseRenderPosition.y - Variable.IndicatorPosition.y;
+            var mapTrans = Managers.RecipeMap.currentMap.referencesContainer.transform;
+            var indPos = Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition + Variable.Offset;
             List<Vector3> points = [];
 
             if (Math.Abs(dx) > 1e-5)
             {
-                var t = (-80 - Variable.IndicatorPosition.x) / dx;
-                var y = Variable.IndicatorPosition.y + t * dy;
+                var t = (-80 - indPos.x) / dx;
+                var y = indPos.y + t * dy;
                 if (y >= -80 && y <= 80)
-                    points.Add(new Vector3(-80, (float)y + yDev, 0));
-                t = (80 - Variable.IndicatorPosition.x) / dx;
-                y = Variable.IndicatorPosition.y + t * dy;
+                    points.Add(mapTrans.TransformPoint(new(-80, (float)y)));
+                t = (80 - indPos.x) / dx;
+                y = indPos.y + t * dy;
                 if (y >= -80 && y <= 80)
-                    points.Add(new Vector3(80, (float)y + yDev, 0));
+                    points.Add(mapTrans.TransformPoint(new(80, (float)y)));
             }
             if (Math.Abs(dy) > 1e-5)
             {
-                var t = (-80 - Variable.IndicatorPosition.y) / dy;
-                var x = Variable.IndicatorPosition.x + t * dx;
+                var t = (-80 - indPos.y) / dy;
+                var x = indPos.x + t * dx;
                 if (x > -80 && x < 80)
-                    points.Add(new Vector3((float)x, -80 + yDev, 0));
-                t = (80 - Variable.IndicatorPosition.y) / dy;
-                x = Variable.IndicatorPosition.x + t * dx;
+                    points.Add(mapTrans.TransformPoint(new((float)x, -80)));
+                t = (80 - indPos.y) / dy;
+                x = indPos.x + t * dx;
                 if (x > -80 && x < 80)
-                    points.Add(new Vector3((float)x, 80 + yDev, 0));
+                    points.Add(mapTrans.TransformPoint(new((float)x, 80)));
             }
             Points = [.. points];
         }
@@ -335,10 +382,10 @@ namespace AlchAssV3
         /// <summary>
         /// 生成路径曲线（整列和散列）
         /// </summary>
-        public static void InitPathCurve(out List<(Vector3, bool)> PathPhysical, out List<(Vector3[], bool)> PathGraphical, out List<Vector2> swamppos)
+        public static void InitPathCurve()
         {
-            PathPhysical = []; PathGraphical = []; swamppos = [];
-            if (!Variable.DerivedEnables[4])
+            Variable.PathPhysical = []; Variable.PathGraphical = []; Variable.SwampPositions = [];
+            if (!Variable.DoPathCurve)
                 return;
 
             var pathHints = Managers.RecipeMap.path.fixedPathHints;
@@ -347,71 +394,76 @@ namespace AlchAssV3
 
             var mapTrans = Managers.RecipeMap.currentMap.referencesContainer.transform;
             var pathTrans = Managers.RecipeMap.path.thisTransform;
-            var yDev = Variable.BaseRenderPosition.y - Variable.IndicatorPosition.y;
             var stIn = ZonePart.GetZonesActivePartsCount(typeof(SwampZonePart)) > 0;
             var stSet = Vector3.zero;
+            var indPos = Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition;
+            var mapId = Managers.RecipeMap.currentMap.potionBase.name;
 
-            PathPhysical.Add((Variable.IndicatorPosition, false));
+            Variable.PathPhysical.Add((indPos + Variable.Offset, false));
             for (int i = 0; i < pathHints.Count; i++)
             {
                 var hint = pathHints[i];
                 var isTp = hint.GetType().Name == "TeleportationFixedHint";
                 var points = hint.evenlySpacedPointsFixedPhysics.points.Select(point => mapTrans.InverseTransformPoint(pathTrans.TransformPoint(point))).ToList();
                 if (points.Count() < 2) continue;
-                if (i == 0) points[0] = Variable.IndicatorPosition;
+                if (i == 0) points[0] = indPos;
                 if (isTp) points = [points[0], points[points.Count - 1]];
-                if (Variable.DerivedEnables[16] && Variable.CurrentMapID == "Oil")
+                if (Variable.DoSwampPoint && mapId == "Oil")
                 {
                     Geometry.ScalePath(points, stIn, stSet, isTp, out var pointsSc, out var pos, out var edIn, out var edSet);
                     stIn = edIn; stSet = edSet; points = pointsSc;
-                    swamppos.AddRange(pos);
+                    Variable.SwampPositions.AddRange(pos);
                 }
 
-                var pointsDev = points.Select(point => new Vector3(point.x, point.y + yDev, 0));
-                PathPhysical.AddRange(points.Skip(1).Select(point => (point, isTp)));
-                PathGraphical.Add(([.. pointsDev], isTp));
+                Variable.PathPhysical.AddRange(points.Skip(1).Select(point => (point + Variable.Offset, isTp)));
+                Variable.PathGraphical.Add(([.. points.Select(point => mapTrans.TransformPoint(point + Variable.Offset))], isTp));
             }
         }
 
         /// <summary>
         /// 生成漩涡曲线（参数和散列）
         /// </summary>
-        public static void InitVortexCurve(out double[] Parameters, out Vector3[] Points)
+        public static void InitVortexCurve()
         {
-            Parameters = [double.NaN, double.NaN, double.NaN, double.NaN, double.NaN]; Points = [];
-            if (!Variable.DerivedEnables[5])
+            Variable.VortexX = double.NaN; Variable.VortexY = double.NaN; Variable.VortexRotation = double.NaN;
+            Variable.VortexMaxAngle = double.NaN; Variable.VortexMinAngle = double.NaN; Variable.VortexGraphical = [];
+            if (!Variable.DoVortexCurve)
                 return;
 
             var curVortex = Managers.RecipeMap.CurrentVortexMapItem;
             if (curVortex == null)
                 return;
 
-            Vector2 vortexPos = curVortex.thisTransform.localPosition;
-            var maxDis = ((CircleCollider2D)Traverse.Create(curVortex).Field("vortexCollider").GetValue()).radius + Variable.IndicatorRadius;
-            var distance = Vector2.Distance(vortexPos, Variable.IndicatorPosition);
+            var vortexPos = curVortex.thisTransform.localPosition;
+            var indPos = Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition + Variable.Offset;
+            var maxDis = ((CircleCollider2D)Traverse.Create(curVortex).Field("vortexCollider").GetValue()).radius + 0.74;
+            var distance = Vector2.Distance(vortexPos, indPos);
             if (distance > maxDis + 1e-5)
                 return;
 
-            var v = Variable.IndicatorPosition - vortexPos;
-            var maxAng = v.magnitude / Variable.VortexCurveA;
+            var v = indPos - vortexPos;
+            var maxAng = v.magnitude / Variable.VortexA;
             var rot = (Math.Atan2(v.y, v.x) - maxAng) % (2 * Math.PI);
-            var minAng = (maxDis - Variable.MaxVortexDanger) / Variable.VortexCurveA;
-            Parameters = [vortexPos.x, vortexPos.y, rot, maxAng, minAng];
+            Variable.VortexMinAngle = (maxDis - 1.55) / Variable.VortexA;
+            Variable.VortexX = vortexPos.x;
+            Variable.VortexY = vortexPos.y;
+            Variable.VortexRotation = rot;
+            Variable.VortexMaxAngle = maxAng;
 
-            var yDev = Variable.BaseRenderPosition.y - Variable.IndicatorPosition.y;
-            Points = new Vector3[Math.Max(10, (int)(distance * 250))];
-            for (int i = 0; i < Points.Length; i++)
+            var mapTrans = Managers.RecipeMap.currentMap.referencesContainer.transform;
+            Variable.VortexGraphical = new Vector3[Math.Max(10, (int)(distance * 250))];
+            for (int i = 0; i < Variable.VortexGraphical.Length; i++)
             {
-                var t = i / (double)Points.Length;
+                var t = i / (double)Variable.VortexGraphical.Length;
                 var angle = t * maxAng;
-                var radius = Variable.VortexCurveA * angle;
+                var radius = Variable.VortexA * angle;
                 var x = radius * Math.Cos(angle);
                 var y = radius * Math.Sin(angle);
                 var x_rot = x * Math.Cos(rot) - y * Math.Sin(rot) + vortexPos.x;
-                var y_rot = x * Math.Sin(rot) + y * Math.Cos(rot) + vortexPos.y + yDev;
-                Points[i] = new Vector3((float)x_rot, (float)y_rot, 0);
+                var y_rot = x * Math.Sin(rot) + y * Math.Cos(rot) + vortexPos.y;
+                Variable.VortexGraphical[i] = mapTrans.TransformPoint(new((float)x_rot, (float)y_rot));
             }
-            Points = [.. Points.AddItem(new Vector3(Variable.IndicatorPosition.x, Variable.BaseRenderPosition.y, 0))];
+            Variable.VortexGraphical = [.. Variable.VortexGraphical.AddItem(mapTrans.TransformPoint(indPos))];
         }
 
         /// <summary>
@@ -420,67 +472,70 @@ namespace AlchAssV3
         public static void InitRange(double rad, double cx, double cy, out Vector3[] Points)
         {
             var r = rad - Variable.LineWidth.Value * 0.5;
-            var yDev = Variable.BaseRenderPosition.y - Variable.IndicatorPosition.y;
             Points = new Vector3[Math.Max(10, (int)(r * 250))];
+            var mapTrans = Managers.RecipeMap.currentMap.referencesContainer.transform;
             for (int i = 0; i < Points.Length; i++)
             {
                 var t = i / (double)Points.Length;
                 var angle = t * 2 * Math.PI;
                 var x = r * Math.Cos(angle) + cx;
-                var y = r * Math.Sin(angle) + cy + yDev;
-                Points[i] = new Vector3((float)x, (float)y, 0);
+                var y = r * Math.Sin(angle) + cy;
+                Points[i] = mapTrans.TransformPoint(new((float)x, (float)y));
             }
         }
 
         /// <summary>
         /// 生成关键点
         /// </summary>
-        public static void InitPoints(double health, out Vector2[] closest, out Vector2[] defeat, out List<Vector2>[] danger, out List<Vector2>[] intersection, out double[] distance)
+        public static void InitPoints(double health)
         {
-            closest = [new Vector2(float.NaN, float.NaN), new Vector2(float.NaN, float.NaN)];
-            defeat = [new Vector2(float.NaN, float.NaN), new Vector2(float.NaN, float.NaN), new Vector2(float.NaN, float.NaN)];
-            danger = [[], [], []];
-            intersection = [[], [], [], []];
-            distance = [double.NaN, double.NaN, double.NaN];
+            Variable.ClosestPositions = [new Vector2(float.NaN, float.NaN), new Vector2(float.NaN, float.NaN)];
+            Variable.DefeatPositions = [new Vector2(float.NaN, float.NaN), new Vector2(float.NaN, float.NaN), new Vector2(float.NaN, float.NaN)];
+            Variable.DangerPositions = [[], [], []];
+            Variable.IntersectionPositions = [[], [], [], []];
+            Variable.DangerDistancePath = double.NaN;
+            Variable.DangerDistanceLadle = double.NaN;
+            Variable.DangerDistanceVortex = double.NaN;
 
-            List<(Vector3, bool)> pathLadle = [(Variable.IndicatorPosition, false), (Vector2.zero, false)];
+            var indPos = Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition + Variable.Offset;
+            List<(Vector3, bool)> pathLadle = [(indPos, false), (Variable.Offset, false)];
             bool[] inDanger = [
                 ZonePart.GetZonesActivePartsCount(typeof(StrongDangerZonePart)) > 0,
                 ZonePart.GetZonesActivePartsCount(typeof(WeakDangerZonePart)) > 0,
                 ZonePart.GetZonesActivePartsCount(typeof(HealZonePart)) > 0,
             ];
 
-            bool targetVaild = new(); bool vortexVaild = new();
-            Vector2 targetPos = new(); Vector2 vortexPos = new();
+            bool effectVaild = new(); bool vortexVaild = new();
+            Vector2 effectPos = new(); Vector2 vortexPos = new();
             double vortexRad = new();
+            var mapId = Managers.RecipeMap.currentMap.potionBase.name;
             if (Variable.TargetEffect != null)
             {
-                targetPos = Variable.TargetEffect.transform.localPosition;
-                targetVaild = true;
+                effectPos = Variable.TargetEffect.transform.localPosition;
+                effectVaild = true;
             }
-            if (Variable.CurrentMapID != "Wine")
+            if (mapId != "Wine")
             {
-                var mapindex = Variable.CurrentMapID == "Water" ? 0 : 1;
-                var vortexList = mapindex == 0 ? Variable.Vortex_Water : Variable.Vortex_Oil;
+                var mapindex = Variable.MapId[mapId];
                 if (Variable.VortexIndex[mapindex] >= 0)
                 {
-                    var selVortex = vortexList[Variable.VortexIndex[mapindex]];
+                    var selVortex = Variable.Vortexs[mapindex][Variable.VortexIndex[mapindex]];
                     vortexPos = new Vector2((float)selVortex.x, (float)selVortex.y);
                     vortexRad = selVortex.r;
                     vortexVaild = true;
                 }
             }
-            var vortexIn = Variable.VortexParameters[3] > Variable.VortexParameters[4];
+            var vortexIn = Variable.VortexMaxAngle > Variable.VortexMinAngle;
 
-            var closePathEn = Variable.DerivedEnables[4] && targetVaild;
-            var closeLadleEn = Variable.DerivedEnables[1] && targetVaild;
-            var targetPathEn = Variable.DerivedEnables[9] && targetVaild;
-            var targetLadleEn = Variable.DerivedEnables[10] && targetVaild;
-            var vortexPathEn = Variable.DerivedEnables[11] && vortexVaild;
-            var vortexLadleEn = Variable.DerivedEnables[12] && vortexVaild;
-            var dangerPathEn = Variable.DerivedEnables[13];
-            var dangerLadleEn = Variable.DerivedEnables[14];
-            var dangerVortexEn = Variable.DerivedEnables[15] && vortexIn;
+            var closePathEn = Variable.DoPathCurve && effectVaild;
+            var closeLadleEn = Variable.DoLines[1] && effectVaild;
+            var effectPathEn = Variable.DoPathEffectPoint && effectVaild;
+            var effectLadleEn = Variable.DoLadleEffectPoint && effectVaild;
+            var vortexPathEn = Variable.DoPathVortexPoint && vortexVaild;
+            var vortexLadleEn = Variable.DoLadleVortexPoint && vortexVaild;
+            var dangerPathEn = Variable.DoPathDangerPoint;
+            var dangerLadleEn = Variable.DoLadleDangerPoint;
+            var dangerVortexEn = Variable.DoVortexDangerPoint && vortexIn;
 
             var lenPath = Variable.PathPhysical.Count() - 1;
             if (lenPath > 0)
@@ -495,16 +550,16 @@ namespace AlchAssV3
                         Vector2 p1 = Variable.PathPhysical[i + 1].Item1;
                         var isTp = Variable.PathPhysical[i + 1].Item2;
 
-                        Geometry.SqrDisToPoint(p0, p1, targetPos, isTp, out var closePathDis, out var closePathPos);
+                        Geometry.SqrDisToPoint(p0, p1, effectPos, isTp, out var closePathDis, out var closePathPos);
                         if (closePathDis < closePathMin)
                         {
                             closePathMin = closePathDis;
-                            closest[0] = closePathPos;
+                            Variable.ClosestPositions[0] = closePathPos;
                         }
                     }
                 }
 
-                if (targetPathEn || vortexPathEn || dangerPathEn)
+                if (effectPathEn || vortexPathEn || dangerPathEn)
                 {
                     List<(Vector2, int, double, int)> dangerPathSum = [];
 
@@ -522,9 +577,9 @@ namespace AlchAssV3
                             miny = Math.Min(miny, y); maxy = Math.Max(maxy, y);
                         }
 
-                        var targetPathEnC = targetPathEn && Geometry.RangeAABB(minx, miny, maxx, maxy, targetPos, 1.53);
+                        var effectPathEnC = effectPathEn && Geometry.RangeAABB(minx, miny, maxx, maxy, effectPos, 1.53);
                         var vortexPathEnC = vortexPathEn && Geometry.RangeAABB(minx, miny, maxx, maxy, vortexPos, vortexRad);
-                        var dangerPathEnC = dangerPathEn && Geometry.DangerAABB(minx, miny, maxx, maxy, Variable.CurrentMapID);
+                        var dangerPathEnC = dangerPathEn && Geometry.DangerAABB(minx, miny, maxx, maxy, mapId);
 
                         for (var j = i; j < lt; j++)
                         {
@@ -532,19 +587,19 @@ namespace AlchAssV3
                             Vector2 p1 = Variable.PathPhysical[j + 1].Item1;
                             var isTp = Variable.PathPhysical[j + 1].Item2;
 
-                            if (targetPathEnC)
+                            if (effectPathEnC)
                             {
-                                Geometry.TargetRange(p0, p1, targetPos, isTp, out var targetPath);
-                                intersection[0].AddRange(targetPath);
+                                Geometry.TargetRange(p0, p1, effectPos, isTp, out var effectPath);
+                                Variable.IntersectionPositions[0].AddRange(effectPath);
                             }
                             if (vortexPathEnC)
                             {
                                 Geometry.VortexRange(p0, p1, vortexPos, vortexRad, isTp, out var vortexPath);
-                                intersection[2].AddRange(vortexPath);
+                                Variable.IntersectionPositions[2].AddRange(vortexPath);
                             }
                             if (dangerPathEnC)
                             {
-                                Geometry.DangerLine(p0, p1, Variable.CurrentMapID, j, isTp, out var dangerPath);
+                                Geometry.DangerLine(p0, p1, mapId, j, isTp, out var dangerPath);
                                 dangerPathSum.AddRange(dangerPath);
                             }
                         }
@@ -552,30 +607,33 @@ namespace AlchAssV3
 
                     if (dangerPathEn)
                     {
-                        Geometry.DefeatLine(Variable.PathPhysical, dangerPathSum, health, inDanger, Variable.CurrentMapID, out defeat[0], out distance[0]);
-                        danger[0].AddRange(dangerPathSum.Select(x => x.Item1));
+                        Geometry.DefeatLine(Variable.PathPhysical, dangerPathSum, health, inDanger, mapId,
+                            out Variable.DefeatPositions[0], out Variable.DangerDistancePath);
+                        Variable.DangerPositions[0].AddRange(dangerPathSum.Select(x => x.Item1));
                     }
                 }
             }
 
             if (closeLadleEn)
-                Geometry.SqrDisToPoint(Variable.IndicatorPosition, Vector2.zero, targetPos, false, out _, out closest[1]);
-            if (targetLadleEn)
-                Geometry.TargetRange(Variable.IndicatorPosition, Vector2.zero, targetPos, false, out intersection[1]);
+                Geometry.SqrDisToPoint(indPos, Variable.Offset, effectPos, false, out _, out Variable.ClosestPositions[1]);
+            if (effectLadleEn)
+                Geometry.TargetRange(indPos, Variable.Offset, effectPos, false, out Variable.IntersectionPositions[1]);
             if (vortexLadleEn)
-                Geometry.VortexRange(Variable.IndicatorPosition, Vector2.zero, vortexPos, vortexRad, false, out intersection[3]);
+                Geometry.VortexRange(indPos, Variable.Offset, vortexPos, vortexRad, false, out Variable.IntersectionPositions[3]);
             if (dangerLadleEn)
             {
-                Geometry.DangerLine(Variable.IndicatorPosition, Vector2.zero, Variable.CurrentMapID, 0, false, out var dangerLadle);
-                Geometry.DefeatLine(pathLadle, dangerLadle, health, inDanger, Variable.CurrentMapID, out defeat[1], out distance[1]);
-                danger[1].AddRange(dangerLadle.Select(x => x.Item1));
+                Geometry.DangerLine(indPos, Variable.Offset, mapId, 0, false, out var dangerLadle);
+                Geometry.DefeatLine(pathLadle, dangerLadle, health, inDanger, mapId, out Variable.DefeatPositions[1], out Variable.DangerDistanceLadle);
+                Variable.DangerPositions[1].AddRange(dangerLadle.Select(x => x.Item1));
             }
 
             if (dangerVortexEn)
             {
-                Geometry.DangerSpiral(Variable.VortexParameters, Variable.CurrentMapID, out var dangerVortex);
-                Geometry.DefeatSpiral(Variable.VortexParameters, dangerVortex, health, inDanger[0], out defeat[2], out distance[2]);
-                danger[2].AddRange(dangerVortex.Select(x => x.Item1));
+                Geometry.DangerSpiral(Variable.VortexX, Variable.VortexY, Variable.VortexRotation,
+                    Variable.VortexMaxAngle, Variable.VortexMinAngle, mapId, out var dangerVortex);
+                Geometry.DefeatSpiral(Variable.VortexX, Variable.VortexY, Variable.VortexRotation, Variable.VortexMaxAngle,
+                    dangerVortex, health, inDanger[0], out Variable.DefeatPositions[2], out Variable.DangerDistanceVortex);
+                Variable.DangerPositions[2].AddRange(dangerVortex.Select(x => x.Item1));
             }
         }
         #endregion

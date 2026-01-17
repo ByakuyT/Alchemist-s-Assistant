@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PotionCraft.ManagersSystem;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -123,7 +124,7 @@ namespace AlchAssV3
                     var t = Brent(f, prevX, x);
                     if (roots.Count == 0 || Math.Abs(t - roots[roots.Count - 1].Item2) > 1e-5)
                     {
-                        var r = t * Variable.VortexCurveA;
+                        var r = t * Variable.VortexA;
                         var pos = new Vector2((float)(r * Math.Cos(t)), (float)(r * Math.Sin(t)));
                         roots.Add((pos, t));
                     }
@@ -291,7 +292,7 @@ namespace AlchAssV3
                 return;
 
             var targetRot = Variable.TargetEffect.transform.localEulerAngles.z;
-            var devRot = Mathf.Abs(Mathf.DeltaAngle(Variable.IndicatorRotation, targetRot));
+            var devRot = Mathf.Abs(Mathf.DeltaAngle(Managers.RecipeMap.indicatorRotation.Value, targetRot));
             double[] targetRad = [1.53, 1.0 / 3.0 - devRot / 216.0, 1.0 / 18.0 - devRot / 216.0];
 
             for (var i = 0; i < 3; i++)
@@ -329,13 +330,9 @@ namespace AlchAssV3
             List<(Vector2, int, double, int)> points = [];
             if (mapid != "Wine")
             {
-                var isWater = mapid == "Water";
-                var shapes = isWater ? Variable.Strong_Water : Variable.Strong_Oil;
-                var bvh = isWater ? Variable.Strong_Water_BVH : Variable.Strong_Oil_BVH;
-
-                LineBVH(p0, p1, bvh, out var items);
+                LineBVH(p0, p1, Variable.StrongBVHs[Variable.MapId[mapid]], out var items);
                 foreach (var item in items)
-                    switch (shapes[item])
+                    switch (Variable.Strongs[Variable.MapId[mapid]][item])
                     {
                         case Variable.Shape.Line line:
                             LineVsLine(p0, p1, line, out var Pline);
@@ -349,8 +346,8 @@ namespace AlchAssV3
             }
             else
             {
-                List<Variable.Shape>[] shapes = [Variable.Strong_Wine, Variable.Weak_Wine, Variable.Heal_Wine];
-                List<Variable.Node>[] bvh = [Variable.Strong_Wine_BVH, Variable.Weak_Wine_BVH, Variable.Heal_Wine_BVH];
+                List<Variable.Shape>[] shapes = [Variable.Strongs[2], Variable.WeakWine, Variable.HealWine];
+                List<Variable.Node>[] bvh = [Variable.StrongBVHs[2], Variable.WeakWineBVH, Variable.HealWineBVH];
 
                 for (var i = 0; i < 3; i++)
                 {
@@ -389,28 +386,24 @@ namespace AlchAssV3
         /// <summary>
         /// 预处理螺线区域检测
         /// </summary>
-        public static void DangerSpiral(double[] pm, string mapid, out List<(Vector2, double)> pos)
+        public static void DangerSpiral(double cX, double cY, double rot, double maxT, double minT, string mapid, out List<(Vector2, double)> pos)
         {
             pos = [];
-
-            var isWater = mapid == "Water";
-            var shapes = isWater ? Variable.Strong_Water : Variable.Strong_Oil;
-            var bvh = isWater ? Variable.Strong_Water_BVH : Variable.Strong_Oil_BVH;
-            CircleBVH(pm[0], pm[1], pm[3] * Variable.VortexCurveA, bvh, out var items);
+            CircleBVH(cX, cY, maxT * Variable.VortexA, Variable.StrongBVHs[Variable.MapId[mapid]], out var items);
 
             List<Variable.Shape> localShapes = [];
             foreach (var item in items)
-                switch (shapes[item])
+                switch (Variable.Strongs[Variable.MapId[mapid]][item])
                 {
                     case Variable.Shape.Line line:
-                        TransToLocal(pm, line.X1, line.Y1, out var p1x, out var p1y);
-                        TransToLocal(pm, line.X2, line.Y2, out var p2x, out var p2y);
+                        TransToLocal(cX, cY, rot, line.X1, line.Y1, out var p1x, out var p1y);
+                        TransToLocal(cX, cY, rot, line.X2, line.Y2, out var p2x, out var p2y);
                         localShapes.Add(new Variable.Shape.Line(p1x, p1y, p2x, p2y));
                         break;
                     case Variable.Shape.Arc arc:
-                        TransToLocal(pm, arc.X, arc.Y, out var cx, out var cy);
-                        var sa = (arc.StartAngle - pm[2]) % (2 * Math.PI);
-                        var ea = (arc.EndAngle - pm[2]) % (2 * Math.PI);
+                        TransToLocal(cX, cY, rot, arc.X, arc.Y, out var cx, out var cy);
+                        var sa = (arc.StartAngle - rot) % (2 * Math.PI);
+                        var ea = (arc.EndAngle - rot) % (2 * Math.PI);
                         if (sa < 0) sa += 2 * Math.PI;
                         if (ea < 0) ea += 2 * Math.PI;
                         localShapes.Add(new Variable.Shape.Arc(cx, cy, arc.R, sa, ea));
@@ -419,7 +412,7 @@ namespace AlchAssV3
 
             var len = localShapes.Count;
             var roots = new List<(Vector2, double)>[len];
-            var th0 = pm[4]; var th1 = pm[3];
+            var th0 = minT; var th1 = maxT;
             Parallel.For(0, len, i =>
             {
                 roots[i] = [];
@@ -467,12 +460,12 @@ namespace AlchAssV3
                 .OrderByDescending(item => item.Item2)];
             if (points.Count > 0)
             {
-                TransToGlobal(pm, points[0].Item1.x, points[0].Item1.y, out var nx0, out var ny0);
+                TransToGlobal(cX, cY, rot, points[0].Item1.x, points[0].Item1.y, out var nx0, out var ny0);
                 pos.Add((new Vector2((float)nx0, (float)ny0), points[0].Item2));
                 for (var i = 1; i < points.Count; i++)
                     if (points[i - 1].Item2 - points[i].Item2 > 1e-5)
                     {
-                        TransToGlobal(pm, points[i].Item1.x, points[i].Item1.y, out var nxi, out var nyi);
+                        TransToGlobal(cX, cY, rot, points[i].Item1.x, points[i].Item1.y, out var nxi, out var nyi);
                         pos.Add((new Vector2((float)nxi, (float)nyi), points[i].Item2));
                     }
             }
@@ -620,11 +613,11 @@ namespace AlchAssV3
         /// <summary>
         /// 后处理螺线区域检测
         /// </summary>
-        public static void DefeatSpiral(double[] pm, List<(Vector2, double)> points, double stlen, bool stin, out Vector2 pos, out double dis)
+        public static void DefeatSpiral(double cX, double cY, double rot, double maxT, List<(Vector2, double)> points, double stlen, bool stin, out Vector2 pos, out double dis)
         {
             pos = new Vector2(float.NaN, float.NaN); dis = double.NaN;
             var inter = stin; var curLen = (1 - stlen) * 2.5;
-            var preDis = SpiralLength(pm[3]); var preLen = curLen;
+            var preDis = SpiralLength(maxT); var preLen = curLen;
             var gotPos = false; var gotDis = false;
             var id = 0;
             while (id < points.Count)
@@ -637,9 +630,9 @@ namespace AlchAssV3
 
                 if (!gotPos && curLen >= 2.5)
                 {
-                    var t = Brent(x => SpiralLength(x) - preDis + 2.5 - preLen, points[id].Item2, id > 0 ? points[id - 1].Item2 : pm[3]);
-                    var r = Variable.VortexCurveA * t;
-                    TransToGlobal(pm, r * Math.Cos(t), r * Math.Sin(t), out var px, out var py);
+                    var t = Brent(x => SpiralLength(x) - preDis + 2.5 - preLen, points[id].Item2, id > 0 ? points[id - 1].Item2 : maxT);
+                    var r = Variable.VortexA * t;
+                    TransToGlobal(cX, cY, rot, r * Math.Cos(t), r * Math.Sin(t), out var px, out var py);
                     pos = new Vector2((float)px, (float)py);
                     gotPos = true;
                 }
@@ -658,9 +651,9 @@ namespace AlchAssV3
             curLen = inter ? curLen + preDis : 0;
             if (!gotPos && curLen >= 2.5)
             {
-                var t = Brent(x => SpiralLength(x) - preDis + 2.5 - preLen, 0, id > 0 ? points[id - 1].Item2 : pm[3]);
-                var r = Variable.VortexCurveA * t;
-                TransToGlobal(pm, r * Math.Cos(t), r * Math.Sin(t), out var px, out var py);
+                var t = Brent(x => SpiralLength(x) - preDis + 2.5 - preLen, 0, id > 0 ? points[id - 1].Item2 : maxT);
+                var r = Variable.VortexA * t;
+                TransToGlobal(cX, cY, rot, r * Math.Cos(t), r * Math.Sin(t), out var px, out var py);
                 pos = new Vector2((float)px, (float)py);
             }
         }
@@ -674,11 +667,11 @@ namespace AlchAssV3
             if (Math.Abs(p0.x - p1.x) < 1e-5 && Math.Abs(p0.y - p1.y) < 1e-5)
                 return;
 
-            LineBVH(p0, p1, Variable.Swamp_Oil_BVH, out var items);
+            LineBVH(p0, p1, Variable.SwampOilBVH, out var items);
 
             List<(Vector2, double)> points = [];
             foreach (var item in items)
-                switch (Variable.Swamp_Oil[item])
+                switch (Variable.SwampOil[item])
                 {
                     case Variable.Shape.Line line:
                         LineVsLine(p0, p1, line, out var Pline);
@@ -747,7 +740,7 @@ namespace AlchAssV3
                     minx = s.x + (minx - s.x) * scale + offset.x; maxx = s.x + (maxx - s.x) * scale + offset.x;
                     miny = s.y + (miny - s.y) * scale + offset.y; maxy = s.y + (maxy - s.y) * scale + offset.y;
 
-                    if (!SquareBVH(minx, miny, maxx, maxy, Variable.Swamp_Oil_BVH))
+                    if (!SquareBVH(minx, miny, maxx, maxy, Variable.SwampOilBVH))
                     {
                         for (var j = i + 1; j <= lt; j++)
                             LineC.Add(s + (lineP[j] - s) * scale + offset);
@@ -827,19 +820,14 @@ namespace AlchAssV3
         public static bool DangerAABB(double minx, double miny, double maxx, double maxy, string mapid)
         {
             if (mapid != "Wine")
-            {
-                var isWater = mapid == "Water";
-                var bvh = isWater ? Variable.Strong_Water_BVH : Variable.Strong_Oil_BVH;
-                return SquareBVH(minx, miny, maxx, maxy, bvh);
-            }
+                return SquareBVH(minx, miny, maxx, maxy, Variable.StrongBVHs[Variable.MapId[mapid]]);
             else
             {
-                List<Variable.Node>[] bvhs = [Variable.Strong_Wine_BVH, Variable.Weak_Wine_BVH, Variable.Heal_Wine_BVH];
-
-                var hit = false;
+                List<Variable.Node>[] bvhs = [Variable.StrongBVHs[2], Variable.WeakWineBVH, Variable.HealWineBVH];
                 foreach (var bvh in bvhs)
-                    hit = hit || SquareBVH(minx, miny, maxx, maxy, bvh);
-                return hit;
+                    if (SquareBVH(minx, miny, maxx, maxy, bvh))
+                        return true;
+                return false;
             }
         }
         #endregion
@@ -869,18 +857,18 @@ namespace AlchAssV3
         public static double SpiralLength(double theta)
         {
             var sq = Math.Sqrt(theta * theta + 1);
-            return Variable.VortexCurveA * (theta * sq + Math.Log(theta + sq)) / 2;
+            return Variable.VortexA * (theta * sq + Math.Log(theta + sq)) / 2;
         }
 
         /// <summary>
         /// 转换为螺线本地坐标
         /// </summary>
-        public static void TransToLocal(double[] pm, double px, double py, out double tx, out double ty)
+        public static void TransToLocal(double cX, double cY, double rot, double px, double py, out double tx, out double ty)
         {
-            var cR = Math.Cos(-pm[2]);
-            var sR = Math.Sin(-pm[2]);
-            var dx = px - pm[0];
-            var dy = py - pm[1];
+            var cR = Math.Cos(-rot);
+            var sR = Math.Sin(-rot);
+            var dx = px - cX;
+            var dy = py - cY;
             tx = dx * cR - dy * sR;
             ty = dx * sR + dy * cR;
         }
@@ -888,14 +876,14 @@ namespace AlchAssV3
         /// <summary>
         /// 转换为整体坐标
         /// </summary>
-        public static void TransToGlobal(double[] pm, double tx, double ty, out double px, out double py)
+        public static void TransToGlobal(double cX, double cY, double rot, double tx, double ty, out double px, out double py)
         {
-            var cR = Math.Cos(pm[2]);
-            var sR = Math.Sin(pm[2]);
+            var cR = Math.Cos(rot);
+            var sR = Math.Sin(rot);
             var dx = tx * cR - ty * sR;
             var dy = tx * sR + ty * cR;
-            px = dx + pm[0];
-            py = dy + pm[1];
+            px = dx + cX;
+            py = dy + cY;
         }
 
         /// <summary>

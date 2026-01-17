@@ -1,37 +1,40 @@
-﻿using Newtonsoft.Json;
-using PotionCraft.DebugObjects.DebugWindows;
+﻿using PotionCraft.DebugObjects.DebugWindows;
 using PotionCraft.ManagersSystem;
-using PotionCraft.ManagersSystem.Ingredient;
-using PotionCraft.ManagersSystem.TMP;
 using PotionCraft.ObjectBased;
 using PotionCraft.ObjectBased.InteractiveItem;
-using PotionCraft.ObjectBased.UIElements.FloatingText;
-using PotionCraft.Settings;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace AlchAssV3
 {
     internal class Function
     {
-        #region 窗口与消息
+        #region 窗口相关
         /// <summary>
-        /// 加载调试窗口位置
+        /// 生成调试窗口
         /// </summary>
-        public static void LoadDebugWindowPos()
+        public static void InitDebugWindow(int index, Room room)
         {
-            if (!File.Exists(Variable.WindowConfigPath))
-            {
-                var json = JsonConvert.SerializeObject(Variable.DefaultWindowConfig, Formatting.Indented);
-                File.WriteAllText(Variable.WindowConfigPath, json);
-            }
-            var fileData = File.ReadAllText(Variable.WindowConfigPath);
-            var windowConfig = JsonConvert.DeserializeObject<Variable.WindowConfigData>(fileData);
-            for (int i = 0; i < Variable.DebugWindowPos.Length; i++)
-                Variable.DebugWindowPos[i] = new Vector3(windowConfig.positions[i].x, windowConfig.positions[i].y, 0f);
+            var Window = DebugWindow.Init(Variable.WindowTags[index] + "信息", true);
+            Window.ToForeground();
+            Window.transform.SetParent(room.transform, false);
+            Window.transform.localPosition = Variable.WindowPositions[index].Value;
+            Window.transform.localScale *= Variable.WindowScale.Value;
+            Variable.DebugWindows[index] = Window;
+        }
+
+        /// <summary>
+        /// 打开调试窗口
+        /// </summary>
+        public static void OpenDebugWindows()
+        {
+            foreach (var window in Variable.DebugWindows)
+                window.Visible = true;
         }
 
         /// <summary>
@@ -39,216 +42,173 @@ namespace AlchAssV3
         /// </summary>
         public static void SaveDebugWindowPos()
         {
-            var windowConfig = new Variable.WindowConfigData
-            {
-                positions = new Variable.WindowConfigData.PositionData[Variable.DebugWindowPos.Length]
-            };
-            for (int i = 0; i < Variable.DebugWindowPos.Length; i++)
-            {
-                windowConfig.positions[i] = new Variable.WindowConfigData.PositionData
-                {
-                    tag = Variable.DefaultWindowConfig.positions[i].tag,
-                    x = Variable.DebugWindows[i] != null ? Variable.DebugWindows[i].transform.position.x : Variable.DebugWindowPos[i].x,
-                    y = Variable.DebugWindows[i] != null ? Variable.DebugWindows[i].transform.position.y : Variable.DebugWindowPos[i].y,
-                };
-            }
-            var json = JsonConvert.SerializeObject(windowConfig, Formatting.Indented);
-            File.WriteAllText(Variable.WindowConfigPath, json);
-        }
-
-        /// <summary>
-        /// 生成调试窗口
-        /// </summary>
-        public static void InitDebugWindow(int index, Room room)
-        {
-            if (!Variable.EnableWindows[index].Value || Variable.DebugWindows[index] != null)
-                return;
-            var Window = DebugWindow.Init(Variable.DefaultWindowConfig.positions[index].tag, true);
-            Variable.ActiveDebugWindows.Add(Window);
-            Window.ToForeground();
-            Window.transform.SetParent(room.transform, false);
-            Window.transform.localPosition = Variable.DebugWindowPos[index];
-            Window.transform.localScale *= (float)Variable.WindowScale.Value;
-            Window.transform.Find("Maximized/Head").gameObject.SetActive(false);
-            Variable.DebugWindows[index] = Window;
-        }
-
-        /// <summary>
-        /// 生成弹窗消息
-        /// </summary>
-        public static void SpawnMessageText(string message)
-        {
-            var cursorPosition = Managers.Cursor.cursor.transform.position;
-            var commonAtlasName = Settings<TMPManagerSettings>.Asset.CommonAtlasName;
-            var formattedText = $"<voffset=0.085em><size=81%><sprite=\"{commonAtlasName}\" name=\"SpeechBubble ExclamationMark Icon\"></size>\u202f{message}";
-            var textContent = new CollectedFloatingText.FloatingTextContent(formattedText, CollectedFloatingText.FloatingTextContent.Type.Text, 0f);
-            var ingredientManagerAsset = typeof(Settings<IngredientManagerSettings>).GetProperty("Asset", BindingFlags.Public | BindingFlags.Static).GetValue(null);
-            var collectedFloatingTextField = ingredientManagerAsset.GetType().GetProperty("CollectedFloatingText", BindingFlags.NonPublic | BindingFlags.Instance);
-            var collectedFloatingText = collectedFloatingTextField.GetValue(ingredientManagerAsset) as CollectedFloatingText;
-            CollectedFloatingText.SpawnNewText(collectedFloatingText.gameObject, cursorPosition, [textContent], Managers.Game.Cam.transform, false, false);
-        }
-        #endregion
-
-        #region 格式化文本
-        /// <summary>
-        /// 格式化位置文本
-        /// </summary>
-        public static string FormatPosition(Vector2 position)
-        {
-            if (Variable.PolarMode)
-                return $"""
-                    r: {position.magnitude}
-                    θ: {Vector2.SignedAngle(Vector2.right, position)}°
-                    """;
-            return $"""
-                x: {position.x}
-                y: {position.y}
-                """;
-        }
-
-        /// <summary>
-        /// 格式化月盐文本
-        /// </summary>
-        public static string FormatMoonSalt(float rotation)
-        {
-            if (rotation < 0)
-                return $"<sprite=\"IconsAtlas\" name=\"MoonSalt\"> {-rotation}";
-            return $"<sprite=\"IconsAtlas\" name=\"SunSalt\"> {rotation}";
-        }
-
-        /// <summary>
-        /// 格式化血盐文本
-        /// </summary>
-        public static string FormatLifeSalt(double DangerDistance)
-        {
-            double salt = DangerDistance > 2.5 ? (DangerDistance - 2.5) * 100 : 0;
-            return $"<sprite=\"IconsAtlas\" name=\"LifeSalt\"> {(float)salt}";
+            for (var i = 0; i < Variable.DebugWindows.Length; i++)
+                Variable.WindowPositions[i].Value = Variable.DebugWindows[i].transform.localPosition;
+            Variable.WindowRectConfig.Value = Variable.WindowRect;
         }
         #endregion
 
         #region 快捷键功能
         /// <summary>
-        /// 极坐标模式开关
+        /// 控制面板开关
         /// </summary>
-        public static void UpdatePolarMode()
+        public static void UpdateWindow()
         {
-            if (Variable.KeyPolarMode.Value.IsDown())
+            if (Variable.KeyWindow.Value.IsDown())
+                Variable.ShowWindow = !Variable.ShowWindow;
+            if (Variable.ShowWindow)
             {
-                Variable.PolarMode = !Variable.PolarMode;
-                SpawnMessageText($"极坐标模式{(Variable.PolarMode ? "已开启" : "已关闭")}");
+                Cursor.visible = true;
+                UIWindow.Resizing();
             }
         }
 
         /// <summary>
-        /// 渲染元素开关
-        /// </summary>
-        public static void UpdateEnables()
-        {
-            for (int i = 0; i < Variable.Enables.Length; i++)
-                if (Variable.Keys[i].Value.IsDown())
-                {
-                    Variable.Enables[i] = !Variable.Enables[i];
-                    SpawnMessageText($"{Variable.MessageText[i]}{(Variable.Enables[i] ? "已开启" : "已关闭")}");
-                }
-        }
-
-        /// <summary>
-        /// 派生渲染元素开关
-        /// </summary>
-        public static void UpdateDerivedEnables()
-        {
-            Variable.DerivedEnables[0] = Variable.Enables[0] && Variable.Enables[4];
-            Variable.DerivedEnables[1] = Variable.Enables[1];
-            Variable.DerivedEnables[2] = Variable.Enables[2];
-            Variable.DerivedEnables[3] = Variable.Enables[3];
-            Variable.DerivedEnables[4] = Variable.Enables[4];
-            Variable.DerivedEnables[5] = Variable.Enables[5];
-            Variable.DerivedEnables[6] = Variable.Enables[6];
-            Variable.DerivedEnables[7] = Variable.Enables[7];
-            Variable.DerivedEnables[8] = Variable.Enables[10];
-            Variable.DerivedEnables[9] = Variable.Enables[4] && Variable.Enables[6];
-            Variable.DerivedEnables[10] = Variable.Enables[1] && Variable.Enables[6];
-            Variable.DerivedEnables[11] = Variable.Enables[4] && Variable.Enables[7];
-            Variable.DerivedEnables[12] = Variable.Enables[1] && Variable.Enables[7];
-            Variable.DerivedEnables[13] = Variable.Enables[4] && Variable.Enables[8];
-            Variable.DerivedEnables[14] = Variable.Enables[1] && Variable.Enables[8];
-            Variable.DerivedEnables[15] = Variable.Enables[5] && Variable.Enables[8];
-            Variable.DerivedEnables[16] = Variable.Enables[4] && Variable.Enables[9];
-        }
-
-        /// <summary>
-        /// 选择效果
+        /// 更新选择效果
         /// </summary>
         public static void UpdateSelectEffect(InteractiveItem item)
         {
-            if (Variable.KeySelectEffect.Value.IsDown() && item != null)
+            if (Variable.KeyEffect.Value.IsPressed() && Mouse.current.rightButton.wasPressedThisFrame)
             {
                 var name = item.name;
                 if (name == null)
                     return;
                 Variable.TargetEffect = Managers.RecipeMap.currentMap.referencesContainer.potionEffectsOnMap.FirstOrDefault(item => item.name == name);
-                if (Variable.TargetEffect != null)
-                    SpawnMessageText($"已选中效果: {Variable.TargetEffect.Effect.GetLocalizedTitle()}");
-                else
-                    SpawnMessageText($"已取消选中效果");
             }
         }
 
         /// <summary>
-        /// 选择漩涡
+        /// 更新选择漩涡
         /// </summary>
         public static void UpdateSelectVortex()
         {
-            if (Variable.CurrentMapID == null || Variable.CurrentMapID == "Wine")
+            if (Managers.RecipeMap?.currentMap == null || Managers.RecipeMap.currentMap.potionBase.name == "Wine")
                 return;
-            var mapindex = Variable.CurrentMapID == "Water" ? 0 : 1;
-            var vortexList = mapindex == 0 ? Variable.Vortex_Water : Variable.Vortex_Oil;
 
-            if (Variable.KeyNextVortex.Value.IsDown())
+            var mapid = Variable.MapId[Managers.RecipeMap.currentMap.potionBase.name];
+            if (Variable.KeyVortex.Value.IsPressed() && Mouse.current.rightButton.wasPressedThisFrame)
             {
-                Variable.VortexIndex[mapindex]++;
-                if (Variable.VortexIndex[mapindex] >= vortexList.Count)
-                    Variable.VortexIndex[mapindex] = 0;
-                SpawnMessageText($"已选择第 {Variable.VortexIndex[mapindex] + 1} 个漩涡");
-            }
+                var mousePos = Managers.Cursor.cursor.transform.position;
+                if (!Managers.RecipeMap.recipeMapObject.visibilityZoneCollider.OverlapPoint(mousePos))
+                    return;
 
-            if (Variable.KeyPrevVortex.Value.IsDown())
-            {
-                Variable.VortexIndex[mapindex]--;
-                if (Variable.VortexIndex[mapindex] < 0)
-                    Variable.VortexIndex[mapindex] = vortexList.Count - 1;
-                SpawnMessageText($"已选择第 {Variable.VortexIndex[mapindex] + 1} 个漩涡");
-            }
-
-            if (Variable.KeyNoneVortex.Value.IsDown())
-            {
-                Variable.VortexIndex[mapindex] = -1;
-                SpawnMessageText("已取消漩涡选择");
-            }
-
-            if (Variable.KeyNearVortex.Value.IsDown())
-            {
-                var indicatorPos = Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition;
-                var nearestIndex = -1;
-                var nearestDist = double.MaxValue;
-                for (int i = 0; i < vortexList.Count; i++)
+                var worldPos = Managers.RecipeMap.recipeMapObject.transmitterWindow.ViewToCamera(mousePos);
+                var mapPos = Managers.RecipeMap.currentMap.referencesContainer.transform.InverseTransformPoint(worldPos);
+                Variable.VortexIndex[mapid] = -1;
+                for (var i = 0; i < Variable.Vortexs[mapid].Count; i++)
                 {
-                    var dx = indicatorPos.x - vortexList[i].x;
-                    var dy = indicatorPos.y - vortexList[i].y;
-                    var dist = dx * dx + dy * dy;
-                    if (dist < nearestDist)
+                    var vortex = Variable.Vortexs[mapid][i];
+                    var dx = mapPos.x - vortex.x;
+                    var dy = mapPos.y - vortex.y;
+                    if (dx * dx + dy * dy <= vortex.r * vortex.r)
                     {
-                        nearestDist = dist;
-                        nearestIndex = i;
+                        Variable.VortexIndex[mapid] = i;
+                        break;
                     }
                 }
-                Variable.VortexIndex[mapindex] = nearestIndex;
-                SpawnMessageText($"已选择第 {Variable.VortexIndex[mapindex] + 1} 个漩涡");
             }
+        }
+
+        /// <summary>
+        /// 更新自定义直线
+        /// </summary>
+        public static void UpdateCustomLines()
+        {
+            if (Variable.KeyCustom.Value.IsPressed() && Variable.DoCustomLine)
+            {
+                var mousePos = Managers.Cursor.cursor.transform.position;
+                if (!Managers.RecipeMap.recipeMapObject.visibilityZoneCollider.OverlapPoint(mousePos))
+                    return;
+
+                var worldPos = Managers.RecipeMap.recipeMapObject.transmitterWindow.ViewToCamera(mousePos);
+                var mapPos = Managers.RecipeMap.currentMap.referencesContainer.transform.InverseTransformPoint(worldPos);
+                var indPos = Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition + Variable.Offset;
+                var delta = mapPos - indPos;
+
+                if (Mouse.current.middleButton.isPressed)
+                {
+                    if (Variable.TargetLineIndex < 0)
+                        return;
+
+                    var dir = Vector2.SignedAngle(Vector2.right, delta);
+                    dir = dir < 0 ? dir + 360 : dir;
+                    Variable.CustomLineDirections[Variable.TargetLineIndex] = dir;
+                    Variable.Inputs[Variable.TargetLineIndex] = (dir.ToString(), false);
+                }
+                else
+                {
+                    var target = -1;
+                    var minDis = double.MaxValue;
+                    for (var i = 0; i < Variable.CustomLineDirections.Count; i++)
+                    {
+                        var theta = Variable.CustomLineDirections[i] / 180 * Math.PI;
+                        var dis = Math.Abs(delta.x * Math.Sin(theta) - delta.y * Math.Cos(theta));
+                        if (dis < minDis)
+                        {
+                            minDis = dis;
+                            target = i;
+                        }
+                    }
+                    if (minDis < 0.3)
+                        Variable.TargetLineIndex = target;
+                    else
+                        Variable.TargetLineIndex = -1;
+
+                    if (Mouse.current.rightButton.wasPressedThisFrame)
+                    {
+                        if (Variable.TargetLineIndex < 0)
+                        {
+                            var dir = Vector2.SignedAngle(Vector2.right, delta);
+                            dir = dir < 0 ? dir + 360 : dir;
+                            Variable.CustomLineDirections.Add(dir);
+                            Variable.CustomLineHovers.Add(false);
+                            Variable.Inputs.Add((dir.ToString(), false));
+                            Variable.TargetLineIndex = Variable.CustomLineDirections.Count - 1;
+                        }
+                        else
+                        {
+                            Variable.CustomLineDirections.RemoveAt(Variable.TargetLineIndex);
+                            Variable.CustomLineHovers.RemoveAt(Variable.TargetLineIndex);
+                            Variable.Inputs.RemoveAt(Variable.TargetLineIndex);
+                            Variable.TargetLineIndex = -1;
+                        }
+                    }
+                }
+            }
+            else
+                Variable.TargetLineIndex = -1;
         }
         #endregion
 
-        #region 加载数据集
+        #region 功能开关
+        /// <summary>
+        /// 渲染元素开关
+        /// </summary>
+        public static void UpdateDoFromEnable()
+        {
+            Variable.DoCustomLine = Variable.EnableCustomLine;
+            Variable.DoPathCurve = Variable.EnablePathCurve;
+            Variable.DoVortexCurve = Variable.EnableVortexCurve;
+            Variable.DoEffectRange = Variable.EnableEffectRange;
+            Variable.DoVortexRange = Variable.EnableVortexRange;
+            Variable.DoTransparency = Variable.EnableTransparency;
+            Variable.DoPathEffectPoint = Variable.EnablePathCurve && Variable.EnableEffectRange;
+            Variable.DoLadleEffectPoint = Variable.EnableLadleLine && Variable.EnableEffectRange;
+            Variable.DoPathVortexPoint = Variable.EnablePathCurve && Variable.EnableVortexRange;
+            Variable.DoLadleVortexPoint = Variable.EnableLadleLine && Variable.EnableVortexRange;
+            Variable.DoPathDangerPoint = Variable.EnablePathCurve && Variable.EnableDangerSimulation;
+            Variable.DoLadleDangerPoint = Variable.EnableLadleLine && Variable.EnableDangerSimulation;
+            Variable.DoVortexDangerPoint = Variable.EnableVortexCurve && Variable.EnableDangerSimulation;
+            Variable.DoSwampPoint = Variable.EnablePathCurve && Variable.EnableSwampSimulation;
+            Variable.DoLines[0] = Variable.EnablePathLine && Variable.EnablePathCurve;
+            Variable.DoLines[1] = Variable.EnableLadleLine;
+            Variable.DoLines[2] = Variable.EnableEffectLine;
+            Variable.DoLines[3] = Variable.EnableVortexLine;
+            Variable.DoLines[4] = Variable.EnableTangentLine && Variable.EnableVortexCurve;
+        }
+        #endregion
+
+        #region 加载数据
         /// <summary>
         /// 读取二进制文件
         /// </summary>
@@ -334,16 +294,52 @@ namespace AlchAssV3
         /// <summary>
         /// 加载二进制资源
         /// </summary>
-        public static void LoadFromBin()
+        public static void LoadFromBins()
         {
-            LoadVortexFromBin("Vortex_Water", out Variable.Vortex_Water);
-            LoadVortexFromBin("Vortex_Oil", out Variable.Vortex_Oil);
-            LoadZoneFromBin("Strong_Water", out Variable.Strong_Water, out Variable.Strong_Water_BVH);
-            LoadZoneFromBin("Strong_Oil", out Variable.Strong_Oil, out Variable.Strong_Oil_BVH);
-            LoadZoneFromBin("Strong_Wine", out Variable.Strong_Wine, out Variable.Strong_Wine_BVH);
-            LoadZoneFromBin("Weak_Wine", out Variable.Weak_Wine, out Variable.Weak_Wine_BVH);
-            LoadZoneFromBin("Heal_Wine", out Variable.Heal_Wine, out Variable.Heal_Wine_BVH);
-            LoadZoneFromBin("Swamp_Oil", out Variable.Swamp_Oil, out Variable.Swamp_Oil_BVH);
+            LoadVortexFromBin("Vortex_Water", out Variable.Vortexs[0]);
+            LoadVortexFromBin("Vortex_Oil", out Variable.Vortexs[1]);
+            LoadZoneFromBin("Strong_Water", out Variable.Strongs[0], out Variable.StrongBVHs[0]);
+            LoadZoneFromBin("Strong_Oil", out Variable.Strongs[1], out Variable.StrongBVHs[1]);
+            LoadZoneFromBin("Strong_Wine", out Variable.Strongs[2], out Variable.StrongBVHs[2]);
+            LoadZoneFromBin("Weak_Wine", out Variable.WeakWine, out Variable.WeakWineBVH);
+            LoadZoneFromBin("Heal_Wine", out Variable.HealWine, out Variable.HealWineBVH);
+            LoadZoneFromBin("Swamp_Oil", out Variable.SwampOil, out Variable.SwampOilBVH);
+        }
+        #endregion
+
+        #region 格式化文本
+        /// <summary>
+        /// 格式化位置文本
+        /// </summary>
+        public static string FormatPosition(Vector2 position)
+        {
+            if (Variable.DisplayPolar)
+                return $"{(position.magnitude, Vector2.SignedAngle(Vector2.right, position))}";
+            return $"{(position.x, position.y)}";
+        }
+
+        /// <summary>
+        /// 格式化月盐文本
+        /// </summary>
+        public static string FormatMoonSalt(float rotation)
+        {
+            var angle = Mathf.DeltaAngle(rotation, 0f);
+            if (!Variable.DisplaySalt)
+                return $"{angle}°";
+            if (angle < 0)
+                return $"<sprite=\"IconsAtlas\" name=\"MoonSalt\"> {-angle / 9f * 25f}";
+            return $"<sprite=\"IconsAtlas\" name=\"SunSalt\"> {angle / 9f * 25f}";
+        }
+
+        /// <summary>
+        /// 格式化血盐文本
+        /// </summary>
+        public static string FormatLifeSalt(double DangerDistance)
+        {
+            var hp = Mathf.Max((float)DangerDistance - 2.5f, 0f) * 40f;
+            if (!Variable.DisplaySalt)
+                return $"{hp}%";
+            return $"<sprite=\"IconsAtlas\" name=\"LifeSalt\"> {hp * 2.5f}";
         }
         #endregion
     }
