@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace AlchAssV3
 {
-    internal class Calculation
+    public static class Calculation
     {
         #region 窗口信息计算
         /// <summary>

@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace AlchAssV3
 {
-    internal class Rendering
+    public static class Rendering
     {
         #region 生成材质
         /// <summary>

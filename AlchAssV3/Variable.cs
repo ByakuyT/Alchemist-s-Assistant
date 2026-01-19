@@ -12,7 +12,7 @@ namespace System.Runtime.CompilerServices
 
 namespace AlchAssV3
 {
-    internal class Variable
+    public static class Variable
     {
         #region 配置数据
         public static ConfigEntry<KeyboardShortcut> KeyWindow;

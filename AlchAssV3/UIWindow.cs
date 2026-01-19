@@ -3,7 +3,7 @@ using UnityEngine.InputSystem;
 
 namespace AlchAssV3
 {
-    internal class UIWindow
+    public static class UIWindow
     {
         #region 主体渲染
         /// <summary>
@@ -57,7 +57,6 @@ namespace AlchAssV3
             Variable.LabelStyle = new(GUI.skin.label);
             Variable.LabelStyle.font = Variable.Font;
             Variable.LabelStyle.margin = new(30, 10, 5, 5);
-            Variable.LabelStyle.fixedWidth = 25;
 
             Variable.SliderStyle = new(GUI.skin.horizontalSlider);
             Variable.SliderStyle.margin = new(0, 5, 14, 0);
@@ -230,7 +229,7 @@ namespace AlchAssV3
                 for (int i = 0; i < Variable.CustomLineDirections.Count; i++)
                 {
                     GUILayout.BeginHorizontal();
-                    GUILayout.Label($"{i + 1}.", Variable.LabelStyle);
+                    GUILayout.Label($"{i + 1}.", Variable.LabelStyle, GUILayout.Width(25));
 
                     var slideValue = GUILayout.HorizontalSlider(Variable.CustomLineDirections[i], 0f, 360f, Variable.SliderStyle, new(GUI.skin.horizontalSliderThumb));
                     if (slideValue != Variable.CustomLineDirections[i])

@@ -12,7 +12,7 @@ using UnityEngine.InputSystem;
 
 namespace AlchAssV3
 {
-    internal class Function
+    public static class Function
     {
         #region 窗口相关
         /// <summary>

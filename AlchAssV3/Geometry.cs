@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace AlchAssV3
 {
-    internal class Geometry
+    public static class Geometry
     {
         #region 计算几何
         /// <summary>
@@ -49,7 +49,7 @@ namespace AlchAssV3
             var p = p1 - p0;
             var q = q1 - q0;
             var Cpq = Cross(p, q);
-            if (Math.Abs(Cpq) < 1e-5)
+            if (Math.Abs(Cpq) <= 0)
                 return;
 
             var r = q0 - p0;
@@ -67,6 +67,9 @@ namespace AlchAssV3
         public static void LineVsCircle(Vector2 p0, Vector2 p1, Vector2 cen, double rad, out List<Vector2> pos, out List<double> ti)
         {
             pos = []; ti = [];
+            if (rad <= 0)
+                return;
+
             var d = p1 - p0;
             var f = p0 - cen;
             var a = d.sqrMagnitude;
