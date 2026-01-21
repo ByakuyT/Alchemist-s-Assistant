@@ -60,8 +60,12 @@ namespace AlchAssExV3
                     VariableEx.StirSet = Mathf.Max(VariableEx.StirSetTarget - VariableEx.StirStage, 0f);
                     VariableEx.InputStirSet = ($"{VariableEx.StirSet}", false);
                 }
-                VariableEx.StirSet = DrawFloat("定量搅拌:", VariableEx.StirSet, ref VariableEx.InputStirSet, false, false, 0f, 100f);
-                VariableEx.StirSetTarget = VariableEx.StirSet + VariableEx.StirStage;
+                var stirval = DrawFloat("定量搅拌:", VariableEx.StirSet, ref VariableEx.InputStirSet, false, false, 0f, 100f);
+                if (stirval != VariableEx.StirSet)
+                {
+                    VariableEx.StirSet = stirval;
+                    VariableEx.StirSetTarget = VariableEx.StirSet + VariableEx.StirStage;
+                }
 
                 var indis = (Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition + Variable.Offset).magnitude;
                 if (indis != VariableEx.LadleDistance)
@@ -70,8 +74,12 @@ namespace AlchAssExV3
                     VariableEx.LadleSet = Mathf.Max(VariableEx.LadleDistance - VariableEx.LadleSetTarget, 0f);
                     VariableEx.InputLadleSet = ($"{VariableEx.LadleSet}", false);
                 }
-                VariableEx.LadleSet = DrawFloat("定量加水:", VariableEx.LadleSet, ref VariableEx.InputLadleSet, false, false, 0f, 100f);
-                VariableEx.LadleSetTarget = VariableEx.LadleDistance - VariableEx.LadleSet;
+                var ladleval = DrawFloat("定量加水:", VariableEx.LadleSet, ref VariableEx.InputLadleSet, false, false, 0f, 100f);
+                if (ladleval != VariableEx.LadleSet)
+                {
+                    VariableEx.LadleSet = ladleval;
+                    VariableEx.LadleSetTarget = VariableEx.LadleDistance - VariableEx.LadleSet;
+                }
             }
         }
 
