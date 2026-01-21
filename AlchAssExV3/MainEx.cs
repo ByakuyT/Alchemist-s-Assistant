@@ -2,6 +2,7 @@
 using BepInEx;
 using BepInEx.Configuration;
 using HarmonyLib;
+using PotionCraft.ManagersSystem;
 using PotionCraft.ManagersSystem.RecipeMap;
 using PotionCraft.ManagersSystem.SaveLoad;
 using PotionCraft.ObjectBased.Cauldron;
@@ -32,7 +33,6 @@ namespace AlchAssExV3
             VariableEx.ControlThreshold = Config.Bind("制动配置", "制动阈值", 0.05f);
             VariableEx.ControlStrength = Config.Bind("制动配置", "制动强度", 1.35f);
             VariableEx.ControlAsymptote = Config.Bind("制动配置", "渐近因子", 2e-3f);
-            VariableEx.ControlAdsorption = Config.Bind("制动配置", "吸附范围", 1e-3f);
             VariableEx.ControlEnterSpeed = Config.Bind("制动配置", "进入速度", 5e-4f);
             VariableEx.ControlMinSpeed = Config.Bind("制动配置", "最低速度", 0f);
 
@@ -150,6 +150,8 @@ namespace AlchAssExV3
             CalculationEx.GetEdgeControl();
             CalculationEx.GetClosestControl();
             CalculationEx.GetProximityControl();
+            CalculationEx.GetStirSet();
+            CalculationEx.GetLadleSet();
         }
 
         /// <summary>
@@ -162,7 +164,10 @@ namespace AlchAssExV3
             if (VariableEx.LoadReset)
                 VariableEx.LoadReset = false;
             else if (VariableEx.EnableEdgeControl)
-                VariableEx.EdgeSpeed = float.MinValue;
+            {
+                VariableEx.EdgeSpeed = 0f;
+                VariableEx.EnterPosition = Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition + Variable.Offset;
+            }
         }
 
         /// <summary>
@@ -193,9 +198,10 @@ namespace AlchAssExV3
         public static void DrawExpansionUI()
         {
             UIWindowEx.DrawEnables();
-            UIWindowEx.DrawLevels("数值配置一", 0, ref VariableEx.L1Expand);
-            UIWindowEx.DrawLevels("数值配置二", 1, ref VariableEx.L2Expand);
-            UIWindowEx.DrawLevels("数值配置三", 2, ref VariableEx.L3Expand);
+            UIWindowEx.DrawSets();
+            UIWindowEx.DrawLevels("默认数值配置一", 0, ref VariableEx.L1Expand);
+            UIWindowEx.DrawLevels("默认数值配置二", 1, ref VariableEx.L2Expand);
+            UIWindowEx.DrawLevels("默认数值配置三", 2, ref VariableEx.L3Expand);
         }
         #endregion
     }

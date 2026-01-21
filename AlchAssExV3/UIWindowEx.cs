@@ -1,5 +1,5 @@
 ﻿using AlchAssV3;
-using BepInEx.Configuration;
+using PotionCraft.ManagersSystem;
 using UnityEngine;
 
 namespace AlchAssExV3
@@ -22,20 +22,56 @@ namespace AlchAssExV3
                 GUILayout.BeginHorizontal();
                 GUILayout.BeginVertical();
                 VariableEx.EnableGrindSet = GUILayout.Toggle(VariableEx.EnableGrindSet, "定量研磨", Variable.ToggleStyle);
+                VariableEx.EnableStirSet = GUILayout.Toggle(VariableEx.EnableStirSet, "定量搅拌", Variable.ToggleStyle);
+                VariableEx.EnableLadleSet = GUILayout.Toggle(VariableEx.EnableLadleSet, "定量加水", Variable.ToggleStyle);
                 VariableEx.EnableHeatSet = GUILayout.Toggle(VariableEx.EnableHeatSet, "定量加热", Variable.ToggleStyle);
                 VariableEx.EnableGrindSpeed = GUILayout.Toggle(VariableEx.EnableGrindSpeed, "减速研磨", Variable.ToggleStyle);
                 VariableEx.EnableStirSpeed = GUILayout.Toggle(VariableEx.EnableStirSpeed, "减速搅拌", Variable.ToggleStyle);
-                VariableEx.EnableLadleSpeed = GUILayout.Toggle(VariableEx.EnableLadleSpeed, "减速加水", Variable.ToggleStyle);
                 GUILayout.EndVertical();
                 GUILayout.FlexibleSpace();
                 GUILayout.BeginVertical();
-                VariableEx.EnableHeatSpeed = GUILayout.Toggle(VariableEx.EnableHeatSpeed, "减速加热", Variable.ToggleStyle); ;
+                VariableEx.EnableLadleSpeed = GUILayout.Toggle(VariableEx.EnableLadleSpeed, "减速加水", Variable.ToggleStyle);
+                VariableEx.EnableHeatSpeed = GUILayout.Toggle(VariableEx.EnableHeatSpeed, "减速加热", Variable.ToggleStyle);
                 VariableEx.EnableBrewMassive = GUILayout.Toggle(VariableEx.EnableBrewMassive, "批量炼药", Variable.ToggleStyle);
                 VariableEx.EnableEdgeControl = GUILayout.Toggle(VariableEx.EnableEdgeControl, "漩涡制动", Variable.ToggleStyle);
                 VariableEx.EnableClosestControl = GUILayout.Toggle(VariableEx.EnableClosestControl, "最近点制动", Variable.ToggleStyle);
                 VariableEx.EnableProximityControl = GUILayout.Toggle(VariableEx.EnableProximityControl, "接近点制动", Variable.ToggleStyle);
                 GUILayout.EndVertical();
                 GUILayout.EndHorizontal();
+            }
+        }
+
+        /// <summary>
+        /// 绘制定量配置
+        /// </summary>
+        public static void DrawSets()
+        {
+            GUILayout.Space(10);
+            var icon = VariableEx.SetExpand ? "▼ 定量搅拌加水设定" : "▲ 定量搅拌加水设定";
+            if (GUILayout.Button(icon, Variable.CategoryStyle))
+                VariableEx.SetExpand = !VariableEx.SetExpand;
+
+            if (VariableEx.SetExpand)
+            {
+                var stage = Managers.RecipeMap.path.deletedGraphicsSegments + Managers.RecipeMap.path.segmentLengthToDeletePhysics;
+                if (stage != VariableEx.StirStage)
+                {
+                    VariableEx.StirStage = stage;
+                    VariableEx.StirSet = Mathf.Max(VariableEx.StirSetTarget - VariableEx.StirStage, 0f);
+                    VariableEx.InputStirSet = ($"{VariableEx.StirSet}", false);
+                }
+                VariableEx.StirSet = DrawFloat("定量搅拌:", VariableEx.StirSet, ref VariableEx.InputStirSet, false, false, 0f, 100f);
+                VariableEx.StirSetTarget = VariableEx.StirSet + VariableEx.StirStage;
+
+                var indis = (Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition + Variable.Offset).magnitude;
+                if (indis != VariableEx.LadleDistance)
+                {
+                    VariableEx.LadleDistance = indis;
+                    VariableEx.LadleSet = Mathf.Max(VariableEx.LadleDistance - VariableEx.LadleSetTarget, 0f);
+                    VariableEx.InputLadleSet = ($"{VariableEx.LadleSet}", false);
+                }
+                VariableEx.LadleSet = DrawFloat("定量加水:", VariableEx.LadleSet, ref VariableEx.InputLadleSet, false, false, 0f, 100f);
+                VariableEx.LadleSetTarget = VariableEx.LadleDistance - VariableEx.LadleSet;
             }
         }
 
@@ -51,13 +87,13 @@ namespace AlchAssExV3
 
             if (category)
             {
-                DrawFloat("定量研磨:", ref VariableEx.ConfigGrindSet[index], ref VariableEx.InputGrindSet[index]);
-                DrawFloat("定量加热:", ref VariableEx.ConfigHeatSet[index], ref VariableEx.InputHeatSet[index]);
-                DrawPow("减速研磨:", ref VariableEx.ConfigGrindSpeed[index], ref VariableEx.InputGrindSpeed[index]);
-                DrawPow("减速搅拌:", ref VariableEx.ConfigStirSpeed[index], ref VariableEx.InputStirSpeed[index]);
-                DrawPow("减速加水:", ref VariableEx.ConfigLadleSpeed[index], ref VariableEx.InputLadleSpeed[index]);
-                DrawPow("减速加热:", ref VariableEx.ConfigHeatSpeed[index], ref VariableEx.InputHeatSpeed[index]);
-                DrawInt("批量炼药:", ref VariableEx.ConfigBrewMassive[index], ref VariableEx.InputBrewMassive[index]);
+                VariableEx.ConfigGrindSet[index].Value = DrawFloat("定量研磨:", VariableEx.ConfigGrindSet[index].Value, ref VariableEx.InputGrindSet[index], false, true, 0f, 100f);
+                VariableEx.ConfigHeatSet[index].Value = DrawFloat("定量加热:", VariableEx.ConfigHeatSet[index].Value, ref VariableEx.InputHeatSet[index], false, true, 0f, 100f);
+                VariableEx.ConfigGrindSpeed[index].Value = DrawFloat("减速研磨:", VariableEx.ConfigGrindSpeed[index].Value, ref VariableEx.InputGrindSpeed[index], true, true, 2f, -2f);
+                VariableEx.ConfigStirSpeed[index].Value = DrawFloat("减速搅拌:", VariableEx.ConfigStirSpeed[index].Value, ref VariableEx.InputStirSpeed[index], true, true, 2f, -2f);
+                VariableEx.ConfigLadleSpeed[index].Value = DrawFloat("减速加水:", VariableEx.ConfigLadleSpeed[index].Value, ref VariableEx.InputLadleSpeed[index], true, true, 2f, -2f);
+                VariableEx.ConfigHeatSpeed[index].Value = DrawFloat("减速加热:", VariableEx.ConfigHeatSpeed[index].Value, ref VariableEx.InputHeatSpeed[index], true, true, 2f, -2f);
+                VariableEx.ConfigBrewMassive[index].Value = DrawInt("批量炼药:", VariableEx.ConfigBrewMassive[index].Value, ref VariableEx.InputBrewMassive[index]);
             }
         }
         #endregion
@@ -66,17 +102,17 @@ namespace AlchAssExV3
         /// <summary>
         /// 绘制整数滑条
         /// </summary>
-        public static void DrawInt(string label, ref ConfigEntry<int> config, ref (string, bool) input)
+        public static int DrawInt(string label, int config, ref (string, bool) input)
         {
             GUILayout.BeginHorizontal();
             GUILayout.Label(label, Variable.LabelStyle, GUILayout.Width(75));
 
-            var value = Mathf.Log(config.Value, 10);
+            var value = Mathf.Log(config, 10);
             var slideValue = GUILayout.HorizontalSlider(value, 0f, 2f, Variable.SliderStyle, new(GUI.skin.horizontalSliderThumb));
             if (slideValue != value)
             {
-                config.Value = (int)Mathf.Pow(10, slideValue);
-                input = ($"{config.Value}", false);
+                config = (int)Mathf.Pow(10, slideValue);
+                input = ($"{config}", false);
             }
 
             var style = input.Item2 ? Variable.TextFieldErrorStyle : Variable.TextFieldStyle;
@@ -85,9 +121,9 @@ namespace AlchAssExV3
             {
                 if (int.TryParse(inputValue, out var parsedValue))
                 {
-                    config.Value = Mathf.Max(parsedValue, 1);
+                    config = Mathf.Max(parsedValue, 1);
                     if (parsedValue < 1)
-                        input = ($"{config.Value}", false);
+                        input = ($"{config}", false);
                     else
                         input = (inputValue, false);
                 }
@@ -95,55 +131,23 @@ namespace AlchAssExV3
                     input = (inputValue, true);
             }
             GUILayout.EndHorizontal();
-        }
-
-        /// <summary>
-        /// 绘制指数滑条
-        /// </summary>
-        public static void DrawPow(string label, ref ConfigEntry<float> config, ref (string, bool) input)
-        {
-            GUILayout.BeginHorizontal();
-            GUILayout.Label(label, Variable.LabelStyle, GUILayout.Width(75));
-
-            var value = Mathf.Log(config.Value, 10);
-            var slideValue = GUILayout.HorizontalSlider(value, 2f, -2f, Variable.SliderStyle, new(GUI.skin.horizontalSliderThumb));
-            if (slideValue != value)
-            {
-                config.Value = Mathf.Pow(10, slideValue);
-                input = ($"{config.Value}", false);
-            }
-
-            var style = input.Item2 ? Variable.TextFieldErrorStyle : Variable.TextFieldStyle;
-            var inputValue = GUILayout.TextField(input.Item1, style);
-            if (inputValue != input.Item1)
-            {
-                if (float.TryParse(inputValue, out var parsedValue))
-                {
-                    config.Value = Mathf.Clamp(parsedValue, 0f, 100f);
-                    if (parsedValue < 0f || parsedValue > 100f)
-                        input = ($"{config.Value}", false);
-                    else
-                        input = (inputValue, false);
-                }
-                else
-                    input = (inputValue, true);
-            }
-            GUILayout.EndHorizontal();
+            return config;
         }
 
         /// <summary>
         /// 绘制浮点滑条
         /// </summary>
-        public static void DrawFloat(string label, ref ConfigEntry<float> config, ref (string, bool) input)
+        public static float DrawFloat(string label, float config, ref (string, bool) input, bool pow, bool clamp, float min, float max)
         {
             GUILayout.BeginHorizontal();
             GUILayout.Label(label, Variable.LabelStyle, GUILayout.Width(75));
 
-            var slideValue = GUILayout.HorizontalSlider(config.Value, 0f, 100f, Variable.SliderStyle, new(GUI.skin.horizontalSliderThumb));
-            if (slideValue != config.Value)
+            var value = pow ? Mathf.Log(config, 10) : config;
+            var slideValue = GUILayout.HorizontalSlider(value, min, max, Variable.SliderStyle, new(GUI.skin.horizontalSliderThumb));
+            if (slideValue != value)
             {
-                config.Value = slideValue;
-                input = ($"{config.Value}", false);
+                config = pow ? Mathf.Pow(10, slideValue) : slideValue;
+                input = ($"{config}", false);
             }
 
             var style = input.Item2 ? Variable.TextFieldErrorStyle : Variable.TextFieldStyle;
@@ -152,9 +156,9 @@ namespace AlchAssExV3
             {
                 if (float.TryParse(inputValue, out var parsedValue))
                 {
-                    config.Value = Mathf.Clamp(parsedValue, 0f, 100f);
-                    if (parsedValue < 0f || parsedValue > 100f)
-                        input = ($"{config.Value}", false);
+                    config = clamp ? Mathf.Clamp(parsedValue, 0f, 100f) : Mathf.Max(parsedValue, 0f);
+                    if (parsedValue < 0f || (clamp && parsedValue > 100f))
+                        input = ($"{config}", false);
                     else
                         input = (inputValue, false);
                 }
@@ -162,6 +166,7 @@ namespace AlchAssExV3
                     input = (inputValue, true);
             }
             GUILayout.EndHorizontal();
+            return config;
         }
         #endregion
     }

@@ -34,8 +34,8 @@ namespace AlchAssExV3
 
             if (!VariableEx.KeyRelease.Value.IsPressed())
             {
-                VariableEx.StirSpeed *= Mathf.Clamp01(Mathf.Min(VariableEx.EdgeSpeed, VariableEx.ClosestSpeed[0], VariableEx.ProximitySpeed[0]));
-                VariableEx.LadleSpeed *= Mathf.Clamp01(Mathf.Min(VariableEx.EdgeSpeed, VariableEx.ClosestSpeed[1], VariableEx.ProximitySpeed[1]));
+                VariableEx.StirSpeed *= Mathf.Clamp01(Mathf.Min(VariableEx.EdgeSpeed, VariableEx.ClosestSpeed[0], VariableEx.ProximitySpeed[0], VariableEx.StirSetSpeed));
+                VariableEx.LadleSpeed *= Mathf.Clamp01(Mathf.Min(VariableEx.EdgeSpeed, VariableEx.ClosestSpeed[1], VariableEx.ProximitySpeed[1], VariableEx.LadleSetSpeed));
                 VariableEx.HeatSpeed *= Mathf.Clamp01(Mathf.Min(VariableEx.ProximitySpeed));
             }
         }
