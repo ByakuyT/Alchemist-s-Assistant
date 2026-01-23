@@ -65,7 +65,7 @@ namespace AlchAssExV3
                     var vorPos = Managers.RecipeMap.CurrentVortexMapItem.thisTransform.localPosition;
                     var vorRad = ((CircleCollider2D)Traverse.Create(Managers.RecipeMap.CurrentVortexMapItem).Field("vortexCollider").GetValue()).radius + 0.74f;
                     var dist = vorRad - Vector2.Distance(vorPos, indPos);
-                    if (indPos != VariableEx.EnterPosition)
+                    if ((indPos - VariableEx.EnterPosition).sqrMagnitude > 1e-5)
                         VariableEx.EdgeSpeed = FunctionEx.GetControlSpeed(dist);
                     return;
                 }

@@ -46,9 +46,8 @@ namespace AlchAssExV3
         public static float GetControlSpeed(float distance)
         {
             var normalizedDistance = distance / VariableEx.ControlThreshold.Value;
-            var baseSpeedFactor = Mathf.Pow(normalizedDistance, VariableEx.ControlStrength.Value);
-            var asymptoteCalc = normalizedDistance / (normalizedDistance + VariableEx.ControlAsymptote.Value);
-            return Mathf.Max(baseSpeedFactor * asymptoteCalc, VariableEx.ControlMinSpeed.Value);
+            var speedFactor = Mathf.Pow(normalizedDistance, VariableEx.ControlStrength.Value);
+            return Mathf.Max(speedFactor, VariableEx.ControlMinSpeed.Value);
         }
 
         /// <summary>
@@ -72,7 +71,7 @@ namespace AlchAssExV3
         }
         #endregion
 
-        #region 定量操作
+        #region 操作控制
         /// <summary>
         /// 定量研磨
         /// </summary>

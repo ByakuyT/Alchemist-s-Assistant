@@ -52,7 +52,6 @@ namespace AlchAssV3
             Variable.ToggleStyle.font = Variable.Font;
             Variable.ToggleStyle.margin = new(30, 30, 6, 4);
             Variable.ToggleStyle.padding = new(25, 0, -1, 0);
-            Variable.ToggleStyle.fixedWidth = 130;
 
             Variable.LabelStyle = new(GUI.skin.label);
             Variable.LabelStyle.font = Variable.Font;

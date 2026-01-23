@@ -11,7 +11,6 @@ namespace AlchAssExV3
 
         public static ConfigEntry<float> ControlThreshold;
         public static ConfigEntry<float> ControlStrength;
-        public static ConfigEntry<float> ControlAsymptote;
         public static ConfigEntry<float> ControlEnterSpeed;
         public static ConfigEntry<float> ControlMinSpeed;
 

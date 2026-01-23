@@ -15,7 +15,7 @@ using UnityEngine;
 
 namespace AlchAssExV3
 {
-    [BepInPlugin("AlchAssExV3", "Alchemist's Assistant Extension V3", "1.0.0")]
+    [BepInPlugin("AlchAssExV3", "Alchemist's Assistant Extension V3", "2.0.0")]
     [BepInDependency("AlchAssV3", BepInDependency.DependencyFlags.HardDependency)]
     public class MainEx : BaseUnityPlugin
     {
@@ -30,10 +30,9 @@ namespace AlchAssExV3
             VariableEx.KeyLevels[2] = Config.Bind("快捷键", "配置三", new KeyboardShortcut(KeyCode.LeftShift));
             VariableEx.KeyRelease = Config.Bind("快捷键", "暂停制动", new KeyboardShortcut(KeyCode.Z));
 
-            VariableEx.ControlThreshold = Config.Bind("制动配置", "制动阈值", 0.05f);
-            VariableEx.ControlStrength = Config.Bind("制动配置", "制动强度", 1.35f);
-            VariableEx.ControlAsymptote = Config.Bind("制动配置", "渐近因子", 2e-3f);
-            VariableEx.ControlEnterSpeed = Config.Bind("制动配置", "进入速度", 5e-4f);
+            VariableEx.ControlThreshold = Config.Bind("制动配置", "制动阈值", 0.1f);
+            VariableEx.ControlStrength = Config.Bind("制动配置", "制动强度", 1.5f);
+            VariableEx.ControlEnterSpeed = Config.Bind("制动配置", "进入速度", 1e-3f);
             VariableEx.ControlMinSpeed = Config.Bind("制动配置", "最低速度", 0f);
 
             float[] set = [100f, 0f, 50f], speed = [10f, 1f, 0.1f]; int[] mass = [10, 20, 50];
@@ -165,7 +164,7 @@ namespace AlchAssExV3
                 VariableEx.LoadReset = false;
             else if (VariableEx.EnableEdgeControl)
             {
-                VariableEx.EdgeSpeed = 0f;
+                VariableEx.EdgeSpeed = float.MinValue;
                 VariableEx.EnterPosition = Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition + Variable.Offset;
             }
         }
@@ -188,7 +187,8 @@ namespace AlchAssExV3
         [HarmonyPatch(typeof(SaveLoadManager), "LoadProgressState")]
         public static void ResetWhenLoading()
         {
-            VariableEx.LoadReset = true;
+            if (Managers.RecipeMap.CurrentVortexMapItem != null)
+                VariableEx.LoadReset = true;
         }
         #endregion
 

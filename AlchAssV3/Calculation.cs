@@ -20,7 +20,7 @@ namespace AlchAssV3
             string devTotText = "不可用";
             string devPosText = "不可用";
             string closestDirText = "不可用";
-            string deltaAngelText = "不可用";
+            string deltaAngleText = "不可用";
             string lifeSaltText = "不可用";
 
             if (!float.IsNaN(Variable.ClosestPositions[0].x))
@@ -43,7 +43,7 @@ namespace AlchAssV3
             if (!double.IsNaN(Variable.LineDirections[0]) && !double.IsNaN(Variable.LineDirections[2]))
             {
                 var deltaAng = Mathf.DeltaAngle((float)Variable.LineDirections[0], (float)Variable.LineDirections[2]);
-                deltaAngelText = $"{deltaAng}°";
+                deltaAngleText = $"{deltaAng}°";
             }
 
             if (!double.IsNaN(Variable.DangerDistancePath))
@@ -52,7 +52,7 @@ namespace AlchAssV3
                 总体偏离: {devTotText}
                 位置偏离: {devPosText}
                 近点方向: {closestDirText}
-                目标夹角: {deltaAngelText}
+                目标夹角: {deltaAngleText}
                 加血需求: {lifeSaltText}
                 """;
         }
@@ -65,7 +65,7 @@ namespace AlchAssV3
             string devTotText = "不可用";
             string devPosText = "不可用";
             string closestDirText = "不可用";
-            string deltaAngelText = "不可用";
+            string deltaAngleText = "不可用";
             string lifeSaltText = "不可用";
 
             if (!float.IsNaN(Variable.ClosestPositions[1].x))
@@ -88,7 +88,7 @@ namespace AlchAssV3
             if (!double.IsNaN(Variable.LineDirections[1]) && !double.IsNaN(Variable.LineDirections[2]))
             {
                 var deltaAng = Mathf.DeltaAngle((float)Variable.LineDirections[1], (float)Variable.LineDirections[2]);
-                deltaAngelText = $"{deltaAng}°";
+                deltaAngleText = $"{deltaAng}°";
             }
 
             if (!double.IsNaN(Variable.DangerDistanceLadle))
@@ -97,7 +97,7 @@ namespace AlchAssV3
                 总体偏离: {devTotText}
                 位置偏离: {devPosText}
                 近点方向: {closestDirText}
-                目标夹角: {deltaAngelText}
+                目标夹角: {deltaAngleText}
                 加血需求: {lifeSaltText}
                 """;
         }
