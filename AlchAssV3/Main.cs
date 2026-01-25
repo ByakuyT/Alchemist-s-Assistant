@@ -2,6 +2,7 @@
 using BepInEx.Configuration;
 using HarmonyLib;
 using PotionCraft.DebugObjects.DebugWindows;
+using PotionCraft.LocalizationSystem;
 using PotionCraft.ManagersSystem.Cursor;
 using PotionCraft.ObjectBased;
 using PotionCraft.ObjectBased.InteractiveItem;
@@ -13,7 +14,7 @@ using UnityEngine;
 
 namespace AlchAssV3
 {
-    [BepInPlugin("AlchAssV3", "Alchemist's Assistant V3", "2.0.0")]
+    [BepInPlugin("AlchAssV3", "Alchemist's Assistant V3", "2.5.0")]
     public class Main : BaseUnityPlugin
     {
         #region Unity - 生命周期
@@ -24,11 +25,11 @@ namespace AlchAssV3
         {
             Variable.WindowPositions[0] = Config.Bind("窗口位置", "路径信息", new Vector3(-12.50f, -2.30f, 0f));
             Variable.WindowPositions[1] = Config.Bind("窗口位置", "加水信息", new Vector3(-12.50f, -4.60f, 0f));
-            Variable.WindowPositions[2] = Config.Bind("窗口位置", "移动信息", new Vector3(-9.85f, -4.90f, 0f));
+            Variable.WindowPositions[2] = Config.Bind("窗口位置", "移动信息", new Vector3(-9.85f, -4.60f, 0f));
             Variable.WindowPositions[3] = Config.Bind("窗口位置", "效果信息", new Vector3(-4.75f, -4.90f, 0f));
             Variable.WindowPositions[4] = Config.Bind("窗口位置", "位置信息", new Vector3(-1.55f, -5.30f, 0f));
             Variable.WindowPositions[5] = Config.Bind("窗口位置", "偏离信息", new Vector3(-7.40f, -5.30f, 0f));
-            Variable.WindowPositions[6] = Config.Bind("窗口位置", "漩涡信息", new Vector3(7.65f, -4.90f, 0f));
+            Variable.WindowPositions[6] = Config.Bind("窗口位置", "漩涡信息", new Vector3(7.65f, -4.60f, 0f));
             Variable.WindowPositions[7] = Config.Bind("窗口位置", "血量信息", new Vector3(10.0f, -5.00f, 0f));
             Variable.WindowPositions[8] = Config.Bind("窗口位置", "研磨信息", new Vector3(10.0f, -6.00f, 0f));
             Variable.WindowRectConfig = Config.Bind("窗口位置", "控制面板", new Rect(200, 200, 400, 400));
@@ -60,6 +61,8 @@ namespace AlchAssV3
 
             Variable.WindowRect = Variable.WindowRectConfig.Value;
             Function.LoadFromBins();
+            LocalizationManager.OnInitialize.AddListener(Function.FormatLocalization);
+            LocalizationManager.OnLocaleChanged.AddListener(Function.SetDebugWindowTitle);
             Rendering.CreateMaterialAndSprites();
 
             Harmony.CreateAndPatchAll(typeof(Main));
@@ -85,7 +88,7 @@ namespace AlchAssV3
             {
                 if (Variable.WindowStyle == null)
                     UIWindow.InitStyles();
-                Variable.WindowRect = GUILayout.Window(0, Variable.WindowRect, UIWindow.DrawWindow, "功能面板", Variable.WindowStyle);
+                Variable.WindowRect = GUILayout.Window(0, Variable.WindowRect, UIWindow.DrawWindow, LocalizationManager.GetText("功能面板"), Variable.WindowStyle);
             }
         }
         #endregion

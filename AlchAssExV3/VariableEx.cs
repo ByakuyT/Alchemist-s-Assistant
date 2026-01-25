@@ -64,6 +64,8 @@ namespace AlchAssExV3
         public static float LadleSetTarget;
         public static float StirStage;
         public static float LadleDistance;
+        public static float LabelWidthSets = float.NaN;
+        public static float LabelWidthLevels = float.NaN;
         public static float[] ClosestSpeed = new float[2];
         public static float[] ProximitySpeed = new float[2];
         // 0 - 搅拌; 1 - 加水

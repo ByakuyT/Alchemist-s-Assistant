@@ -1,0 +1,146 @@
+[
+  {
+    "key": "漩涡切向",
+    "values": {
+      "en": "Vortex Tangent"
+    }
+  },
+  {
+    "key": "路径方向",
+    "values": {
+      "en": "Path Direction"
+    }
+  },
+  {
+    "key": "效果方向",
+    "values": {
+      "en": "Effect Direction"
+    }
+  },
+  {
+    "key": "加水方向",
+    "values": {
+      "en": "Ladle Direction"
+    }
+  },
+  {
+    "key": "漩涡方向",
+    "values": {
+      "en": "Vortex Direction"
+    }
+  },
+  {
+    "key": "近点方向",
+    "values": {
+      "en": "Proximity Direction"
+    }
+  },
+  {
+    "key": "旋转角度",
+    "values": {
+      "en": "Rotation"
+    }
+  },
+  {
+    "key": "搅拌进度",
+    "values": {
+      "en": "Stir Progress"
+    }
+  },
+  {
+    "key": "阶段进度",
+    "values": {
+      "en": "Phase Progress"
+    }
+  },
+  {
+    "key": "研磨进度",
+    "values": {
+      "en": "Grind Progress"
+    }
+  },
+  {
+    "key": "目标效果",
+    "values": {
+      "en": "Target Effect"
+    }
+  },
+  {
+    "key": "搅拌阶段",
+    "values": {
+      "en": "Stir Phase"
+    }
+  },
+  {
+    "key": "加血需求",
+    "values": {
+      "en": "Healing Requirement"
+    }
+  },
+  {
+    "key": "总体偏离",
+    "values": {
+      "en": "Total Deviation"
+    }
+  },
+  {
+    "key": "位置偏离",
+    "values": {
+      "en": "Position Deviation"
+    }
+  },
+  {
+    "key": "旋转偏离",
+    "values": {
+      "en": "Rotation Deviation"
+    }
+  },
+  {
+    "key": "最大距离",
+    "values": {
+      "en": "Maximum Distance"
+    }
+  },
+  {
+    "key": "漩涡距离",
+    "values": {
+      "en": "Vortex Distance"
+    }
+  },
+  {
+    "key": "碰撞偏移",
+    "values": {
+      "en": "Offset"
+    }
+  },
+  {
+    "key": "坐标位置",
+    "values": {
+      "en": "Position"
+    }
+  },
+  {
+    "key": "漩涡切角",
+    "values": {
+      "en": "Vortex Tangency"
+    }
+  },
+  {
+    "key": "效果夹角",
+    "values": {
+      "en": "Effect Angle"
+    }
+  },
+  {
+    "key": "当前血量",
+    "values": {
+      "en": "Health"
+    }
+  },
+  {
+    "key": "不可用",
+    "values": {
+      "en": "Unavailable"
+    }
+  }
+]

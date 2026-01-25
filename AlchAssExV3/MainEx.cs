@@ -2,6 +2,7 @@
 using BepInEx;
 using BepInEx.Configuration;
 using HarmonyLib;
+using PotionCraft.LocalizationSystem;
 using PotionCraft.ManagersSystem;
 using PotionCraft.ManagersSystem.RecipeMap;
 using PotionCraft.ManagersSystem.SaveLoad;
@@ -15,7 +16,7 @@ using UnityEngine;
 
 namespace AlchAssExV3
 {
-    [BepInPlugin("AlchAssExV3", "Alchemist's Assistant Extension V3", "2.0.0")]
+    [BepInPlugin("AlchAssExV3", "Alchemist's Assistant Extension V3", "2.5.0")]
     [BepInDependency("AlchAssV3", BepInDependency.DependencyFlags.HardDependency)]
     public class MainEx : BaseUnityPlugin
     {
@@ -44,10 +45,12 @@ namespace AlchAssExV3
                 VariableEx.ConfigStirSpeed[i] = Config.Bind("操作控制", $"搅拌速度 {i + 1}", speed[i]);
                 VariableEx.ConfigLadleSpeed[i] = Config.Bind("操作控制", $"加水速度 {i + 1}", speed[i]);
                 VariableEx.ConfigHeatSpeed[i] = Config.Bind("操作控制", $"加热速度 {i + 1}", speed[i]);
-                VariableEx.ConfigBrewMassive[i] = Config.Bind("操作控制", $"批量炼药 {i + 1}", mass[i]);
+                VariableEx.ConfigBrewMassive[i] = Config.Bind("操作控制", $"批量酿造 {i + 1}", mass[i]);
             }
 
             FunctionEx.InitInputs();
+            LocalizationManager.OnInitialize.AddListener(FunctionEx.FormatLocalization);
+            LocalizationManager.OnLocaleChanged.AddListener(FunctionEx.ClearLabelWidth);
             Harmony.CreateAndPatchAll(typeof(MainEx));
             Logger.LogInfo("Alchemist's Assistant Extension V3 插件已加载");
         }
@@ -125,9 +128,9 @@ namespace AlchAssExV3
         }
         #endregion
 
-        #region Patch - 批量炼药
+        #region Patch - 批量酿造
         /// <summary>
-        /// 批量炼药
+        /// 批量酿造
         /// </summary>
         [HarmonyPrefix]
         [HarmonyPatch(typeof(RecipeBookRecipeBrewController), "BrewRecipe")]
@@ -197,6 +200,7 @@ namespace AlchAssExV3
         [HarmonyPatch(typeof(UIWindow), "DrawExpansion")]
         public static void DrawExpansionUI()
         {
+            UIWindowEx.GetLabelWidth();
             UIWindowEx.DrawEnables();
             UIWindowEx.DrawSets();
             UIWindowEx.DrawLevels("默认数值配置一", 0, ref VariableEx.L1Expand);

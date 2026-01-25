@@ -1,0 +1,104 @@
+[
+  {
+    "key": "控制选项",
+    "values": {
+      "en": "Controlling Options"
+    }
+  },
+  {
+    "key": "定量搅拌与加水设定",
+    "values": {
+      "en": "Quantitative Stir & Ladle Settings"
+    }
+  },
+  {
+    "key": "默认数值配置一",
+    "values": {
+      "en": "Default Value Configurations 1"
+    }
+  },
+  {
+    "key": "默认数值配置二",
+    "values": {
+      "en": "Default Value Configurations 2"
+    }
+  },
+  {
+    "key": "默认数值配置三",
+    "values": {
+      "en": "Default Value Configurations 3"
+    }
+  },
+  {
+    "key": "定量搅拌",
+    "values": {
+      "en": "Quantitative Stiring"
+    }
+  },
+  {
+    "key": "定量加水",
+    "values": {
+      "en": "Quantitative Ladling"
+    }
+  },
+  {
+    "key": "定量加热",
+    "values": {
+      "en": "Quantitative Heating"
+    }
+  },
+  {
+    "key": "定量研磨",
+    "values": {
+      "en": "Quantitative Grinding"
+    }
+  },
+  {
+    "key": "减速搅拌",
+    "values": {
+      "en": "Slow Stiring"
+    }
+  },
+  {
+    "key": "减速加水",
+    "values": {
+      "en": "Slow Ladling"
+    }
+  },
+  {
+    "key": "减速加热",
+    "values": {
+      "en": "Slow Heating"
+    }
+  },
+  {
+    "key": "减速研磨",
+    "values": {
+      "en": "Slow Grinding"
+    }
+  },
+  {
+    "key": "批量酿造",
+    "values": {
+      "en": "Bulk Brewing"
+    }
+  },
+  {
+    "key": "漩涡制动",
+    "values": {
+      "en": "Vortex Damping"
+    }
+  },
+  {
+    "key": "近点制动",
+    "values": {
+      "en": "Proximity Damping"
+    }
+  },
+  {
+    "key": "吸附制动",
+    "values": {
+      "en": "Alignment Damping"
+    }
+  }
+]

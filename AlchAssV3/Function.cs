@@ -1,4 +1,5 @@
 ﻿using PotionCraft.DebugObjects.DebugWindows;
+using PotionCraft.LocalizationSystem;
 using PotionCraft.ManagersSystem;
 using PotionCraft.ObjectBased;
 using PotionCraft.ObjectBased.InteractiveItem;
@@ -20,7 +21,7 @@ namespace AlchAssV3
         /// </summary>
         public static void InitDebugWindow(int index, Room room)
         {
-            var Window = DebugWindow.Init(Variable.WindowTags[index] + "信息", true);
+            var Window = DebugWindow.Init(LocalizationManager.GetText($"{Variable.WindowTags[index]}信息"), true);
             Window.ToForeground();
             Window.transform.SetParent(room.transform, false);
             Window.transform.localPosition = Variable.WindowPositions[index].Value;
@@ -29,12 +30,15 @@ namespace AlchAssV3
         }
 
         /// <summary>
-        /// 打开调试窗口
+        /// 恢复调试窗口
         /// </summary>
-        public static void OpenDebugWindows()
+        public static void RestoreDebugWindows()
         {
-            foreach (var window in Variable.DebugWindows)
-                window.Visible = true;
+            for (var i = 0; i < Variable.DebugWindows.Length; i++)
+            {
+                Variable.DebugWindows[i].Visible = true;
+                Variable.DebugWindows[i].transform.localPosition = Variable.WindowPositions[i].Value;
+            }
         }
 
         /// <summary>
@@ -45,6 +49,12 @@ namespace AlchAssV3
             for (var i = 0; i < Variable.DebugWindows.Length; i++)
                 Variable.WindowPositions[i].Value = Variable.DebugWindows[i].transform.localPosition;
             Variable.WindowRectConfig.Value = Variable.WindowRect;
+        }
+
+        public static void SetDebugWindowTitle()
+        {
+            for (var i = 0; i < Variable.DebugWindows.Length; i++)
+                Variable.DebugWindows[i]?.captionText.text = LocalizationManager.GetText($"{Variable.WindowTags[i]}信息");
         }
         #endregion
 
@@ -214,8 +224,7 @@ namespace AlchAssV3
         /// </summary>
         public static byte[] ReadBinaryFile(string path)
         {
-            var assembly = Assembly.GetExecutingAssembly();
-            var stream = assembly.GetManifestResourceStream(path);
+            using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(path);
             var buffer = new byte[stream.Length];
             stream.Read(buffer, 0, buffer.Length);
             return buffer;
@@ -340,6 +349,17 @@ namespace AlchAssV3
             if (!Variable.DisplaySalt)
                 return $"{hp}%";
             return $"<sprite=\"IconsAtlas\" name=\"LifeSalt\"> {hp * 2.5f}";
+        }
+
+        /// <summary>
+        /// 格式化本地化文本
+        /// </summary>
+        public static void FormatLocalization()
+        {
+            var assembly = Assembly.GetExecutingAssembly();
+            string[] tags = ["Label", "Title", "Button"];
+            foreach (var tag in tags)
+                Localization.RegisterLocalization($"AlchAssV3.Locs.{tag}.json", assembly);
         }
         #endregion
     }

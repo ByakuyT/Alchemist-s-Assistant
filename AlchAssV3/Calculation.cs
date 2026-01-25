@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using PotionCraft.LocalizationSystem;
 using PotionCraft.ManagersSystem;
 using PotionCraft.ObjectBased.Mortar;
 using PotionCraft.ObjectBased.RecipeMap.RecipeMapItem.Zones;
@@ -17,11 +18,11 @@ namespace AlchAssV3
         /// </summary>
         public static string CalculatePath()
         {
-            string devTotText = "不可用";
-            string devPosText = "不可用";
-            string closestDirText = "不可用";
-            string deltaAngleText = "不可用";
-            string lifeSaltText = "不可用";
+            string devTotText = LocalizationManager.GetText("不可用");
+            string devPosText = LocalizationManager.GetText("不可用");
+            string closestDirText = LocalizationManager.GetText("不可用");
+            string deltaAngleText = LocalizationManager.GetText("不可用");
+            string lifeSaltText = LocalizationManager.GetText("不可用");
 
             if (!float.IsNaN(Variable.ClosestPositions[0].x))
             {
@@ -49,11 +50,11 @@ namespace AlchAssV3
             if (!double.IsNaN(Variable.DangerDistancePath))
                 lifeSaltText = Function.FormatLifeSalt(Variable.DangerDistancePath);
             return $"""
-                总体偏离: {devTotText}
-                位置偏离: {devPosText}
-                近点方向: {closestDirText}
-                目标夹角: {deltaAngleText}
-                加血需求: {lifeSaltText}
+                {LocalizationManager.GetText("总体偏离")}: {devTotText}
+                {LocalizationManager.GetText("位置偏离")}: {devPosText}
+                {LocalizationManager.GetText("近点方向")}: {closestDirText}
+                {LocalizationManager.GetText("效果夹角")}: {deltaAngleText}
+                {LocalizationManager.GetText("加血需求")}: {lifeSaltText}
                 """;
         }
 
@@ -62,11 +63,11 @@ namespace AlchAssV3
         /// </summary>
         public static string CalculateLadle()
         {
-            string devTotText = "不可用";
-            string devPosText = "不可用";
-            string closestDirText = "不可用";
-            string deltaAngleText = "不可用";
-            string lifeSaltText = "不可用";
+            string devTotText = LocalizationManager.GetText("不可用");
+            string devPosText = LocalizationManager.GetText("不可用");
+            string closestDirText = LocalizationManager.GetText("不可用");
+            string deltaAngleText = LocalizationManager.GetText("不可用");
+            string lifeSaltText = LocalizationManager.GetText("不可用");
 
             if (!float.IsNaN(Variable.ClosestPositions[1].x))
             {
@@ -94,11 +95,11 @@ namespace AlchAssV3
             if (!double.IsNaN(Variable.DangerDistanceLadle))
                 lifeSaltText = Function.FormatLifeSalt(Variable.DangerDistanceLadle);
             return $"""
-                总体偏离: {devTotText}
-                位置偏离: {devPosText}
-                近点方向: {closestDirText}
-                目标夹角: {deltaAngleText}
-                加血需求: {lifeSaltText}
+                {LocalizationManager.GetText("总体偏离")}: {devTotText}
+                {LocalizationManager.GetText("位置偏离")}: {devPosText}
+                {LocalizationManager.GetText("近点方向")}: {closestDirText}
+                {LocalizationManager.GetText("效果夹角")}: {deltaAngleText}
+                {LocalizationManager.GetText("加血需求")}: {lifeSaltText}
                 """;
         }
 
@@ -107,21 +108,33 @@ namespace AlchAssV3
         /// </summary>
         public static string CalculateMove()
         {
-            var stage = Managers.RecipeMap.path.deletedGraphicsSegments;
+            var phase = Managers.RecipeMap.path.deletedGraphicsSegments;
             var progress = Managers.RecipeMap.path.segmentLengthToDeletePhysics;
-            var pathDir = double.IsNaN(Variable.LineDirections[0]) ? "不可用" : $"{(float)Variable.LineDirections[0]}°";
-            var ladleDir = double.IsNaN(Variable.LineDirections[1]) ? "不可用" : $"{(float)Variable.LineDirections[1]}°";
+            var pathDir = double.IsNaN(Variable.LineDirections[0]) ? LocalizationManager.GetText("不可用") : $"{(float)Variable.LineDirections[0]}°";
+            var ladleDir = double.IsNaN(Variable.LineDirections[1]) ? LocalizationManager.GetText("不可用") : $"{(float)Variable.LineDirections[1]}°";
+            var vortexText = LocalizationManager.GetText("不可用");
+            if (Managers.RecipeMap.CurrentVortexMapItem != null)
+            {
+                var p = Managers.RecipeMap.CurrentVortexMapItem.thisTransform.localPosition - Variable.Offset;
+                var r = ((CircleCollider2D)Traverse.Create(Managers.RecipeMap.CurrentVortexMapItem).Field("vortexCollider").GetValue()).radius + 0.74f;
+                var a = (float)Variable.VortexA;
+                var b = r * r / (p.magnitude * Mathf.Sqrt(r * r + a * a));
+                var vortexDir = (Mathf.Atan2(p.y, p.x) + Mathf.Asin(b)) * Mathf.Rad2Deg;
+                vortexText = $"{(vortexDir > 0f ? vortexDir - 180f : vortexDir + 180f)}°";
+            }
             if (Variable.DisplayStage)
                 return $"""
-                搅拌阶段: {stage}
-                阶段进度: {progress}
-                路径方向: {pathDir}
-                加水方向: {ladleDir}
+                {LocalizationManager.GetText("搅拌阶段")}: {phase}
+                {LocalizationManager.GetText("阶段进度")}: {progress}
+                {LocalizationManager.GetText("路径方向")}: {pathDir}
+                {LocalizationManager.GetText("加水方向")}: {ladleDir}
+                {LocalizationManager.GetText("漩涡切角")}: {vortexText}
                 """;
             return $"""
-                搅拌进度: {stage + progress}
-                路径方向: {pathDir}
-                加水方向: {ladleDir}
+                {LocalizationManager.GetText("搅拌进度")}: {phase + progress}
+                {LocalizationManager.GetText("路径方向")}: {pathDir}
+                {LocalizationManager.GetText("加水方向")}: {ladleDir}
+                {LocalizationManager.GetText("漩涡切角")}: {vortexText}
                 """;
         }
 
@@ -138,12 +151,12 @@ namespace AlchAssV3
             var targetRot = Mathf.DeltaAngle(Variable.TargetEffect.transform.localEulerAngles.z, 0f) / 9f * 25f;
             var posText = Function.FormatPosition(targetPos);
             var rotText = Function.FormatMoonSalt(targetRot);
-            var dirText = double.IsNaN(Variable.LineDirections[2]) ? "不可用" : $"{(float)Variable.LineDirections[2]}°";
+            var dirText = double.IsNaN(Variable.LineDirections[2]) ? LocalizationManager.GetText("不可用") : $"{(float)Variable.LineDirections[2]}°";
             return $"""
-                目标效果: {targetId}
-                坐标位置: {posText}
-                旋转角度: {rotText}
-                目标方向: {dirText}
+                {LocalizationManager.GetText("目标效果")}: {targetId}
+                {LocalizationManager.GetText("坐标位置")}: {posText}
+                {LocalizationManager.GetText("旋转角度")}: {rotText}
+                {LocalizationManager.GetText("效果方向")}: {dirText}
                 """;
         }
 
@@ -159,9 +172,9 @@ namespace AlchAssV3
             var offText = Function.FormatPosition(offPos);
             var rotText = Function.FormatMoonSalt(indRot);
             return $"""
-                坐标位置: {posText}
-                碰撞偏离: {offText}
-                旋转角度: {rotText}
+                {LocalizationManager.GetText("坐标位置")}: {posText}
+                {LocalizationManager.GetText("碰撞偏移")}: {offText}
+                {LocalizationManager.GetText("旋转角度")}: {rotText}
                 """;
         }
 
@@ -186,9 +199,9 @@ namespace AlchAssV3
             var lvlRot = devRot <= 100f ? 3 : devRot <= 600f ? 2 : 1;
             var lvlTot = devTot <= 100f ? 3 : devTot <= 600f ? 2 : devPos <= 2754f ? 1 : 0;
             return $"""
-                总体偏离: <color=red>L{lvlTot}</color> {devTot}%
-                位置偏离: <color=red>L{lvlPos}</color> {devPos}%
-                旋转偏离: <color=red>L{lvlRot}</color> {devRot}%
+                {LocalizationManager.GetText("总体偏离")}: <color=red>L{lvlTot}</color> {devTot}%
+                {LocalizationManager.GetText("位置偏离")}: <color=red>L{lvlPos}</color> {devPos}%
+                {LocalizationManager.GetText("旋转偏离")}: <color=red>L{lvlRot}</color> {devRot}%
                 """;
         }
 
@@ -223,13 +236,15 @@ namespace AlchAssV3
             }
 
             var distance = Vector2.Distance(vortexPos, indPos);
-            var dirText = double.IsNaN(dirVortex) ? "不可用" : $"{(float)dirVortex}°";
-            var lifeSaltText = double.IsNaN(dangerDis) ? "不可用" : Function.FormatLifeSalt(dangerDis);
+            var dirText = double.IsNaN(dirVortex) ? LocalizationManager.GetText("不可用") : $"{(float)dirVortex}°";
+            var tanText = double.IsNaN(Variable.LineDirections[4]) ? LocalizationManager.GetText("不可用") : $"{(float)Variable.LineDirections[4]}°";
+            var lifeSaltText = double.IsNaN(dangerDis) ? LocalizationManager.GetText("不可用") : Function.FormatLifeSalt(dangerDis);
             return $"""
-                当前距离: {distance}
-                最大距离: {(float)maxDis}
-                漩涡方向: {dirText}
-                加血需求: {lifeSaltText}
+                {LocalizationManager.GetText("漩涡距离")}: {distance}
+                {LocalizationManager.GetText("最大距离")}: {(float)maxDis}
+                {LocalizationManager.GetText("漩涡方向")}: {dirText}
+                {LocalizationManager.GetText("漩涡切向")}: {tanText}
+                {LocalizationManager.GetText("加血需求")}: {lifeSaltText}
                 """;
         }
 
@@ -238,7 +253,7 @@ namespace AlchAssV3
         /// </summary>
         public static string CalculateHealth(float health)
         {
-            return $"当前血量: {health * 100f}%";
+            return $"{LocalizationManager.GetText("当前血量")}: {health * 100f}%";
         }
 
         /// <summary>
@@ -248,7 +263,7 @@ namespace AlchAssV3
         {
             if (mortar.ContainedStack == null)
                 return "";
-            return $"研磨进度: {mortar.ContainedStack.overallGrindStatus * 100f}%";
+            return $"{LocalizationManager.GetText("研磨进度")}: {mortar.ContainedStack.overallGrindStatus * 100f}%";
         }
         #endregion
 
@@ -334,7 +349,7 @@ namespace AlchAssV3
             {
                 var dir = Variable.VortexMaxAngle + Variable.VortexRotation + Math.Atan(Variable.VortexMaxAngle);
                 var dirdeg = dir * 180 / Math.PI;
-                Variable.LineDirections[4] = dirdeg % 360;
+                Variable.LineDirections[4] = dirdeg % 360 - 180;
             }
         }
 

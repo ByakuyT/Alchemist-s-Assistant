@@ -158,6 +158,7 @@ namespace AlchAssV3
         public static int TargetLineIndex = -1;
         public static int[] VortexIndex = [-1, -1];
         // 0 - 水; 1 - 油
+        public static float LabelWidth;
         public static double VortexX;
         public static double VortexY;
         public static double VortexRotation;
@@ -224,6 +225,12 @@ namespace AlchAssV3
                 double MinX, double MinY, double MaxX, double MaxY,
                 int[] Items
             ) : Node(MinX, MinY, MaxX, MaxY);
+        }
+
+        public struct Localization
+        {
+            public string key;
+            public Dictionary<string, string> values;
         }
         #endregion
     }

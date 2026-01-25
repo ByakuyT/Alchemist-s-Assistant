@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using PotionCraft.LocalizationSystem;
+using UnityEngine;
 using UnityEngine.InputSystem;
 
 namespace AlchAssV3
@@ -43,7 +44,7 @@ namespace AlchAssV3
             Variable.DeleteButtonStyle.font = Variable.Font;
             Variable.DeleteButtonStyle.fontSize = 14;
             Variable.DeleteButtonStyle.margin = new(0, 30, 5, 0);
-            Variable.DeleteButtonStyle.padding = new(10, 10, 5, 5);
+            Variable.DeleteButtonStyle.padding = new(10, 10, 6, 4);
             Variable.DeleteButtonStyle.fixedWidth = 50;
 
             Variable.ToggleStyle = new(GUI.skin.toggle);
@@ -129,7 +130,7 @@ namespace AlchAssV3
         /// </summary>
         public static void DrawEnables()
         {
-            var icon = Variable.EnableExpand ? "▼ 功能选项" : "▲ 功能选项";
+            var icon = $"{(Variable.EnableExpand ? "▼" : "▲")} {LocalizationManager.GetText("渲染选项")}";
             if (GUILayout.Button(icon, Variable.CategoryStyle))
                 Variable.EnableExpand = !Variable.EnableExpand;
 
@@ -137,22 +138,22 @@ namespace AlchAssV3
             {
                 GUILayout.BeginHorizontal();
                 GUILayout.BeginVertical();
-                Variable.EnablePathLine = GUILayout.Toggle(Variable.EnablePathLine, "路径切向线", Variable.ToggleStyle);
-                Variable.EnableLadleLine = GUILayout.Toggle(Variable.EnableLadleLine, "加水方向线", Variable.ToggleStyle);
-                Variable.EnableEffectLine = GUILayout.Toggle(Variable.EnableEffectLine, "效果径向线", Variable.ToggleStyle);
-                Variable.EnableVortexLine = GUILayout.Toggle(Variable.EnableVortexLine, "漩涡径向线", Variable.ToggleStyle);
-                Variable.EnableTangentLine = GUILayout.Toggle(Variable.EnableTangentLine, "漩涡切向线", Variable.ToggleStyle);
-                Variable.EnableCustomLine = GUILayout.Toggle(Variable.EnableCustomLine, "自定义方向线", Variable.ToggleStyle);
-                Variable.EnablePathCurve = GUILayout.Toggle(Variable.EnablePathCurve, "路径曲线", Variable.ToggleStyle);
+                Variable.EnablePathLine = GUILayout.Toggle(Variable.EnablePathLine, LocalizationManager.GetText("路径切向线"), Variable.ToggleStyle);
+                Variable.EnableLadleLine = GUILayout.Toggle(Variable.EnableLadleLine, LocalizationManager.GetText("加水方向线"), Variable.ToggleStyle);
+                Variable.EnableEffectLine = GUILayout.Toggle(Variable.EnableEffectLine, LocalizationManager.GetText("效果径向线"), Variable.ToggleStyle);
+                Variable.EnableVortexLine = GUILayout.Toggle(Variable.EnableVortexLine, LocalizationManager.GetText("漩涡径向线"), Variable.ToggleStyle);
+                Variable.EnableTangentLine = GUILayout.Toggle(Variable.EnableTangentLine, LocalizationManager.GetText("漩涡切向线"), Variable.ToggleStyle);
+                Variable.EnableCustomLine = GUILayout.Toggle(Variable.EnableCustomLine, LocalizationManager.GetText("自定义方向线"), Variable.ToggleStyle);
+                Variable.EnablePathCurve = GUILayout.Toggle(Variable.EnablePathCurve, LocalizationManager.GetText("路径曲线"), Variable.ToggleStyle);
                 GUILayout.EndVertical();
                 GUILayout.FlexibleSpace();
                 GUILayout.BeginVertical();
-                Variable.EnableVortexCurve = GUILayout.Toggle(Variable.EnableVortexCurve, "漩涡曲线", Variable.ToggleStyle);
-                Variable.EnableEffectRange = GUILayout.Toggle(Variable.EnableEffectRange, "效果范围", Variable.ToggleStyle);
-                Variable.EnableVortexRange = GUILayout.Toggle(Variable.EnableVortexRange, "漩涡范围", Variable.ToggleStyle);
-                Variable.EnableDangerSimulation = GUILayout.Toggle(Variable.EnableDangerSimulation, "骷髅区模拟", Variable.ToggleStyle);
-                Variable.EnableSwampSimulation = GUILayout.Toggle(Variable.EnableSwampSimulation, "沼泽区模拟", Variable.ToggleStyle);
-                Variable.EnableTransparency = GUILayout.Toggle(Variable.EnableTransparency, "透明瓶身", Variable.ToggleStyle);
+                Variable.EnableVortexCurve = GUILayout.Toggle(Variable.EnableVortexCurve, LocalizationManager.GetText("漩涡曲线"), Variable.ToggleStyle);
+                Variable.EnableEffectRange = GUILayout.Toggle(Variable.EnableEffectRange, LocalizationManager.GetText("效果范围"), Variable.ToggleStyle);
+                Variable.EnableVortexRange = GUILayout.Toggle(Variable.EnableVortexRange, LocalizationManager.GetText("漩涡范围"), Variable.ToggleStyle);
+                Variable.EnableDangerSimulation = GUILayout.Toggle(Variable.EnableDangerSimulation, LocalizationManager.GetText("骷髅区模拟"), Variable.ToggleStyle);
+                Variable.EnableSwampSimulation = GUILayout.Toggle(Variable.EnableSwampSimulation, LocalizationManager.GetText("沼泽区模拟"), Variable.ToggleStyle);
+                Variable.EnableTransparency = GUILayout.Toggle(Variable.EnableTransparency, LocalizationManager.GetText("透明瓶身"), Variable.ToggleStyle);
                 GUILayout.EndVertical();
                 GUILayout.EndHorizontal();
                 Function.UpdateDoFromEnable();
@@ -165,7 +166,7 @@ namespace AlchAssV3
         /// </summary>
         public static void DrawDisplays()
         {
-            var icon = Variable.DisplayExpand ? "▼ 显示选项" : "▲ 显示选项";
+            var icon = $"{(Variable.DisplayExpand ? "▼" : "▲")} {LocalizationManager.GetText("显示选项")}";
             if (GUILayout.Button(icon, Variable.CategoryStyle))
                 Variable.DisplayExpand = !Variable.DisplayExpand;
 
@@ -173,13 +174,13 @@ namespace AlchAssV3
             {
                 GUILayout.BeginHorizontal();
                 GUILayout.BeginVertical();
-                Variable.DisplaySalt = GUILayout.Toggle(Variable.DisplaySalt, "旋转盐量", Variable.ToggleStyle);
-                Variable.DisplayStage = GUILayout.Toggle(Variable.DisplayStage, "搅拌阶段", Variable.ToggleStyle);
+                Variable.DisplaySalt = GUILayout.Toggle(Variable.DisplaySalt, LocalizationManager.GetText("旋转盐量"), Variable.ToggleStyle);
+                Variable.DisplayStage = GUILayout.Toggle(Variable.DisplayStage, LocalizationManager.GetText("搅拌阶段"), Variable.ToggleStyle);
                 GUILayout.EndVertical();
                 GUILayout.FlexibleSpace();
                 GUILayout.BeginVertical();
-                Variable.DisplayPolar = GUILayout.Toggle(Variable.DisplayPolar, "极坐标", Variable.ToggleStyle);
-                Variable.DisplayOffset = GUILayout.Toggle(Variable.DisplayOffset, "碰撞体位置", Variable.ToggleStyle);
+                Variable.DisplayPolar = GUILayout.Toggle(Variable.DisplayPolar, LocalizationManager.GetText("极坐标"), Variable.ToggleStyle);
+                Variable.DisplayOffset = GUILayout.Toggle(Variable.DisplayOffset, LocalizationManager.GetText("碰撞体位置"), Variable.ToggleStyle);
                 GUILayout.EndVertical();
                 GUILayout.EndHorizontal();
             }
@@ -191,16 +192,16 @@ namespace AlchAssV3
         /// </summary>
         public static void DrawActions()
         {
-            var icon = Variable.ActionExpand ? "▼ 即时功能" : "▲ 即时功能";
+            var icon = $"{(Variable.ActionExpand ? "▼" : "▲")} {LocalizationManager.GetText("窗口管理")}";
             if (GUILayout.Button(icon, Variable.CategoryStyle))
                 Variable.ActionExpand = !Variable.ActionExpand;
 
             if (Variable.ActionExpand)
             {
                 GUILayout.BeginHorizontal();
-                if (GUILayout.Button("开启所有窗口", Variable.ButtonStyle))
-                    Function.OpenDebugWindows();
-                if (GUILayout.Button("保存窗口位置", Variable.ButtonStyle))
+                if (GUILayout.Button(LocalizationManager.GetText("恢复所有窗口"), Variable.ButtonStyle))
+                    Function.RestoreDebugWindows();
+                if (GUILayout.Button(LocalizationManager.GetText("保存窗口布局"), Variable.ButtonStyle))
                     Function.SaveDebugWindowPos();
                 GUILayout.EndHorizontal();
             }
@@ -212,23 +213,26 @@ namespace AlchAssV3
         /// </summary>
         public static void DrawCustomList()
         {
-            var icon = Variable.CustomListExpand ? "▼ 自定义方向线管理" : "▲ 自定义方向线管理";
+            var icon = $"{(Variable.CustomListExpand ? "▼" : "▲")} {LocalizationManager.GetText("自定义方向线管理")}";
             if (GUILayout.Button(icon, Variable.CategoryStyle))
                 Variable.CustomListExpand = !Variable.CustomListExpand;
 
             if (Variable.CustomListExpand)
             {
-                if (GUILayout.Button("+ 添加方向线", Variable.ButtonStyle))
+                if (GUILayout.Button($"+ {LocalizationManager.GetText("添加方向线")}", Variable.ButtonStyle))
                 {
                     Variable.CustomLineDirections.Add(0f);
                     Variable.CustomLineHovers.Add(false);
                     Variable.Inputs.Add(("0", false));
+
+                    var cnt = (int)Mathf.Ceil(Mathf.Log10(Variable.CustomLineDirections.Count + 1));
+                    Variable.LabelWidth = Localization.GetLabelWidth([new('0', cnt)], false);
                 }
 
                 for (int i = 0; i < Variable.CustomLineDirections.Count; i++)
                 {
                     GUILayout.BeginHorizontal();
-                    GUILayout.Label($"{i + 1}.", Variable.LabelStyle, GUILayout.Width(25));
+                    GUILayout.Label($"{i + 1}.", Variable.LabelStyle, GUILayout.Width(Variable.LabelWidth));
 
                     var slideValue = GUILayout.HorizontalSlider(Variable.CustomLineDirections[i], 0f, 360f, Variable.SliderStyle, new(GUI.skin.horizontalSliderThumb));
                     if (slideValue != Variable.CustomLineDirections[i])
@@ -253,7 +257,7 @@ namespace AlchAssV3
                             Variable.Inputs[i] = (inputValue, true);
                     }
 
-                    if (GUILayout.Button("删除", Variable.DeleteButtonStyle))
+                    if (GUILayout.Button(LocalizationManager.GetText("删除"), Variable.DeleteButtonStyle))
                     {
                         Variable.CustomLineDirections.RemoveAt(i);
                         Variable.CustomLineHovers.RemoveAt(i);
@@ -261,6 +265,9 @@ namespace AlchAssV3
                         if (Variable.TargetLineIndex == i) Variable.TargetLineIndex = -1;
                         else if (Variable.TargetLineIndex > i) Variable.TargetLineIndex--;
                         i--;
+
+                        var cnt = (int)Mathf.Ceil(Mathf.Log10(Variable.CustomLineDirections.Count + 1));
+                        Variable.LabelWidth = Localization.GetLabelWidth([new('0', cnt)], false);
                     }
                     GUILayout.EndHorizontal();
 

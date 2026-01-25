@@ -581,5 +581,8 @@
     <Compile Include="UIWindowEx.cs" />
     <Compile Include="VariableEx.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Locs\*.json" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

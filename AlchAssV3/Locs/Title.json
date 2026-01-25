@@ -1,0 +1,62 @@
+[
+  {
+    "key": "功能面板",
+    "values": {
+      "en": "Feature Panel"
+    }
+  },
+  {
+    "key": "路径信息",
+    "values": {
+      "en": "Path Status"
+    }
+  },
+  {
+    "key": "加水信息",
+    "values": {
+      "en": "Ladle Status"
+    }
+  },
+  {
+    "key": "移动信息",
+    "values": {
+      "en": "Movement Status"
+    }
+  },
+  {
+    "key": "效果信息",
+    "values": {
+      "en": "Effect Status"
+    }
+  },
+  {
+    "key": "位置信息",
+    "values": {
+      "en": "Position Status"
+    }
+  },
+  {
+    "key": "偏离信息",
+    "values": {
+      "en": "Deviation Status"
+    }
+  },
+  {
+    "key": "漩涡信息",
+    "values": {
+      "en": "Vortex Status"
+    }
+  },
+  {
+    "key": "血量信息",
+    "values": {
+      "en": "Health Status"
+    }
+  },
+  {
+    "key": "研磨信息",
+    "values": {
+      "en": "Grind Status"
+    }
+  }
+]

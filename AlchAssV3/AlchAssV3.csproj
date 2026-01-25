@@ -617,6 +617,7 @@
     <Compile Include="Calculation.cs" />
     <Compile Include="Function.cs" />
     <Compile Include="Geometry.cs" />
+    <Compile Include="Localization.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Rendering.cs" />
@@ -625,6 +626,11 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Bins\*.bin" />
+    <EmbeddedResource Include="Locs\*.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Locs\Button.json" />
+    <None Include="Locs\Title.json" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

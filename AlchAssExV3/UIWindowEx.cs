@@ -1,6 +1,8 @@
 ﻿using AlchAssV3;
+using PotionCraft.LocalizationSystem;
 using PotionCraft.ManagersSystem;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace AlchAssExV3
 {
@@ -13,7 +15,7 @@ namespace AlchAssExV3
         public static void DrawEnables()
         {
             GUILayout.Space(10);
-            var icon = VariableEx.EnableExpand ? "▼ 扩展功能选项" : "▲ 扩展功能选项";
+            var icon = $"{(VariableEx.EnableExpand ? "▼" : "▲")} {LocalizationManager.GetText("控制选项")}";
             if (GUILayout.Button(icon, Variable.CategoryStyle))
                 VariableEx.EnableExpand = !VariableEx.EnableExpand;
 
@@ -21,21 +23,21 @@ namespace AlchAssExV3
             {
                 GUILayout.BeginHorizontal();
                 GUILayout.BeginVertical();
-                VariableEx.EnableGrindSet = GUILayout.Toggle(VariableEx.EnableGrindSet, "定量研磨", Variable.ToggleStyle);
-                VariableEx.EnableStirSet = GUILayout.Toggle(VariableEx.EnableStirSet, "定量搅拌", Variable.ToggleStyle);
-                VariableEx.EnableLadleSet = GUILayout.Toggle(VariableEx.EnableLadleSet, "定量加水", Variable.ToggleStyle);
-                VariableEx.EnableHeatSet = GUILayout.Toggle(VariableEx.EnableHeatSet, "定量加热", Variable.ToggleStyle);
-                VariableEx.EnableGrindSpeed = GUILayout.Toggle(VariableEx.EnableGrindSpeed, "减速研磨", Variable.ToggleStyle);
-                VariableEx.EnableStirSpeed = GUILayout.Toggle(VariableEx.EnableStirSpeed, "减速搅拌", Variable.ToggleStyle);
+                VariableEx.EnableStirSet = GUILayout.Toggle(VariableEx.EnableStirSet, LocalizationManager.GetText("定量搅拌"), Variable.ToggleStyle);
+                VariableEx.EnableLadleSet = GUILayout.Toggle(VariableEx.EnableLadleSet, LocalizationManager.GetText("定量加水"), Variable.ToggleStyle);
+                VariableEx.EnableHeatSet = GUILayout.Toggle(VariableEx.EnableHeatSet, LocalizationManager.GetText("定量加热"), Variable.ToggleStyle);
+                VariableEx.EnableGrindSet = GUILayout.Toggle(VariableEx.EnableGrindSet, LocalizationManager.GetText("定量研磨"), Variable.ToggleStyle);
+                VariableEx.EnableStirSpeed = GUILayout.Toggle(VariableEx.EnableStirSpeed, LocalizationManager.GetText("减速搅拌"), Variable.ToggleStyle);
+                VariableEx.EnableLadleSpeed = GUILayout.Toggle(VariableEx.EnableLadleSpeed, LocalizationManager.GetText("减速加水"), Variable.ToggleStyle);
                 GUILayout.EndVertical();
                 GUILayout.FlexibleSpace();
                 GUILayout.BeginVertical();
-                VariableEx.EnableLadleSpeed = GUILayout.Toggle(VariableEx.EnableLadleSpeed, "减速加水", Variable.ToggleStyle);
-                VariableEx.EnableHeatSpeed = GUILayout.Toggle(VariableEx.EnableHeatSpeed, "减速加热", Variable.ToggleStyle);
-                VariableEx.EnableBrewMassive = GUILayout.Toggle(VariableEx.EnableBrewMassive, "批量炼药", Variable.ToggleStyle);
-                VariableEx.EnableEdgeControl = GUILayout.Toggle(VariableEx.EnableEdgeControl, "漩涡制动", Variable.ToggleStyle);
-                VariableEx.EnableClosestControl = GUILayout.Toggle(VariableEx.EnableClosestControl, "最近点制动", Variable.ToggleStyle);
-                VariableEx.EnableProximityControl = GUILayout.Toggle(VariableEx.EnableProximityControl, "接近点制动", Variable.ToggleStyle);
+                VariableEx.EnableHeatSpeed = GUILayout.Toggle(VariableEx.EnableHeatSpeed, LocalizationManager.GetText("减速加热"), Variable.ToggleStyle);
+                VariableEx.EnableGrindSpeed = GUILayout.Toggle(VariableEx.EnableGrindSpeed, LocalizationManager.GetText("减速研磨"), Variable.ToggleStyle);
+                VariableEx.EnableBrewMassive = GUILayout.Toggle(VariableEx.EnableBrewMassive, LocalizationManager.GetText("批量酿造"), Variable.ToggleStyle);
+                VariableEx.EnableEdgeControl = GUILayout.Toggle(VariableEx.EnableEdgeControl, LocalizationManager.GetText("漩涡制动"), Variable.ToggleStyle);
+                VariableEx.EnableClosestControl = GUILayout.Toggle(VariableEx.EnableClosestControl, LocalizationManager.GetText("近点制动"), Variable.ToggleStyle);
+                VariableEx.EnableProximityControl = GUILayout.Toggle(VariableEx.EnableProximityControl, LocalizationManager.GetText("吸附制动"), Variable.ToggleStyle);
                 GUILayout.EndVertical();
                 GUILayout.EndHorizontal();
             }
@@ -47,7 +49,7 @@ namespace AlchAssExV3
         public static void DrawSets()
         {
             GUILayout.Space(10);
-            var icon = VariableEx.SetExpand ? "▼ 定量搅拌加水设定" : "▲ 定量搅拌加水设定";
+            var icon = $"{(VariableEx.SetExpand ? "▼" : "▲")} {LocalizationManager.GetText("定量搅拌与加水设定")}";
             if (GUILayout.Button(icon, Variable.CategoryStyle))
                 VariableEx.SetExpand = !VariableEx.SetExpand;
 
@@ -60,7 +62,7 @@ namespace AlchAssExV3
                     VariableEx.StirSet = Mathf.Max(VariableEx.StirSetTarget - VariableEx.StirStage, 0f);
                     VariableEx.InputStirSet = ($"{VariableEx.StirSet}", false);
                 }
-                var stirval = DrawFloat("定量搅拌:", VariableEx.StirSet, ref VariableEx.InputStirSet, false, false, 0f, 100f);
+                var stirval = DrawFloat("定量搅拌", VariableEx.StirSet, VariableEx.LabelWidthSets, ref VariableEx.InputStirSet, false, false, 0f, 100f);
                 if (stirval != VariableEx.StirSet)
                 {
                     VariableEx.StirSet = stirval;
@@ -74,7 +76,7 @@ namespace AlchAssExV3
                     VariableEx.LadleSet = Mathf.Max(VariableEx.LadleDistance - VariableEx.LadleSetTarget, 0f);
                     VariableEx.InputLadleSet = ($"{VariableEx.LadleSet}", false);
                 }
-                var ladleval = DrawFloat("定量加水:", VariableEx.LadleSet, ref VariableEx.InputLadleSet, false, false, 0f, 100f);
+                var ladleval = DrawFloat("定量加水", VariableEx.LadleSet, VariableEx.LabelWidthSets, ref VariableEx.InputLadleSet, false, false, 0f, 100f);
                 if (ladleval != VariableEx.LadleSet)
                 {
                     VariableEx.LadleSet = ladleval;
@@ -89,19 +91,19 @@ namespace AlchAssExV3
         public static void DrawLevels(string label, int index, ref bool category)
         {
             GUILayout.Space(10);
-            var icon = category ? "▼ " + label : "▲ " + label;
+            var icon = $"{(category ? "▼" : "▲")} {LocalizationManager.GetText(label)}";
             if (GUILayout.Button(icon, Variable.CategoryStyle))
                 category = !category;
 
             if (category)
             {
-                VariableEx.ConfigGrindSet[index].Value = DrawFloat("定量研磨:", VariableEx.ConfigGrindSet[index].Value, ref VariableEx.InputGrindSet[index], false, true, 0f, 100f);
-                VariableEx.ConfigHeatSet[index].Value = DrawFloat("定量加热:", VariableEx.ConfigHeatSet[index].Value, ref VariableEx.InputHeatSet[index], false, true, 0f, 100f);
-                VariableEx.ConfigGrindSpeed[index].Value = DrawFloat("减速研磨:", VariableEx.ConfigGrindSpeed[index].Value, ref VariableEx.InputGrindSpeed[index], true, true, 2f, -2f);
-                VariableEx.ConfigStirSpeed[index].Value = DrawFloat("减速搅拌:", VariableEx.ConfigStirSpeed[index].Value, ref VariableEx.InputStirSpeed[index], true, true, 2f, -2f);
-                VariableEx.ConfigLadleSpeed[index].Value = DrawFloat("减速加水:", VariableEx.ConfigLadleSpeed[index].Value, ref VariableEx.InputLadleSpeed[index], true, true, 2f, -2f);
-                VariableEx.ConfigHeatSpeed[index].Value = DrawFloat("减速加热:", VariableEx.ConfigHeatSpeed[index].Value, ref VariableEx.InputHeatSpeed[index], true, true, 2f, -2f);
-                VariableEx.ConfigBrewMassive[index].Value = DrawInt("批量炼药:", VariableEx.ConfigBrewMassive[index].Value, ref VariableEx.InputBrewMassive[index]);
+                VariableEx.ConfigHeatSet[index].Value = DrawFloat("定量加热", VariableEx.ConfigHeatSet[index].Value, VariableEx.LabelWidthLevels, ref VariableEx.InputHeatSet[index], false, true, 0f, 100f);
+                VariableEx.ConfigGrindSet[index].Value = DrawFloat("定量研磨", VariableEx.ConfigGrindSet[index].Value, VariableEx.LabelWidthLevels, ref VariableEx.InputGrindSet[index], false, true, 0f, 100f);
+                VariableEx.ConfigStirSpeed[index].Value = DrawFloat("减速搅拌", VariableEx.ConfigStirSpeed[index].Value, VariableEx.LabelWidthLevels, ref VariableEx.InputStirSpeed[index], true, true, 2f, -2f);
+                VariableEx.ConfigLadleSpeed[index].Value = DrawFloat("减速加水", VariableEx.ConfigLadleSpeed[index].Value, VariableEx.LabelWidthLevels, ref VariableEx.InputLadleSpeed[index], true, true, 2f, -2f);
+                VariableEx.ConfigHeatSpeed[index].Value = DrawFloat("减速加热", VariableEx.ConfigHeatSpeed[index].Value, VariableEx.LabelWidthLevels, ref VariableEx.InputHeatSpeed[index], true, true, 2f, -2f);
+                VariableEx.ConfigGrindSpeed[index].Value = DrawFloat("减速研磨", VariableEx.ConfigGrindSpeed[index].Value, VariableEx.LabelWidthLevels, ref VariableEx.InputGrindSpeed[index], true, true, 2f, -2f);
+                VariableEx.ConfigBrewMassive[index].Value = DrawInt("批量酿造", VariableEx.ConfigBrewMassive[index].Value, ref VariableEx.InputBrewMassive[index]);
             }
         }
         #endregion
@@ -113,9 +115,9 @@ namespace AlchAssExV3
         public static int DrawInt(string label, int config, ref (string, bool) input)
         {
             GUILayout.BeginHorizontal();
-            GUILayout.Label(label, Variable.LabelStyle, GUILayout.Width(75));
+            GUILayout.Label($"{LocalizationManager.GetText(label)}:", Variable.LabelStyle, GUILayout.Width(VariableEx.LabelWidthLevels));
 
-            var value = Mathf.Log(config, 10);
+            var value = Mathf.Log10(config);
             var slideValue = GUILayout.HorizontalSlider(value, 0f, 2f, Variable.SliderStyle, new(GUI.skin.horizontalSliderThumb));
             if (slideValue != value)
             {
@@ -145,12 +147,12 @@ namespace AlchAssExV3
         /// <summary>
         /// 绘制浮点滑条
         /// </summary>
-        public static float DrawFloat(string label, float config, ref (string, bool) input, bool pow, bool clamp, float min, float max)
+        public static float DrawFloat(string label, float config, float width, ref (string, bool) input, bool pow, bool clamp, float min, float max)
         {
             GUILayout.BeginHorizontal();
-            GUILayout.Label(label, Variable.LabelStyle, GUILayout.Width(75));
+            GUILayout.Label($"{LocalizationManager.GetText(label)}:", Variable.LabelStyle, GUILayout.Width(width));
 
-            var value = pow ? Mathf.Log(config, 10) : config;
+            var value = pow ? Mathf.Log10(config) : config;
             var slideValue = GUILayout.HorizontalSlider(value, min, max, Variable.SliderStyle, new(GUI.skin.horizontalSliderThumb));
             if (slideValue != value)
             {
@@ -175,6 +177,19 @@ namespace AlchAssExV3
             }
             GUILayout.EndHorizontal();
             return config;
+        }
+        #endregion
+
+        #region 标签渲染
+        /// <summary>
+        /// 更新标签宽度
+        /// </summary>
+        public static void GetLabelWidth()
+        {
+            if (float.IsNaN(VariableEx.LabelWidthSets))
+                VariableEx.LabelWidthSets = Localization.GetLabelWidth(["定量搅拌", "定量加水"], true);
+            if (float.IsNaN(VariableEx.LabelWidthLevels))
+                VariableEx.LabelWidthLevels = Localization.GetLabelWidth(["定量加热", "定量研磨", "减速搅拌", "减速加水", "减速加热", "减速研磨", "批量酿造"], true);
         }
         #endregion
     }

@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using AlchAssV3;
+using HarmonyLib;
 using PotionCraft.ManagersSystem;
 using PotionCraft.ManagersSystem.Potion.Entities;
 using PotionCraft.ObjectBased.Bellows;
@@ -6,6 +7,7 @@ using PotionCraft.ObjectBased.Pestle;
 using PotionCraft.ObjectBased.UIElements.Books.RecipeBook;
 using PotionCraft.ScriptableObjects;
 using System;
+using System.Reflection;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -51,7 +53,7 @@ namespace AlchAssExV3
         }
 
         /// <summary>
-        /// 判断是否能够进行批量炼药
+        /// 判断是否能够进行批量酿造
         /// </summary>
         public static bool CanBrewTimes(IRecipeBookPageContent recipe, int count, int times)
         {
@@ -111,6 +113,24 @@ namespace AlchAssExV3
                 VariableEx.InputHeatSpeed[i] = ($"{VariableEx.ConfigHeatSpeed[i].Value}", false);
                 VariableEx.InputBrewMassive[i] = ($"{VariableEx.ConfigBrewMassive[i].Value}", false);
             }
+        }
+
+        /// <summary>
+        /// 格式化本地化文本
+        /// </summary>
+        public static void FormatLocalization()
+        {
+            var assembly = Assembly.GetExecutingAssembly();
+            Localization.RegisterLocalization($"AlchAssExV3.Locs.Button.json", assembly);
+        }
+
+        /// <summary>
+        /// 清除标签长度缓存
+        /// </summary>
+        public static void ClearLabelWidth()
+        {
+            VariableEx.LabelWidthSets = float.NaN;
+            VariableEx.LabelWidthLevels = float.NaN;
         }
         #endregion
     }

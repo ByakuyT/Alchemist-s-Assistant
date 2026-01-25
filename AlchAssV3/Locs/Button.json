@@ -1,0 +1,146 @@
+[
+  {
+    "key": "渲染选项",
+    "values": {
+      "en": "Rendering Options"
+    }
+  },
+  {
+    "key": "显示选项",
+    "values": {
+      "en": "Display Options"
+    }
+  },
+  {
+    "key": "窗口管理",
+    "values": {
+      "en": "Window Management"
+    }
+  },
+  {
+    "key": "自定义方向线管理",
+    "values": {
+      "en": "Custom Lines Management"
+    }
+  },
+  {
+    "key": "路径切向线",
+    "values": {
+      "en": "Path Line"
+    }
+  },
+  {
+    "key": "加水方向线",
+    "values": {
+      "en": "Ladle Line"
+    }
+  },
+  {
+    "key": "效果径向线",
+    "values": {
+      "en": "Effect Line"
+    }
+  },
+  {
+    "key": "漩涡径向线",
+    "values": {
+      "en": "Vortex Line"
+    }
+  },
+  {
+    "key": "漩涡切向线",
+    "values": {
+      "en": "Vortex Tangent"
+    }
+  },
+  {
+    "key": "自定义方向线",
+    "values": {
+      "en": "Custom Line"
+    }
+  },
+  {
+    "key": "路径曲线",
+    "values": {
+      "en": "Path Curve"
+    }
+  },
+  {
+    "key": "漩涡曲线",
+    "values": {
+      "en": "Vortex Curve"
+    }
+  },
+  {
+    "key": "效果范围",
+    "values": {
+      "en": "Effect Range"
+    }
+  },
+  {
+    "key": "漩涡范围",
+    "values": {
+      "en": "Vortex Range"
+    }
+  },
+  {
+    "key": "骷髅区模拟",
+    "values": {
+      "en": "Danger Simulation"
+    }
+  },
+  {
+    "key": "沼泽区模拟",
+    "values": {
+      "en": "Swamp Simulation"
+    }
+  },
+  {
+    "key": "透明瓶身",
+    "values": {
+      "en": "Transparency"
+    }
+  },
+  {
+    "key": "旋转盐量",
+    "values": {
+      "en": "Rotation Salt"
+    }
+  },
+  {
+    "key": "极坐标",
+    "values": {
+      "en": "Polar Coordinates"
+    }
+  },
+  {
+    "key": "碰撞体位置",
+    "values": {
+      "en": "Collider Position"
+    }
+  },
+  {
+    "key": "恢复所有窗口",
+    "values": {
+      "en": "Restore All Windows"
+    }
+  },
+  {
+    "key": "保存窗口布局",
+    "values": {
+      "en": "Save Window Layout"
+    }
+  },
+  {
+    "key": "添加方向线",
+    "values": {
+      "en": "Add Lines"
+    }
+  },
+  {
+    "key": "删除",
+    "values": {
+      "en": "DEL"
+    }
+  }
+]
