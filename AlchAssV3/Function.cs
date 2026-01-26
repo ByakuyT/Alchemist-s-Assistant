@@ -345,7 +345,7 @@ namespace AlchAssV3
         /// </summary>
         public static string FormatLifeSalt(double DangerDistance)
         {
-            var hp = Mathf.Max((float)DangerDistance - 2.5f, 0f) * 40f;
+            var hp = (float)DangerDistance * 40f - 100f;
             if (!Variable.DisplaySalt)
                 return $"{hp}%";
             return $"<sprite=\"IconsAtlas\" name=\"LifeSalt\"> {hp * 2.5f}";

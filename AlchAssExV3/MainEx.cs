@@ -16,7 +16,7 @@ using UnityEngine;
 
 namespace AlchAssExV3
 {
-    [BepInPlugin("AlchAssExV3", "Alchemist's Assistant Extension V3", "2.5.0")]
+    [BepInPlugin("AlchAssExV3", "Alchemist's Assistant Extension V3", "2.5.1")]
     [BepInDependency("AlchAssV3", BepInDependency.DependencyFlags.HardDependency)]
     public class MainEx : BaseUnityPlugin
     {

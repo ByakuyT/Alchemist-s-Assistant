@@ -14,7 +14,7 @@ using UnityEngine;
 
 namespace AlchAssV3
 {
-    [BepInPlugin("AlchAssV3", "Alchemist's Assistant V3", "2.5.0")]
+    [BepInPlugin("AlchAssV3", "Alchemist's Assistant V3", "2.5.1")]
     public class Main : BaseUnityPlugin
     {
         #region Unity - 生命周期

@@ -36,8 +36,8 @@ namespace AlchAssExV3
                 VariableEx.EnableGrindSpeed = GUILayout.Toggle(VariableEx.EnableGrindSpeed, LocalizationManager.GetText("减速研磨"), Variable.ToggleStyle);
                 VariableEx.EnableBrewMassive = GUILayout.Toggle(VariableEx.EnableBrewMassive, LocalizationManager.GetText("批量酿造"), Variable.ToggleStyle);
                 VariableEx.EnableEdgeControl = GUILayout.Toggle(VariableEx.EnableEdgeControl, LocalizationManager.GetText("漩涡制动"), Variable.ToggleStyle);
-                VariableEx.EnableClosestControl = GUILayout.Toggle(VariableEx.EnableClosestControl, LocalizationManager.GetText("近点制动"), Variable.ToggleStyle);
-                VariableEx.EnableProximityControl = GUILayout.Toggle(VariableEx.EnableProximityControl, LocalizationManager.GetText("吸附制动"), Variable.ToggleStyle);
+                VariableEx.EnableClosestControl = GUILayout.Toggle(VariableEx.EnableClosestControl, LocalizationManager.GetText("最近点制动"), Variable.ToggleStyle);
+                VariableEx.EnableProximityControl = GUILayout.Toggle(VariableEx.EnableProximityControl, LocalizationManager.GetText("吸附点制动"), Variable.ToggleStyle);
                 GUILayout.EndVertical();
                 GUILayout.EndHorizontal();
             }

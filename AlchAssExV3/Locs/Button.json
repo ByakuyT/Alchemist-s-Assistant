@@ -90,13 +90,13 @@
     }
   },
   {
-    "key": "近点制动",
+    "key": "最近点制动",
     "values": {
       "en": "Proximity Damping"
     }
   },
   {
-    "key": "吸附制动",
+    "key": "吸附点制动",
     "values": {
       "en": "Alignment Damping"
     }
