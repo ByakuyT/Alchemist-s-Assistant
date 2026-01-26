@@ -174,7 +174,7 @@ namespace AlchAssV3
             {
                 GUILayout.BeginHorizontal();
                 GUILayout.BeginVertical();
-                Variable.DisplaySalt = GUILayout.Toggle(Variable.DisplaySalt, LocalizationManager.GetText("旋转盐量"), Variable.ToggleStyle);
+                Variable.DisplaySalt = GUILayout.Toggle(Variable.DisplaySalt, LocalizationManager.GetText("盐量数据"), Variable.ToggleStyle);
                 Variable.DisplayStage = GUILayout.Toggle(Variable.DisplayStage, LocalizationManager.GetText("搅拌阶段"), Variable.ToggleStyle);
                 GUILayout.EndVertical();
                 GUILayout.FlexibleSpace();
