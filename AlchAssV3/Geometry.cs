@@ -376,7 +376,7 @@ namespace AlchAssV3
             {
                 pointsort.Add(points[0]);
                 for (var i = 1; i < points.Count; i++)
-                    if (points[i].Item4 == points[i - 1].Item4 && points[i].Item3 - points[i - 1].Item3 > 1e-5)
+                    if (points[i].Item4 != points[i - 1].Item4 || points[i].Item3 - points[i - 1].Item3 > 1e-5)
                         pointsort.Add(points[i]);
             }
 
@@ -479,7 +479,7 @@ namespace AlchAssV3
         /// </summary>
         public static void DefeatLine(List<(Vector3, bool)> line, List<(Vector2, int, double, int)> points, double stlen, bool[] stin, string mapid, out Vector2 pos, out double dis)
         {
-            pos = new Vector2(float.NaN, float.NaN); dis = double.NaN;
+            pos = new Vector2(float.NaN, float.NaN); dis = 0.0;
             if (line.Count < 2)
                 return;
 
@@ -543,6 +543,8 @@ namespace AlchAssV3
                     var t = (preDis + 2.5 - preLen - sumj) / len[j];
                     pos = line[j].Item1 + (float)t * (line[j + 1].Item1 - line[j].Item1);
                 }
+                if (!gotDis)
+                    dis = curLen;
             }
             else
             {
@@ -562,7 +564,7 @@ namespace AlchAssV3
                     else if (inter[1])
                         curLen += disLen * 0.25;
                     else if (!inter[2])
-                        curLen -= disLen * 0.125;
+                        curLen -= disLen * 0.1875;
                     curLen = Math.Max(0, curLen);
                     var coef = inter[0] ? 1.0 : 4.0;
 
@@ -576,10 +578,10 @@ namespace AlchAssV3
                         gotPos = true;
                     }
 
-                    var co1 = (inter[0] || inter[1]) && !inter[2] && points[id].Item4 == 2;
-                    var co2 = inter[0] && !inter[1] && !inter[2] && points[id].Item4 == 0;
-                    var co3 = !inter[0] && inter[1] && !inter[2] && points[id].Item4 == 1;
-                    if ((co1 || co2 || co3) && !gotDis)
+                    var coe1 = (inter[0] || inter[1]) && !inter[2] && points[id].Item4 == 2;
+                    var coe2 = inter[0] && !inter[1] && !inter[2] && points[id].Item4 == 0;
+                    var coe3 = !inter[0] && inter[1] && !inter[2] && points[id].Item4 == 1;
+                    if ((coe1 || coe2 || coe3) && !gotDis)
                     {
                         dis = curLen;
                         gotDis = true;
@@ -598,7 +600,7 @@ namespace AlchAssV3
                 else if (inter[1])
                     curLen += endLen * 0.25;
                 else if (!inter[2])
-                    curLen += endLen * 0.125;
+                    curLen -= endLen * 0.1875;
                 curLen = Math.Max(0, curLen);
                 var enef = inter[0] ? 1.0 : 4.0;
 
@@ -610,6 +612,8 @@ namespace AlchAssV3
                     var t = (preDis + (2.5 - preLen) * enef - sumj) / len[j];
                     pos = line[j].Item1 + (float)t * (line[j + 1].Item1 - line[j].Item1);
                 }
+                if (!gotDis)
+                    dis = curLen;
             }
         }
 
@@ -618,7 +622,7 @@ namespace AlchAssV3
         /// </summary>
         public static void DefeatSpiral(double cX, double cY, double rot, double maxT, List<(Vector2, double)> points, double stlen, bool stin, out Vector2 pos, out double dis)
         {
-            pos = new Vector2(float.NaN, float.NaN); dis = double.NaN;
+            pos = new Vector2(float.NaN, float.NaN); dis = 0.0;
             var inter = stin; var curLen = (1 - stlen) * 2.5;
             var preDis = SpiralLength(maxT); var preLen = curLen;
             var gotPos = false; var gotDis = false;
@@ -659,12 +663,16 @@ namespace AlchAssV3
                 TransToGlobal(cX, cY, rot, r * Math.Cos(t), r * Math.Sin(t), out var px, out var py);
                 pos = new Vector2((float)px, (float)py);
             }
+            if (!gotDis)
+                dis = curLen;
         }
+        #endregion
 
+        #region 路径缩放处理
         /// <summary>
         /// 寻找缩放点
         /// </summary>
-        public static void ScalePathPoint(Vector2 p0, Vector2 p1, bool isTp, out List<(Vector2, double)> pos)
+        public static void ScalePathPoint(Vector2 p0, Vector2 p1, int index, bool isTp, out List<(Vector2, int, double)> pos)
         {
             pos = [];
             if (Math.Abs(p0.x - p1.x) < 1e-5 && Math.Abs(p0.y - p1.y) < 1e-5)
@@ -672,44 +680,42 @@ namespace AlchAssV3
 
             LineBVH(p0, p1, Variable.SwampOilBVH, out var items);
 
-            List<(Vector2, double)> points = [];
+            List<(Vector2, int, double)> points = [];
             foreach (var item in items)
                 switch (Variable.SwampOil[item])
                 {
                     case Variable.Shape.Line line:
                         LineVsLine(p0, p1, line, out var Pline);
-                        if (Pline.HasValue) points.Add(Pline.Value);
+                        if (Pline.HasValue) points.Add((Pline.Value.Item1, index, Pline.Value.Item2));
                         break;
                     case Variable.Shape.Arc arc:
                         LineVsArc(p0, p1, arc, out var Parc);
-                        points.AddRange(Parc);
+                        points.AddRange(Parc.Select(x => (x.Item1, index, x.Item2)));
                         break;
                 }
-            points.Sort((x, y) => x.Item2.CompareTo(y.Item2));
-            List<(Vector2, double)> pointsort = [];
+            points.Sort((x, y) => x.Item3.CompareTo(y.Item3));
+            List<(Vector2, int, double)> pointsort = [];
             if (points.Count > 0)
             {
                 pointsort.Add(points[0]);
                 for (var i = 1; i < points.Count; i++)
-                    if (points[i].Item2 - points[i - 1].Item2 > 1e-5)
+                    if (points[i].Item3 - points[i - 1].Item3 > 1e-5)
                         pointsort.Add(points[i]);
             }
 
             if (isTp)
-                pos = pointsort.Count % 2 != 0 ? [(p0, 0)] : [];
+                pos = pointsort.Count % 2 != 0 ? [(p0, index, 0)] : [];
             else
                 pos = pointsort;
         }
-        #endregion
 
-        #region 路径缩放处理
         /// <summary>
         /// 生成沼泽缩放路径和交点
         /// </summary>
-        public static void ScalePath(List<Vector3> lineP, bool stIn, Vector3 stSet, bool isTp, out List<Vector3> lineC, out List<Vector2> pos, out bool edIn, out Vector3 edSet)
+        public static void ScalePath(List<Vector3> lineP, bool stIn, Vector3 stSet, int index, bool isTp, out List<Vector3> lineC, out List<(Vector2, int, double)> pos, out bool edIn, out Vector3 edSet)
         {
             List<Vector3> LineC = [];
-            List<Vector2> Pos = [];
+            List<(Vector2, int, double)> Pos = [];
             var inter = stIn; var offset = stSet;
             var scale = stIn ? 2f / 3f : 1f;
             if (lineP.Count > 1)
@@ -763,11 +769,11 @@ namespace AlchAssV3
                             q1 = tmp;
                         }
 
-                        ScalePathPoint(q0, q1, isTp, out var points);
+                        ScalePathPoint(q0, q1, j + index, isTp, out var points);
                         var splitPos = Vector3.zero;
                         while (points.Count > 0)
                         {
-                            var pointPre = p0 + (p1 - p0) * (float)points[0].Item2;
+                            var pointPre = p0 + (p1 - p0) * (float)points[0].Item3;
                             splitPos = isTp ? p1 : pointPre;
                             if (!(Math.Abs(splitPos.x - s.x) < 1e-5 && Math.Abs(splitPos.y - s.y) < 1e-5))
                                 break;
@@ -792,7 +798,8 @@ namespace AlchAssV3
                             inter = !inter;
                             scale = inter ? 2f / 3f : 1f;
 
-                            Pos.AddRange(points.Select(pt => pt.Item1));
+                            Pos.AddRange(points);
+                            index += j + 1;
                             HandlePath(newLineP);
                             return;
                         }
@@ -801,6 +808,51 @@ namespace AlchAssV3
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// 后处理折线沼泽检测
+        /// </summary>
+        public static void SwampLine(List<(Vector3, bool)> line, List<(Vector2, int, double)> points, bool stin, out double dis)
+        {
+            dis = 0.0;
+            if (line.Count < 2)
+                return;
+
+            var cnt = line.Count - 1;
+            double[] len = new double[cnt];
+            double[] sum = new double[cnt];
+            var preDis = 0.0; var gotDis = false;
+            var id = 0; var inter = stin;
+
+            sum[0] = len[0] = line[1].Item2 ? 0 : Vector2.Distance(line[0].Item1, line[1].Item1);
+            for (var i = 1; i < cnt; i++)
+            {
+                if (line[i + 1].Item2)
+                    len[i] = 0;
+                else
+                    len[i] = Vector2.Distance(line[i].Item1, line[i + 1].Item1);
+                sum[i] = len[i] + sum[i - 1];
+            }
+
+            while (id < points.Count)
+            {
+                var curDis = points[id].Item2 > 0 ? sum[points[id].Item2 - 1] : 0;
+                curDis += points[id].Item3 * len[points[id].Item2];
+                if (inter)
+                {
+                    dis = (curDis - preDis) * 1.5;
+                    gotDis = true;
+                    break;
+                }
+
+                preDis = curDis;
+                inter = !inter;
+                id++;
+            }
+
+            if (inter && !gotDis)
+                dis = (sum[cnt - 1] - preDis) * 1.5;
         }
         #endregion
 

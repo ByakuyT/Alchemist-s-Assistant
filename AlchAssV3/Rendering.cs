@@ -152,12 +152,12 @@ namespace AlchAssV3
         /// </summary>
         public static void SetNodeRenderers()
         {
-            bool[] ClosestEnables = [Variable.DoPathCurve, Variable.DoLines[1]];
+            bool[] ClosestEnables = [Variable.DoPathCurve, Variable.DoPathCurve, Variable.DoLines[1], Variable.DoLines[1]];
             bool[] IntersectionEnables = [Variable.DoPathEffectPoint, Variable.DoLadleEffectPoint, Variable.DoPathVortexPoint, Variable.DoLadleVortexPoint];
             bool[] DangerEnables = [Variable.DoPathDangerPoint, Variable.DoLadleDangerPoint, Variable.DoVortexDangerPoint];
             var mapTrans = Managers.RecipeMap.currentMap.referencesContainer.transform;
 
-            for (var i = 0; i < 2; i++)
+            for (var i = 0; i < 4; i++)
             {
                 if (ClosestEnables[i] && !float.IsNaN(Variable.ClosestPositions[i].x))
                 {

@@ -6,6 +6,7 @@ using PotionCraft.ObjectBased.RecipeMap.RecipeMapItem.Zones;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Remoting.Contexts;
 using UnityEngine;
 
 namespace AlchAssV3
@@ -23,6 +24,7 @@ namespace AlchAssV3
             string closestDirText = LocalizationManager.GetText("不可用");
             string deltaAngleText = LocalizationManager.GetText("不可用");
             string lifeSaltText = LocalizationManager.GetText("不可用");
+            string swampDisText = LocalizationManager.GetText("不可用");
 
             if (!float.IsNaN(Variable.ClosestPositions[0].x))
             {
@@ -46,15 +48,17 @@ namespace AlchAssV3
                 var deltaAng = Mathf.DeltaAngle((float)Variable.LineDirections[0], (float)Variable.LineDirections[2]);
                 deltaAngleText = $"{deltaAng}°";
             }
-
             if (!double.IsNaN(Variable.DangerDistancePath))
                 lifeSaltText = Function.FormatLifeSalt(Variable.DangerDistancePath);
+            if (!double.IsNaN(Variable.DistanceSwamp))
+                swampDisText = $"{(float)Variable.DistanceSwamp}";
             return $"""
                 {LocalizationManager.GetText("总体偏离")}: {devTotText}
                 {LocalizationManager.GetText("位置偏离")}: {devPosText}
                 {LocalizationManager.GetText("近点方向")}: {closestDirText}
                 {LocalizationManager.GetText("效果夹角")}: {deltaAngleText}
                 {LocalizationManager.GetText("加血需求")}: {lifeSaltText}
+                {LocalizationManager.GetText("沼泽长度")}: {swampDisText}
                 """;
         }
 
@@ -69,17 +73,17 @@ namespace AlchAssV3
             string deltaAngleText = LocalizationManager.GetText("不可用");
             string lifeSaltText = LocalizationManager.GetText("不可用");
 
-            if (!float.IsNaN(Variable.ClosestPositions[1].x))
+            if (!float.IsNaN(Variable.ClosestPositions[2].x))
             {
                 Vector2 targetPos = Variable.TargetEffect.transform.localPosition;
                 var targetRot = Variable.TargetEffect.transform.localEulerAngles.z;
-                var devPos = Vector2.Distance(targetPos, Variable.ClosestPositions[1]) * 1800f;
+                var devPos = Vector2.Distance(targetPos, Variable.ClosestPositions[2]) * 1800f;
                 var devRot = Mathf.Abs(Mathf.DeltaAngle(Managers.RecipeMap.indicatorRotation.Value, targetRot)) / 3f * 25f;
                 var devTot = devPos + devRot;
 
                 var lvlPos = devPos <= 100f ? 3 : devPos <= 600f ? 2 : devPos <= 2754f ? 1 : 0;
                 var lvlTot = devTot <= 100f ? 3 : devTot <= 600f ? 2 : devPos <= 2754f ? 1 : 0;
-                var closestDir = Vector2.SignedAngle(Vector2.right, Variable.ClosestPositions[1] - targetPos);
+                var closestDir = Vector2.SignedAngle(Vector2.right, Variable.ClosestPositions[2] - targetPos);
 
                 devPosText = $"<color=red>L{lvlPos}</color> {devPos}%";
                 devTotText = $"<color=red>L{lvlTot}</color> {devTot}%";
@@ -91,7 +95,6 @@ namespace AlchAssV3
                 var deltaAng = Mathf.DeltaAngle((float)Variable.LineDirections[1], (float)Variable.LineDirections[2]);
                 deltaAngleText = $"{deltaAng}°";
             }
-
             if (!double.IsNaN(Variable.DangerDistanceLadle))
                 lifeSaltText = Function.FormatLifeSalt(Variable.DangerDistanceLadle);
             return $"""
@@ -139,7 +142,7 @@ namespace AlchAssV3
         }
 
         /// <summary>
-        /// 计算效果信息
+        /// 计算目标效果
         /// </summary>
         public static string CalculateEffect()
         {
@@ -161,9 +164,9 @@ namespace AlchAssV3
         }
 
         /// <summary>
-        /// 计算位置信息
+        /// 计算酿造信息
         /// </summary>
-        public static string CalculatePosition()
+        public static string CalculateBrewing(float health)
         {
             var indPos = Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition + Variable.Offset;
             var offPos = Managers.RecipeMap.indicator.thisTransform.localPosition;
@@ -175,11 +178,12 @@ namespace AlchAssV3
                 {LocalizationManager.GetText("坐标位置")}: {posText}
                 {LocalizationManager.GetText("碰撞偏移")}: {offText}
                 {LocalizationManager.GetText("旋转角度")}: {rotText}
+                {LocalizationManager.GetText("当前血量")}: {health * 100f}%
                 """;
         }
 
         /// <summary>
-        /// 计算偏离信息
+        /// 计算效果偏离
         /// </summary>
         public static string CalculateDeviation()
         {
@@ -206,54 +210,55 @@ namespace AlchAssV3
         }
 
         /// <summary>
-        /// 计算漩涡信息
+        /// 计算活跃漩涡
         /// </summary>
         public static string CalculateVortex()
         {
-            Vector2 vortexPos;
-            double maxDis;
-            double dirVortex;
-            var dangerDis = double.NaN;
-            Vector2 indPos = Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition + Variable.Offset;
+            if (Managers.RecipeMap.CurrentVortexMapItem == null)
+                return "";
 
-            if (Managers.RecipeMap.CurrentVortexMapItem != null)
-            {
-                vortexPos = Managers.RecipeMap.CurrentVortexMapItem.thisTransform.localPosition;
-                maxDis = ((CircleCollider2D)Traverse.Create(Managers.RecipeMap.CurrentVortexMapItem).Field("vortexCollider").GetValue()).radius + 0.74;
-                dirVortex = Vector2.SignedAngle(Vector2.right, vortexPos - indPos);
-                dangerDis = Variable.DangerDistanceVortex;
-            }
-            else
-            {
-                var mapindex = Variable.MapId[Managers.RecipeMap.currentMap.potionBase.name];
-                if (mapindex == 2 || Variable.VortexIndex[mapindex] < 0)
-                    return "";
+            var indPos = Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition + Variable.Offset;
+            var vortexPos = Managers.RecipeMap.CurrentVortexMapItem.thisTransform.localPosition;
 
-                var selVortex = Variable.Vortexs[mapindex][Variable.VortexIndex[mapindex]];
-                vortexPos = new Vector2((float)selVortex.x, (float)selVortex.y);
-                maxDis = selVortex.r;
-                dirVortex = Variable.LineDirections[3];
-            }
-
-            var distance = Vector2.Distance(vortexPos, indPos);
-            var dirText = double.IsNaN(dirVortex) ? LocalizationManager.GetText("不可用") : $"{(float)dirVortex}°";
+            var disText = $"{Vector2.Distance(vortexPos, indPos)}";
+            var maxText = $"{((CircleCollider2D)Traverse.Create(Managers.RecipeMap.CurrentVortexMapItem).Field("vortexCollider").GetValue()).radius + 0.74f}";
+            var dirText = $"{Vector2.SignedAngle(Vector2.right, vortexPos - indPos)}°";
             var tanText = double.IsNaN(Variable.LineDirections[4]) ? LocalizationManager.GetText("不可用") : $"{(float)Variable.LineDirections[4]}°";
-            var lifeSaltText = double.IsNaN(dangerDis) ? LocalizationManager.GetText("不可用") : Function.FormatLifeSalt(dangerDis);
+            var lfsText = double.IsNaN(Variable.DangerDistanceVortex) ? LocalizationManager.GetText("不可用") : Function.FormatLifeSalt(Variable.DangerDistanceVortex);
             return $"""
-                {LocalizationManager.GetText("漩涡距离")}: {distance}
-                {LocalizationManager.GetText("最大距离")}: {(float)maxDis}
+                {LocalizationManager.GetText("漩涡距离")}: {disText}
+                {LocalizationManager.GetText("最大距离")}: {maxText}
                 {LocalizationManager.GetText("漩涡方向")}: {dirText}
                 {LocalizationManager.GetText("漩涡切向")}: {tanText}
-                {LocalizationManager.GetText("加血需求")}: {lifeSaltText}
+                {LocalizationManager.GetText("加血需求")}: {lfsText}
                 """;
         }
 
         /// <summary>
-        /// 计算血量信息
+        /// 计算目标漩涡
         /// </summary>
-        public static string CalculateHealth(float health)
+        public static string CalculateTargetVortex()
         {
-            return $"{LocalizationManager.GetText("当前血量")}: {health * 100f}%";
+            var mapindex = Variable.MapId[Managers.RecipeMap.currentMap.potionBase.name];
+            if (mapindex == 2 || Variable.VortexIndex[mapindex] < 0)
+                return "";
+
+            var indPos = Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition + Variable.Offset;
+            var selVortex = Variable.Vortexs[mapindex][Variable.VortexIndex[mapindex]];
+            var vortexPos = new Vector2((float)selVortex.x, (float)selVortex.y);
+
+            var disText = $"{Vector2.Distance(vortexPos, indPos)}";
+            var maxText = $"{(float)selVortex.r}";
+            var dirText = double.IsNaN(Variable.LineDirections[3]) ? LocalizationManager.GetText("不可用") : $"{(float)Variable.LineDirections[3]}°";
+            var strText = float.IsNaN(Variable.ClosestPositions[1].x) ? LocalizationManager.GetText("不可用") : $"{Vector2.Distance(vortexPos, Variable.ClosestPositions[1])}";
+            var ldlText = float.IsNaN(Variable.ClosestPositions[3].x) ? LocalizationManager.GetText("不可用") : $"{Vector2.Distance(vortexPos, Variable.ClosestPositions[3])}";
+            return $"""
+                {LocalizationManager.GetText("漩涡距离")}: {disText}
+                {LocalizationManager.GetText("路径近点")}: {strText}
+                {LocalizationManager.GetText("加水近点")}: {ldlText}
+                {LocalizationManager.GetText("最大距离")}: {maxText}
+                {LocalizationManager.GetText("漩涡方向")}: {dirText}
+                """;
         }
 
         /// <summary>
@@ -399,7 +404,7 @@ namespace AlchAssV3
         /// </summary>
         public static void InitPathCurve()
         {
-            Variable.PathPhysical = []; Variable.PathGraphical = []; Variable.SwampPositions = [];
+            Variable.PathPhysical = []; Variable.PathGraphical = []; Variable.SwampPositions = []; Variable.DistanceSwamp = double.NaN;
             if (!Variable.DoPathCurve)
                 return;
 
@@ -413,6 +418,8 @@ namespace AlchAssV3
             var stSet = Vector3.zero;
             var indPos = Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition;
             var mapId = Managers.RecipeMap.currentMap.potionBase.name;
+            var lineIn = stIn;
+            List<(Vector2, int, double)> swampPos = [];
 
             Variable.PathPhysical.Add((indPos + Variable.Offset, false));
             for (int i = 0; i < pathHints.Count; i++)
@@ -425,14 +432,17 @@ namespace AlchAssV3
                 if (isTp) points = [points[0], points[points.Count - 1]];
                 if (Variable.DoSwampPoint && mapId == "Oil")
                 {
-                    Geometry.ScalePath(points, stIn, stSet, isTp, out var pointsSc, out var pos, out var edIn, out var edSet);
+                    Geometry.ScalePath(points, stIn, stSet, Variable.PathPhysical.Count - 1, isTp, out var pointsSc, out var pos, out var edIn, out var edSet);
                     stIn = edIn; stSet = edSet; points = pointsSc;
-                    Variable.SwampPositions.AddRange(pos);
+                    swampPos.AddRange(pos);
                 }
 
                 Variable.PathPhysical.AddRange(points.Skip(1).Select(point => (point + Variable.Offset, isTp)));
                 Variable.PathGraphical.Add(([.. points.Select(point => mapTrans.TransformPoint(point + Variable.Offset))], isTp));
             }
+            Variable.SwampPositions.AddRange(swampPos.Select(x => x.Item1));
+            if (Variable.DoSwampPoint && mapId == "Oil")
+                Geometry.SwampLine(Variable.PathPhysical, swampPos, lineIn, out Variable.DistanceSwamp);
         }
 
         /// <summary>
@@ -504,7 +514,7 @@ namespace AlchAssV3
         /// </summary>
         public static void InitPoints(double health)
         {
-            Variable.ClosestPositions = [new Vector2(float.NaN, float.NaN), new Vector2(float.NaN, float.NaN)];
+            Variable.ClosestPositions = [new Vector2(float.NaN, float.NaN), new Vector2(float.NaN, float.NaN), new Vector2(float.NaN, float.NaN), new Vector2(float.NaN, float.NaN)];
             Variable.DefeatPositions = [new Vector2(float.NaN, float.NaN), new Vector2(float.NaN, float.NaN), new Vector2(float.NaN, float.NaN)];
             Variable.DangerPositions = [[], [], []];
             Variable.IntersectionPositions = [[], [], [], []];
@@ -517,8 +527,7 @@ namespace AlchAssV3
             bool[] inDanger = [
                 ZonePart.GetZonesActivePartsCount(typeof(StrongDangerZonePart)) > 0,
                 ZonePart.GetZonesActivePartsCount(typeof(WeakDangerZonePart)) > 0,
-                ZonePart.GetZonesActivePartsCount(typeof(HealZonePart)) > 0,
-            ];
+                ZonePart.GetZonesActivePartsCount(typeof(HealZonePart)) > 0];
 
             bool effectVaild = new(); bool vortexVaild = new();
             Vector2 effectPos = new(); Vector2 vortexPos = new();
@@ -542,8 +551,10 @@ namespace AlchAssV3
             }
             var vortexIn = Variable.VortexMaxAngle > Variable.VortexMinAngle;
 
-            var closePathEn = Variable.DoPathCurve && effectVaild;
-            var closeLadleEn = Variable.DoLines[1] && effectVaild;
+            var closeEPathEn = Variable.DoPathCurve && effectVaild;
+            var closeELadleEn = Variable.DoLines[1] && effectVaild;
+            var closeVPathEn = Variable.DoPathCurve && vortexVaild;
+            var closeVLadleEn = Variable.DoLines[1] && vortexVaild;
             var effectPathEn = Variable.DoPathEffectPoint && effectVaild;
             var effectLadleEn = Variable.DoLadleEffectPoint && effectVaild;
             var vortexPathEn = Variable.DoPathVortexPoint && vortexVaild;
@@ -555,9 +566,10 @@ namespace AlchAssV3
             var lenPath = Variable.PathPhysical.Count() - 1;
             if (lenPath > 0)
             {
-                if (closePathEn)
+                if (closeEPathEn || closeVPathEn)
                 {
-                    var closePathMin = double.MaxValue;
+                    var closeEPathMin = double.MaxValue;
+                    var closeVPathMin = double.MaxValue;
 
                     for (var i = 0; i < lenPath; i++)
                     {
@@ -565,11 +577,24 @@ namespace AlchAssV3
                         Vector2 p1 = Variable.PathPhysical[i + 1].Item1;
                         var isTp = Variable.PathPhysical[i + 1].Item2;
 
-                        Geometry.SqrDisToPoint(p0, p1, effectPos, isTp, out var closePathDis, out var closePathPos);
-                        if (closePathDis < closePathMin)
+                        if (closeEPathEn)
                         {
-                            closePathMin = closePathDis;
-                            Variable.ClosestPositions[0] = closePathPos;
+                            Geometry.SqrDisToPoint(p0, p1, effectPos, isTp, out var closeEPathDis, out var closeEPathPos);
+                            if (closeEPathDis < closeEPathMin)
+                            {
+                                closeEPathMin = closeEPathDis;
+                                Variable.ClosestPositions[0] = closeEPathPos;
+                            }
+                        }
+
+                        if (closeVPathEn)
+                        {
+                            Geometry.SqrDisToPoint(p0, p1, vortexPos, isTp, out var closeVPathDis, out var closeVPathPos);
+                            if (closeVPathDis < closeVPathMin)
+                            {
+                                closeVPathMin = closeVPathDis;
+                                Variable.ClosestPositions[1] = closeVPathPos;
+                            }
                         }
                     }
                 }
@@ -629,8 +654,10 @@ namespace AlchAssV3
                 }
             }
 
-            if (closeLadleEn)
-                Geometry.SqrDisToPoint(indPos, Variable.Offset, effectPos, false, out _, out Variable.ClosestPositions[1]);
+            if (closeELadleEn)
+                Geometry.SqrDisToPoint(indPos, Variable.Offset, effectPos, false, out _, out Variable.ClosestPositions[2]);
+            if (closeVLadleEn)
+                Geometry.SqrDisToPoint(indPos, Variable.Offset, vortexPos, false, out _, out Variable.ClosestPositions[3]);
             if (effectLadleEn)
                 Geometry.TargetRange(indPos, Variable.Offset, effectPos, false, out Variable.IntersectionPositions[1]);
             if (vortexLadleEn)

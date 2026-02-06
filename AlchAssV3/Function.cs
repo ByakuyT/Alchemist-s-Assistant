@@ -21,7 +21,7 @@ namespace AlchAssV3
         /// </summary>
         public static void InitDebugWindow(int index, Room room)
         {
-            var Window = DebugWindow.Init(LocalizationManager.GetText($"{Variable.WindowTags[index]}信息"), true);
+            var Window = DebugWindow.Init(LocalizationManager.GetText(Variable.WindowTags[index]), true);
             Window.ToForeground();
             Window.transform.SetParent(room.transform, false);
             Window.transform.localPosition = Variable.WindowPositions[index].Value;
@@ -39,6 +39,7 @@ namespace AlchAssV3
                 Variable.DebugWindows[i].Visible = true;
                 Variable.DebugWindows[i].transform.localPosition = Variable.WindowPositions[i].Value;
             }
+            Variable.WindowRect = Variable.WindowRectConfig.Value;
         }
 
         /// <summary>

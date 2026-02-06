@@ -60,6 +60,12 @@
     }
   },
   {
+    "key": "沼泽长度",
+    "values": {
+      "en": "Swamp Length"
+    }
+  },
+  {
     "key": "目标效果",
     "values": {
       "en": "Target Effect"
@@ -135,6 +141,18 @@
     "key": "当前血量",
     "values": {
       "en": "Health"
+    }
+  },
+  {
+    "key": "路径近点",
+    "values": {
+      "en": "Path Proximity"
+    }
+  },
+  {
+    "key": "加水近点",
+    "values": {
+      "en": "Ladle Proximity"
     }
   },
   {

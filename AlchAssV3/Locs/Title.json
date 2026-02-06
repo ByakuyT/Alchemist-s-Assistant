@@ -24,33 +24,33 @@
     }
   },
   {
-    "key": "效果信息",
+    "key": "目标效果",
     "values": {
-      "en": "Effect Status"
+      "en": "Target Effect"
     }
   },
   {
-    "key": "位置信息",
+    "key": "酿造信息",
     "values": {
-      "en": "Position Status"
+      "en": "Brewing Status"
     }
   },
   {
-    "key": "偏离信息",
+    "key": "效果偏离",
     "values": {
-      "en": "Deviation Status"
+      "en": "Effect Deviation"
     }
   },
   {
-    "key": "漩涡信息",
+    "key": "活跃漩涡",
     "values": {
-      "en": "Vortex Status"
+      "en": "Active Vortex"
     }
   },
   {
-    "key": "血量信息",
+    "key": "目标漩涡",
     "values": {
-      "en": "Health Status"
+      "en": "Target Vortex"
     }
   },
   {

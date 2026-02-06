@@ -14,7 +14,7 @@ using UnityEngine;
 
 namespace AlchAssV3
 {
-    [BepInPlugin("AlchAssV3", "Alchemist's Assistant V3", "2.5.2")]
+    [BepInPlugin("AlchAssV3", "Alchemist's Assistant V3", "2.6.0")]
     public class Main : BaseUnityPlugin
     {
         #region Unity - 生命周期
@@ -23,15 +23,15 @@ namespace AlchAssV3
         /// </summary>
         public void Awake()
         {
-            Variable.WindowPositions[0] = Config.Bind("窗口位置", "路径信息", new Vector3(-12.50f, -2.30f, 0f));
+            Variable.WindowPositions[0] = Config.Bind("窗口位置", "路径信息", new Vector3(-12.50f, -1.85f, 0f));
             Variable.WindowPositions[1] = Config.Bind("窗口位置", "加水信息", new Vector3(-12.50f, -4.60f, 0f));
-            Variable.WindowPositions[2] = Config.Bind("窗口位置", "移动信息", new Vector3(-9.85f, -4.60f, 0f));
-            Variable.WindowPositions[3] = Config.Bind("窗口位置", "效果信息", new Vector3(-4.75f, -4.90f, 0f));
-            Variable.WindowPositions[4] = Config.Bind("窗口位置", "位置信息", new Vector3(-1.55f, -5.30f, 0f));
-            Variable.WindowPositions[5] = Config.Bind("窗口位置", "偏离信息", new Vector3(-7.40f, -5.30f, 0f));
-            Variable.WindowPositions[6] = Config.Bind("窗口位置", "漩涡信息", new Vector3(7.65f, -4.60f, 0f));
-            Variable.WindowPositions[7] = Config.Bind("窗口位置", "血量信息", new Vector3(10.0f, -5.00f, 0f));
-            Variable.WindowPositions[8] = Config.Bind("窗口位置", "研磨信息", new Vector3(10.0f, -6.00f, 0f));
+            Variable.WindowPositions[2] = Config.Bind("窗口位置", "移动信息", new Vector3(-4.10f, -4.60f, 0f));
+            Variable.WindowPositions[3] = Config.Bind("窗口位置", "目标效果", new Vector3(-7.30f, -4.95f, 0f));
+            Variable.WindowPositions[4] = Config.Bind("窗口位置", "酿造信息", new Vector3(-1.70f, -4.95f, 0f));
+            Variable.WindowPositions[5] = Config.Bind("窗口位置", "效果偏离", new Vector3(-9.95f, -5.30f, 0f));
+            Variable.WindowPositions[6] = Config.Bind("窗口位置", "活跃漩涡", new Vector3(7.65f, -4.60f, 0f));
+            Variable.WindowPositions[7] = Config.Bind("窗口位置", "目标漩涡", new Vector3(10.05f, -4.60f, 0f));
+            Variable.WindowPositions[8] = Config.Bind("窗口位置", "研磨信息", new Vector3(5.20f, -6.00f, 0f));
             Variable.WindowRectConfig = Config.Bind("窗口位置", "控制面板", new Rect(200, 200, 400, 400));
 
             Variable.ColorLines[0] = Config.Bind("颜色设置", "路径切向线", new Color(0.0f, 0.9f, 0.9f));
@@ -134,10 +134,10 @@ namespace AlchAssV3
             Variable.DebugWindows[1]?.ShowText(Calculation.CalculateLadle());
             Variable.DebugWindows[2]?.ShowText(Calculation.CalculateMove());
             Variable.DebugWindows[3]?.ShowText(Calculation.CalculateEffect());
-            Variable.DebugWindows[4]?.ShowText(Calculation.CalculatePosition());
+            Variable.DebugWindows[4]?.ShowText(Calculation.CalculateBrewing(___health));
             Variable.DebugWindows[5]?.ShowText(Calculation.CalculateDeviation());
             Variable.DebugWindows[6]?.ShowText(Calculation.CalculateVortex());
-            Variable.DebugWindows[7]?.ShowText(Calculation.CalculateHealth(___health));
+            Variable.DebugWindows[7]?.ShowText(Calculation.CalculateTargetVortex());
         }
 
         /// <summary>

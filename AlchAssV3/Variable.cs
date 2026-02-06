@@ -38,14 +38,18 @@ namespace AlchAssV3
 
         public static ConfigEntry<Rect> WindowRectConfig;
         public static ConfigEntry<Vector3>[] WindowPositions = new ConfigEntry<Vector3>[9];
-        // 0 - 路径; 1 - 加水; 2 - 移动; 3 - 效果; 4 - 位置; 5 - 偏离; 6 - 漩涡; 7 - 血量; 8 - 研磨
+        // 0 - 路径信息; 1 - 加水信息; 2 - 移动信息; 3 - 目标效果; 4 - 酿造信息
+        // 5 - 效果偏离; 6 - 活跃漩涡; 7 - 目标漩涡; 8 - 研磨信息
         #endregion
 
         #region 只读数据
         public static readonly double VortexA = 1 / (2 * Math.PI);
         public static readonly Font Font = Font.CreateDynamicFontFromOSFont("Microsoft YaHei", 16);
-        public static readonly Dictionary<string, int> MapId = new() { { "Water", 0 }, { "Oil", 1 }, { "Wine", 2 } };
-        public static readonly string[] WindowTags = ["路径", "加水", "移动", "效果", "位置", "偏离", "漩涡", "血量", "研磨"];
+        public static readonly Dictionary<string, int> MapId = new() {
+            { "Water", 0 }, { "Oil", 1 }, { "Wine", 2 } };
+        public static readonly string[] WindowTags = [
+            "路径信息", "加水信息", "移动信息", "目标效果", "酿造信息",
+            "效果偏离", "活跃漩涡", "目标漩涡", "研磨信息"];
         #endregion
 
         #region 渲染材质
@@ -69,8 +73,8 @@ namespace AlchAssV3
         public static SpriteRenderer BaseLadleRenderer;
         public static SpriteRenderer EffectDiskMiddle;
         public static SpriteRenderer EffectDiskInner;
-        public static SpriteRenderer[] ClosestPoints = new SpriteRenderer[2];
-        // 0 - 路径; 1 - 加水
+        public static SpriteRenderer[] ClosestPoints = new SpriteRenderer[4];
+        // 0 - 路径和效果; 1 - 路径和漩涡; 2 - 加水和效果; 3 - 加水和漩涡
         public static SpriteRenderer[] DefeatPoints = new SpriteRenderer[3];
         // 0 - 路径; 1 - 加水; 2 - 漩涡
         public static List<SpriteRenderer> SwampPoints = [];
@@ -167,6 +171,7 @@ namespace AlchAssV3
         public static double DangerDistancePath;
         public static double DangerDistanceLadle;
         public static double DangerDistanceVortex;
+        public static double DistanceSwamp;
         public static double[] LineDirections = new double[5];
         // 0 - 路径切向线; 1 - 加水方向线; 2 - 效果径向线; 3 - 漩涡径向线; 4 - 漩涡切向线
 
@@ -177,8 +182,8 @@ namespace AlchAssV3
         public static Vector2 LastMousePosition;
         public static Vector2 ScrollPosition;
         public static Vector3 Offset;
-        public static Vector2[] ClosestPositions = new Vector2[2];
-        // 0 - 路径; 1 - 加水
+        public static Vector2[] ClosestPositions = new Vector2[4];
+        // 0 - 路径和效果; 1 - 路径和漩涡; 2 - 加水和效果; 3 - 加水和漩涡
         public static Vector2[] DefeatPositions = new Vector2[3];
         // 0 - 路径; 1 - 加水; 2 - 漩涡
         public static Vector3[] VortexGraphical;
@@ -193,7 +198,8 @@ namespace AlchAssV3
         public static Rect WindowRect = new(200, 200, 400, 400);
         public static PotionEffectMapItem TargetEffect;
         public static DebugWindow[] DebugWindows = new DebugWindow[9];
-        // 0 - 路径; 1 - 加水; 2 - 移动; 3 - 效果; 4 - 位置; 5 - 偏离; 6 - 漩涡; 7 - 血量; 8 - 研磨
+        // 0 - 路径信息; 1 - 加水信息; 2 - 移动信息; 3 - 目标效果; 4 - 酿造信息
+        // 5 - 效果偏离; 6 - 活跃漩涡; 7 - 目标漩涡; 8 - 研磨信息
         #endregion
 
         #region 辅助结构
