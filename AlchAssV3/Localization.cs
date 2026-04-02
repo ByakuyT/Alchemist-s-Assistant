@@ -38,7 +38,6 @@ namespace AlchAssV3
         }
         #endregion
 
-
         #region 标签格式化
         /// <summary>
         /// 计算标签长度

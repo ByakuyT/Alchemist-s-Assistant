@@ -1,44 +1,38 @@
 [
   {
-    "key": "控制选项",
+    "key": "基础控制选项",
     "values": {
-      "en": "Controlling Options"
+      "en": "Base Control Options"
     }
   },
   {
-    "key": "定量搅拌与加水设定",
+    "key": "自动控制选项",
     "values": {
-      "en": "Quantitative Stir & Ladle Settings"
+      "en": "Auto Control Options"
     }
   },
   {
-    "key": "默认数值配置一",
+    "key": "自动控制配置",
     "values": {
-      "en": "Default Value Configurations 1"
+      "en": "Auto Control Configurations"
     }
   },
   {
-    "key": "默认数值配置二",
+    "key": "手动控制配置 1",
     "values": {
-      "en": "Default Value Configurations 2"
+      "en": "Manual Control Configurations 1"
     }
   },
   {
-    "key": "默认数值配置三",
+    "key": "手动控制配置 2",
     "values": {
-      "en": "Default Value Configurations 3"
+      "en": "Manual Control Configurations 2"
     }
   },
   {
-    "key": "定量搅拌",
+    "key": "手动控制配置 3",
     "values": {
-      "en": "Quantitative Stiring"
-    }
-  },
-  {
-    "key": "定量加水",
-    "values": {
-      "en": "Quantitative Ladling"
+      "en": "Manual Control Configurations 3"
     }
   },
   {
@@ -54,51 +48,99 @@
     }
   },
   {
-    "key": "减速搅拌",
+    "key": "慢速搅拌",
     "values": {
-      "en": "Slow Stiring"
+      "en": "Slow Stirring"
     }
   },
   {
-    "key": "减速加水",
+    "key": "慢速加水",
     "values": {
       "en": "Slow Ladling"
     }
   },
   {
-    "key": "减速加热",
+    "key": "慢速加热",
     "values": {
       "en": "Slow Heating"
     }
   },
   {
-    "key": "减速研磨",
+    "key": "慢速研磨",
     "values": {
       "en": "Slow Grinding"
     }
   },
   {
-    "key": "批量酿造",
+    "key": "大批量酿造",
     "values": {
       "en": "Bulk Brewing"
     }
   },
   {
-    "key": "漩涡制动",
+    "key": "定量搅拌",
     "values": {
-      "en": "Vortex Damping"
+      "en": "Quantitative Stirring"
     }
   },
   {
-    "key": "最近点制动",
+    "key": "定量加水",
     "values": {
-      "en": "Proximity Damping"
+      "en": "Quantitative Ladling"
     }
   },
   {
-    "key": "吸附点制动",
+    "key": "定量回正",
     "values": {
-      "en": "Alignment Damping"
+      "en": "Quantitative Restoring"
+    }
+  },
+  {
+    "key": "效果交会点",
+    "values": {
+      "en": "Effect Intersection"
+    }
+  },
+  {
+    "key": "效果临界点",
+    "values": {
+      "en": "Effect Alignment"
+    }
+  },
+  {
+    "key": "骷髅交会点",
+    "values": {
+      "en": "Danger Intersection"
+    }
+  },
+  {
+    "key": "骷髅临界点",
+    "values": {
+      "en": "Danger Alignment"
+    }
+  },
+  {
+    "key": "沼泽交会点",
+    "values": {
+      "en": "Swamp Intersection"
+    }
+  },
+  {
+    "key": "沼泽临界点",
+    "values": {
+      "en": "Swamp Alignment"
+    }
+  },
+  {
+    "key": "漩涡交会点",
+    "values": {
+      "en": "Vortex Intersection"
+    }
+  },
+  {
+    "key": "漩涡临界点",
+    "values": {
+      "en": "Vortex Alignment"
     }
   }
 ]

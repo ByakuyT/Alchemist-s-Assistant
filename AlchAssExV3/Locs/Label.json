@@ -1,0 +1,74 @@
+[
+  {
+    "key": "效果偏离",
+    "values": {
+      "en": "Effect Deviation"
+    }
+  },
+  {
+    "key": "血量阈值",
+    "values": {
+      "en": "Health Threshold"
+    }
+  },
+  {
+    "key": "搅拌长度",
+    "values": {
+      "en": "Stirring Length"
+    }
+  },
+  {
+    "key": "加水长度",
+    "values": {
+      "en": "Ladling Length"
+    }
+  },
+  {
+    "key": "回正角度",
+    "values": {
+      "en": "Restoring Angle"
+    }
+  },
+  {
+    "key": "研磨目标",
+    "values": {
+      "en": "Grinding Target"
+    }
+  },
+  {
+    "key": "加热目标",
+    "values": {
+      "en": "Heating Target"
+    }
+  },
+  {
+    "key": "研磨速度",
+    "values": {
+      "en": "Grinding Speed"
+    }
+  },
+  {
+    "key": "加热速度",
+    "values": {
+      "en": "Heating Speed"
+    }
+  },
+  {
+    "key": "搅拌速度",
+    "values": {
+      "en": "Stirring Speed"
+    }
+  },
+  {
+    "key": "加水速度",
+    "values": {
+      "en": "Ladling Speed"
+    }
+  },
+  {
+    "key": "酿造倍率",
+    "values": {
+      "en": "Brewing Multiplier"
+    }
+  }
+]

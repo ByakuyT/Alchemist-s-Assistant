@@ -1,109 +1,116 @@
 ﻿using AlchAssV3;
 using PotionCraft.LocalizationSystem;
-using PotionCraft.ManagersSystem;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 namespace AlchAssExV3
 {
     public static class UIWindowEx
     {
-        #region 元素渲染
+        #region 界面渲染
         /// <summary>
-        /// 绘制功能选项
+        /// 绘制手动控制开关
         /// </summary>
-        public static void DrawEnables()
+        public static void DrawManualEnables()
         {
             GUILayout.Space(10);
-            var icon = $"{(VariableEx.EnableExpand ? "▼" : "▲")} {LocalizationManager.GetText("控制选项")}";
+            var icon = $"{(VariableEx.ManualEnableExpand ? "▼" : "▲")} {LocalizationManager.GetText("基础控制选项")}";
             if (GUILayout.Button(icon, Variable.CategoryStyle))
-                VariableEx.EnableExpand = !VariableEx.EnableExpand;
+                VariableEx.ManualEnableExpand = !VariableEx.ManualEnableExpand;
 
-            if (VariableEx.EnableExpand)
+            if (VariableEx.ManualEnableExpand)
             {
                 GUILayout.BeginHorizontal();
                 GUILayout.BeginVertical();
-                VariableEx.EnableStirSet = GUILayout.Toggle(VariableEx.EnableStirSet, LocalizationManager.GetText("定量搅拌"), Variable.ToggleStyle);
-                VariableEx.EnableLadleSet = GUILayout.Toggle(VariableEx.EnableLadleSet, LocalizationManager.GetText("定量加水"), Variable.ToggleStyle);
-                VariableEx.EnableHeatSet = GUILayout.Toggle(VariableEx.EnableHeatSet, LocalizationManager.GetText("定量加热"), Variable.ToggleStyle);
-                VariableEx.EnableGrindSet = GUILayout.Toggle(VariableEx.EnableGrindSet, LocalizationManager.GetText("定量研磨"), Variable.ToggleStyle);
-                VariableEx.EnableStirSpeed = GUILayout.Toggle(VariableEx.EnableStirSpeed, LocalizationManager.GetText("减速搅拌"), Variable.ToggleStyle);
-                VariableEx.EnableLadleSpeed = GUILayout.Toggle(VariableEx.EnableLadleSpeed, LocalizationManager.GetText("减速加水"), Variable.ToggleStyle);
+                VariableEx.EnableSlowStirring = GUILayout.Toggle(VariableEx.EnableSlowStirring, LocalizationManager.GetText("慢速搅拌"), Variable.ToggleStyle);
+                VariableEx.EnableSlowLadling = GUILayout.Toggle(VariableEx.EnableSlowLadling, LocalizationManager.GetText("慢速加水"), Variable.ToggleStyle);
+                VariableEx.EnableSlowGrinding = GUILayout.Toggle(VariableEx.EnableSlowGrinding, LocalizationManager.GetText("慢速研磨"), Variable.ToggleStyle);
                 GUILayout.EndVertical();
                 GUILayout.FlexibleSpace();
                 GUILayout.BeginVertical();
-                VariableEx.EnableHeatSpeed = GUILayout.Toggle(VariableEx.EnableHeatSpeed, LocalizationManager.GetText("减速加热"), Variable.ToggleStyle);
-                VariableEx.EnableGrindSpeed = GUILayout.Toggle(VariableEx.EnableGrindSpeed, LocalizationManager.GetText("减速研磨"), Variable.ToggleStyle);
-                VariableEx.EnableBrewMassive = GUILayout.Toggle(VariableEx.EnableBrewMassive, LocalizationManager.GetText("批量酿造"), Variable.ToggleStyle);
-                VariableEx.EnableEdgeControl = GUILayout.Toggle(VariableEx.EnableEdgeControl, LocalizationManager.GetText("漩涡制动"), Variable.ToggleStyle);
-                VariableEx.EnableClosestControl = GUILayout.Toggle(VariableEx.EnableClosestControl, LocalizationManager.GetText("最近点制动"), Variable.ToggleStyle);
-                VariableEx.EnableProximityControl = GUILayout.Toggle(VariableEx.EnableProximityControl, LocalizationManager.GetText("吸附点制动"), Variable.ToggleStyle);
+                VariableEx.EnableSlowHeating = GUILayout.Toggle(VariableEx.EnableSlowHeating, LocalizationManager.GetText("慢速加热"), Variable.ToggleStyle);
+                VariableEx.EnableBulkBrewing = GUILayout.Toggle(VariableEx.EnableBulkBrewing, LocalizationManager.GetText("大批量酿造"), Variable.ToggleStyle);
                 GUILayout.EndVertical();
                 GUILayout.EndHorizontal();
             }
         }
 
         /// <summary>
-        /// 绘制定量配置
+        /// 绘制手动控制开关
         /// </summary>
-        public static void DrawSets()
+        public static void DrawAutoEnables()
         {
             GUILayout.Space(10);
-            var icon = $"{(VariableEx.SetExpand ? "▼" : "▲")} {LocalizationManager.GetText("定量搅拌与加水设定")}";
+            var icon = $"{(VariableEx.AutoEnableExpand ? "▼" : "▲")} {LocalizationManager.GetText("自动控制选项")}";
             if (GUILayout.Button(icon, Variable.CategoryStyle))
-                VariableEx.SetExpand = !VariableEx.SetExpand;
+                VariableEx.AutoEnableExpand = !VariableEx.AutoEnableExpand;
 
-            if (VariableEx.SetExpand)
+            if (VariableEx.AutoEnableExpand)
             {
-                var stage = Managers.RecipeMap.path.deletedGraphicsSegments + Managers.RecipeMap.path.segmentLengthToDeletePhysics;
-                if (stage != VariableEx.StirStage)
-                {
-                    VariableEx.StirStage = stage;
-                    VariableEx.StirSet = Mathf.Max(VariableEx.StirSetTarget - VariableEx.StirStage, 0f);
-                    VariableEx.InputStirSet = ($"{VariableEx.StirSet}", false);
-                }
-                var stirval = DrawFloat("定量搅拌", VariableEx.StirSet, VariableEx.LabelWidthSets, ref VariableEx.InputStirSet, false, false, 0f, 100f);
-                if (stirval != VariableEx.StirSet)
-                {
-                    VariableEx.StirSet = stirval;
-                    VariableEx.StirSetTarget = VariableEx.StirSet + VariableEx.StirStage;
-                }
+                GUILayout.BeginHorizontal();
+                GUILayout.BeginVertical();
+                VariableEx.EnableQuantitativeStirring = GUILayout.Toggle(VariableEx.EnableQuantitativeStirring, LocalizationManager.GetText("定量搅拌"), Variable.ToggleStyle);
+                VariableEx.EnableQuantitativeLadling = GUILayout.Toggle(VariableEx.EnableQuantitativeLadling, LocalizationManager.GetText("定量加水"), Variable.ToggleStyle);
+                VariableEx.EnableQuantitativeRestoring = GUILayout.Toggle(VariableEx.EnableQuantitativeRestoring, LocalizationManager.GetText("定量回正"), Variable.ToggleStyle);
+                VariableEx.EnableQuantitativeGrinding = GUILayout.Toggle(VariableEx.EnableQuantitativeGrinding, LocalizationManager.GetText("定量研磨"), Variable.ToggleStyle);
+                VariableEx.EnableQuantitativeHeating = GUILayout.Toggle(VariableEx.EnableQuantitativeHeating, LocalizationManager.GetText("定量加热"), Variable.ToggleStyle);
+                VariableEx.EnableEffectIntersection = GUILayout.Toggle(VariableEx.EnableEffectIntersection, LocalizationManager.GetText("效果交会点"), Variable.ToggleStyle);
+                VariableEx.EnableEffectAlignment = GUILayout.Toggle(VariableEx.EnableEffectAlignment, LocalizationManager.GetText("效果临界点"), Variable.ToggleStyle);
+                GUILayout.EndVertical();
+                GUILayout.FlexibleSpace();
+                GUILayout.BeginVertical();
+                VariableEx.EnableVortexIntersection = GUILayout.Toggle(VariableEx.EnableVortexIntersection, LocalizationManager.GetText("漩涡交会点"), Variable.ToggleStyle);
+                VariableEx.EnableVortexAlignment = GUILayout.Toggle(VariableEx.EnableVortexAlignment, LocalizationManager.GetText("漩涡临界点"), Variable.ToggleStyle);
+                VariableEx.EnableDangerIntersection = GUILayout.Toggle(VariableEx.EnableDangerIntersection, LocalizationManager.GetText("骷髅交会点"), Variable.ToggleStyle);
+                VariableEx.EnableDangerAlignment = GUILayout.Toggle(VariableEx.EnableDangerAlignment, LocalizationManager.GetText("骷髅临界点"), Variable.ToggleStyle);
+                VariableEx.EnableSwampIntersection = GUILayout.Toggle(VariableEx.EnableSwampIntersection, LocalizationManager.GetText("沼泽交会点"), Variable.ToggleStyle);
+                VariableEx.EnableSwampAlignment = GUILayout.Toggle(VariableEx.EnableSwampAlignment, LocalizationManager.GetText("沼泽临界点"), Variable.ToggleStyle);
+                GUILayout.EndVertical();
+                GUILayout.EndHorizontal();
+            }
+        }
 
-                var indis = (Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition + Variable.Offset).magnitude;
-                if (indis != VariableEx.LadleDistance)
+        /// <summary>
+        /// 绘制手动控制选项
+        /// </summary>
+        public static void DrawManualSettings()
+        {
+            for (var i = 0; i < 3; i++)
+            {
+                GUILayout.Space(10);
+                var icon = $"{(VariableEx.ManualSettingExpand[i] ? "▼" : "▲")} {LocalizationManager.GetText($"手动控制配置 {i + 1}")}";
+                if (GUILayout.Button(icon, Variable.CategoryStyle))
+                    VariableEx.ManualSettingExpand[i] = !VariableEx.ManualSettingExpand[i];
+
+                if (VariableEx.ManualSettingExpand[i])
                 {
-                    VariableEx.LadleDistance = indis;
-                    VariableEx.LadleSet = Mathf.Max(VariableEx.LadleDistance - VariableEx.LadleSetTarget, 0f);
-                    VariableEx.InputLadleSet = ($"{VariableEx.LadleSet}", false);
-                }
-                var ladleval = DrawFloat("定量加水", VariableEx.LadleSet, VariableEx.LabelWidthSets, ref VariableEx.InputLadleSet, false, false, 0f, 100f);
-                if (ladleval != VariableEx.LadleSet)
-                {
-                    VariableEx.LadleSet = ladleval;
-                    VariableEx.LadleSetTarget = VariableEx.LadleDistance - VariableEx.LadleSet;
+                    VariableEx.ConfigStirSpeed[i].Value = DrawFloatSlider("搅拌速度", VariableEx.ConfigStirSpeed[i].Value, VariableEx.LabelWidthManuals, 2f, -2f, 0f, 100f, true, ref VariableEx.InputStirSpeed[i]);
+                    VariableEx.ConfigLadleSpeed[i].Value = DrawFloatSlider("加水速度", VariableEx.ConfigLadleSpeed[i].Value, VariableEx.LabelWidthManuals, 2f, -2f, 0f, 100f, true, ref VariableEx.InputLadleSpeed[i]);
+                    VariableEx.ConfigGrindSpeed[i].Value = DrawFloatSlider("研磨速度", VariableEx.ConfigGrindSpeed[i].Value, VariableEx.LabelWidthManuals, 2f, -2f, 0f, 100f, true, ref VariableEx.InputGrindSpeed[i]);
+                    VariableEx.ConfigHeatSpeed[i].Value = DrawFloatSlider("加热速度", VariableEx.ConfigHeatSpeed[i].Value, VariableEx.LabelWidthManuals, 2f, -2f, 0f, 100f, true, ref VariableEx.InputHeatSpeed[i]);
+                    VariableEx.ConfigBrewBulk[i].Value = DrawIntSlider("酿造倍率", VariableEx.ConfigBrewBulk[i].Value, VariableEx.LabelWidthManuals, 0f, 3f, 1, int.MaxValue, ref VariableEx.InputBrewBulk[i]);
                 }
             }
         }
 
         /// <summary>
-        /// 绘制变速配置
+        /// 绘制自动控制选项
         /// </summary>
-        public static void DrawLevels(string label, int index, ref bool category)
+        public static void DrawAutoSettings()
         {
             GUILayout.Space(10);
-            var icon = $"{(category ? "▼" : "▲")} {LocalizationManager.GetText(label)}";
+            var icon = $"{(VariableEx.AutoSettingExpand ? "▼" : "▲")} {LocalizationManager.GetText("自动控制配置")}";
             if (GUILayout.Button(icon, Variable.CategoryStyle))
-                category = !category;
+                VariableEx.AutoSettingExpand = !VariableEx.AutoSettingExpand;
 
-            if (category)
+            if (VariableEx.AutoSettingExpand)
             {
-                VariableEx.ConfigHeatSet[index].Value = DrawFloat("定量加热", VariableEx.ConfigHeatSet[index].Value, VariableEx.LabelWidthLevels, ref VariableEx.InputHeatSet[index], false, true, 0f, 100f);
-                VariableEx.ConfigGrindSet[index].Value = DrawFloat("定量研磨", VariableEx.ConfigGrindSet[index].Value, VariableEx.LabelWidthLevels, ref VariableEx.InputGrindSet[index], false, true, 0f, 100f);
-                VariableEx.ConfigStirSpeed[index].Value = DrawFloat("减速搅拌", VariableEx.ConfigStirSpeed[index].Value, VariableEx.LabelWidthLevels, ref VariableEx.InputStirSpeed[index], true, true, 2f, -2f);
-                VariableEx.ConfigLadleSpeed[index].Value = DrawFloat("减速加水", VariableEx.ConfigLadleSpeed[index].Value, VariableEx.LabelWidthLevels, ref VariableEx.InputLadleSpeed[index], true, true, 2f, -2f);
-                VariableEx.ConfigHeatSpeed[index].Value = DrawFloat("减速加热", VariableEx.ConfigHeatSpeed[index].Value, VariableEx.LabelWidthLevels, ref VariableEx.InputHeatSpeed[index], true, true, 2f, -2f);
-                VariableEx.ConfigGrindSpeed[index].Value = DrawFloat("减速研磨", VariableEx.ConfigGrindSpeed[index].Value, VariableEx.LabelWidthLevels, ref VariableEx.InputGrindSpeed[index], true, true, 2f, -2f);
-                VariableEx.ConfigBrewMassive[index].Value = DrawInt("批量酿造", VariableEx.ConfigBrewMassive[index].Value, ref VariableEx.InputBrewMassive[index]);
+                VariableEx.StirringLength = DrawFloatSlider("搅拌长度", VariableEx.StirringLength, VariableEx.LabelWidthAutos, 0f, 30f, 0f, float.MaxValue, false, ref VariableEx.InputStirringLength);
+                VariableEx.LadlingLength = DrawFloatSlider("加水长度", VariableEx.LadlingLength, VariableEx.LabelWidthAutos, 0f, 30f, 0f, float.MaxValue, false, ref VariableEx.InputLadlingLength);
+                VariableEx.RestoringAngle = DrawFloatSlider("回正角度", VariableEx.RestoringAngle, VariableEx.LabelWidthAutos, 0f, 180f, 0f, 180f, false, ref VariableEx.InputRestoringAngle);
+                VariableEx.GrindingTarget = DrawFloatSlider("研磨目标", VariableEx.GrindingTarget, VariableEx.LabelWidthManuals, 0f, 100f, 0f, 100f, false, ref VariableEx.InputGrindingTarget);
+                VariableEx.HeatingTarget = DrawFloatSlider("加热目标", VariableEx.HeatingTarget, VariableEx.LabelWidthManuals, 0f, 100f, 0f, 100f, false, ref VariableEx.InputHeatingTarget);
+                VariableEx.HealthThreshold = DrawFloatSlider("血量阈值", VariableEx.HealthThreshold, VariableEx.LabelWidthAutos, 0f, 100f, float.MinValue, 100f, false, ref VariableEx.InputHealthThreshold);
+                VariableEx.EffectDeviation = DrawPiecewiseSlider("效果偏离", VariableEx.EffectDeviation, VariableEx.LabelWidthAutos, VariableEx.EffectLevels, VariableEx.DeviationRotation, 0f, float.MaxValue, ref VariableEx.InputEffectDeviation);
             }
         }
         #endregion
@@ -112,84 +119,115 @@ namespace AlchAssExV3
         /// <summary>
         /// 绘制整数滑条
         /// </summary>
-        public static int DrawInt(string label, int config, ref (string, bool) input)
+        public static int DrawIntSlider(string label, int value, float width, float min, float max, int cmin, int cmax, ref (string, bool) input)
         {
             GUILayout.BeginHorizontal();
-            GUILayout.Label($"{LocalizationManager.GetText(label)}:", Variable.LabelStyle, GUILayout.Width(VariableEx.LabelWidthLevels));
+            GUILayout.Label($"{LocalizationManager.GetText(label)}:", Variable.LabelStyle, GUILayout.Width(width));
 
-            var value = Mathf.Log10(config);
-            var slideValue = GUILayout.HorizontalSlider(value, 0f, 2f, Variable.SliderStyle, new(GUI.skin.horizontalSliderThumb));
-            if (slideValue != value)
+            var logVal = Mathf.Log10(value);
+            var newVal = GUILayout.HorizontalSlider(logVal, min, max, Variable.SliderStyle, new(GUI.skin.horizontalSliderThumb));
+            if (newVal != logVal)
             {
-                config = (int)Mathf.Pow(10, slideValue);
-                input = ($"{config}", false);
+                value = (int)Mathf.Pow(10, newVal);
+                input = ($"{value}", false);
             }
 
             var style = input.Item2 ? Variable.TextFieldErrorStyle : Variable.TextFieldStyle;
-            var inputValue = GUILayout.TextField(input.Item1, style);
-            if (inputValue != input.Item1)
+            var iptVal = GUILayout.TextField(input.Item1, style);
+            if (iptVal != input.Item1)
             {
-                if (int.TryParse(inputValue, out var parsedValue))
+                if (int.TryParse(iptVal, out var parVal))
                 {
-                    config = Mathf.Max(parsedValue, 1);
-                    if (parsedValue < 1)
-                        input = ($"{config}", false);
+                    value = Mathf.Clamp(parVal, cmin, cmax);
+                    if (parVal < cmin || parVal > cmax)
+                        input = ($"{value}", false);
                     else
-                        input = (inputValue, false);
+                        input = (iptVal, false);
                 }
                 else
-                    input = (inputValue, true);
+                    input = (iptVal, true);
             }
             GUILayout.EndHorizontal();
-            return config;
+            return value;
         }
 
         /// <summary>
         /// 绘制浮点滑条
         /// </summary>
-        public static float DrawFloat(string label, float config, float width, ref (string, bool) input, bool pow, bool clamp, float min, float max)
+        public static float DrawFloatSlider(string label, float value, float width, float min, float max, float cmin, float cmax, bool pow, ref (string, bool) input)
         {
             GUILayout.BeginHorizontal();
             GUILayout.Label($"{LocalizationManager.GetText(label)}:", Variable.LabelStyle, GUILayout.Width(width));
 
-            var value = pow ? Mathf.Log10(config) : config;
-            var slideValue = GUILayout.HorizontalSlider(value, min, max, Variable.SliderStyle, new(GUI.skin.horizontalSliderThumb));
-            if (slideValue != value)
+            var logVal = pow ? Mathf.Log10(value) : value;
+            var newVal = GUILayout.HorizontalSlider(logVal, min, max, Variable.SliderStyle, new(GUI.skin.horizontalSliderThumb));
+            if (newVal != logVal)
             {
-                config = pow ? Mathf.Pow(10, slideValue) : slideValue;
-                input = ($"{config}", false);
+                value = pow ? Mathf.Pow(10, newVal) : newVal;
+                input = ($"{value}", false);
             }
 
             var style = input.Item2 ? Variable.TextFieldErrorStyle : Variable.TextFieldStyle;
-            var inputValue = GUILayout.TextField(input.Item1, style);
-            if (inputValue != input.Item1)
+            var iptVal = GUILayout.TextField(input.Item1, style);
+            if (iptVal != input.Item1)
             {
-                if (float.TryParse(inputValue, out var parsedValue))
+                if (float.TryParse(iptVal, out var parVal))
                 {
-                    config = clamp ? Mathf.Clamp(parsedValue, 0f, 100f) : Mathf.Max(parsedValue, 0f);
-                    if (parsedValue < 0f || (clamp && parsedValue > 100f))
-                        input = ($"{config}", false);
+                    value = Mathf.Clamp(parVal, cmin, cmax);
+                    if (parVal < cmin || parVal > cmax)
+                        input = ($"{value}", false);
                     else
-                        input = (inputValue, false);
+                        input = (iptVal, false);
                 }
                 else
-                    input = (inputValue, true);
+                    input = (iptVal, true);
             }
             GUILayout.EndHorizontal();
-            return config;
+            return value;
         }
-        #endregion
 
-        #region 标签渲染
         /// <summary>
-        /// 更新标签宽度
+        /// 绘制分段滑条
         /// </summary>
-        public static void GetLabelWidth()
+        public static float DrawPiecewiseSlider(string label, float value, float width, float[] pars, float dev, float cmin, float cmax, ref (string, bool) input)
         {
-            if (float.IsNaN(VariableEx.LabelWidthSets))
-                VariableEx.LabelWidthSets = Localization.GetLabelWidth(["定量搅拌", "定量加水"], true);
-            if (float.IsNaN(VariableEx.LabelWidthLevels))
-                VariableEx.LabelWidthLevels = Localization.GetLabelWidth(["定量加热", "定量研磨", "减速搅拌", "减速加水", "减速加热", "减速研磨", "批量酿造"], true);
+            GUILayout.BeginHorizontal();
+            GUILayout.Label($"{LocalizationManager.GetText(label)}:", Variable.LabelStyle, GUILayout.Width(width));
+
+            var nomVal = FunctionEx.ValueToNormalized(value, pars);
+            var newVal = GUILayout.HorizontalSlider(nomVal, 0f, 1f, Variable.SliderStyle, new(GUI.skin.horizontalSliderThumb));
+            if (newVal != nomVal)
+            {
+                value = FunctionEx.NormalizedToValue(newVal, pars);
+                input = ($"{value}", false);
+            }
+
+            var style = input.Item2 ? Variable.TextFieldErrorStyle : Variable.TextFieldStyle;
+            var iptVal = GUILayout.TextField(input.Item1, style);
+            if (iptVal != input.Item1)
+            {
+                if (float.TryParse(iptVal, out var parVal))
+                {
+                    value = Mathf.Clamp(parVal, cmin, cmax);
+                    if (parVal < cmin || parVal > cmax)
+                        input = ($"{value}", false);
+                    else
+                        input = (iptVal, false);
+                }
+                else
+                    input = (iptVal, true);
+            }
+            GUILayout.EndHorizontal();
+            GUILayout.BeginHorizontal();
+
+            for (var i = 1; i < pars.Length - 1; i++)
+                if (GUILayout.Button($"{LocalizationManager.GetText(label)} L{pars.Length - i}", Variable.ButtonStyle))
+                {
+                    value = Mathf.Max(0f, pars[i] - dev);
+                    input = ($"{value}", false);
+                }
+            GUILayout.EndHorizontal();
+            return value;
         }
         #endregion
     }

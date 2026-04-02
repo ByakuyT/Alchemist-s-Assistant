@@ -584,5 +584,8 @@
   <ItemGroup>
     <EmbeddedResource Include="Locs\*.json" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Locs\Label.json" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -3,12 +3,10 @@ using BepInEx;
 using BepInEx.Configuration;
 using HarmonyLib;
 using PotionCraft.LocalizationSystem;
-using PotionCraft.ManagersSystem;
 using PotionCraft.ManagersSystem.RecipeMap;
 using PotionCraft.ManagersSystem.SaveLoad;
 using PotionCraft.ObjectBased.Cauldron;
 using PotionCraft.ObjectBased.RecipeMap.RecipeMapItem.IndicatorMapItem;
-using PotionCraft.ObjectBased.RecipeMap.RecipeMapItem.VortexMapItem;
 using PotionCraft.ObjectBased.Stack;
 using PotionCraft.ObjectBased.UIElements.Books.RecipeBook;
 using PotionCraft.Settings;
@@ -16,7 +14,7 @@ using UnityEngine;
 
 namespace AlchAssExV3
 {
-    [BepInPlugin("AlchAssExV3", "Alchemist's Assistant Extension V3", "2.5.1")]
+    [BepInPlugin("AlchAssExV3", "Alchemist's Assistant Extension V3", "2.6.0")]
     [BepInDependency("AlchAssV3", BepInDependency.DependencyFlags.HardDependency)]
     public class MainEx : BaseUnityPlugin
     {
@@ -26,31 +24,28 @@ namespace AlchAssExV3
         /// </summary>
         public void Awake()
         {
-            VariableEx.KeyLevels[0] = Config.Bind("快捷键", "配置一", new KeyboardShortcut(KeyCode.LeftControl));
-            VariableEx.KeyLevels[1] = Config.Bind("快捷键", "配置二", new KeyboardShortcut(KeyCode.LeftAlt));
-            VariableEx.KeyLevels[2] = Config.Bind("快捷键", "配置三", new KeyboardShortcut(KeyCode.LeftShift));
-            VariableEx.KeyRelease = Config.Bind("快捷键", "暂停制动", new KeyboardShortcut(KeyCode.Z));
+            VariableEx.KeyManuals[0] = Config.Bind("快捷键", "手动控制配置 1", new KeyboardShortcut(KeyCode.LeftControl));
+            VariableEx.KeyManuals[1] = Config.Bind("快捷键", "手动控制配置 2", new KeyboardShortcut(KeyCode.LeftAlt));
+            VariableEx.KeyManuals[2] = Config.Bind("快捷键", "手动控制配置 3", new KeyboardShortcut(KeyCode.LeftShift));
+            VariableEx.KeyAutoPause = Config.Bind("快捷键", "暂停自动控制", new KeyboardShortcut(KeyCode.Z));
 
-            VariableEx.ControlThreshold = Config.Bind("制动配置", "制动阈值", 0.1f);
-            VariableEx.ControlStrength = Config.Bind("制动配置", "制动强度", 1.5f);
-            VariableEx.ControlEnterSpeed = Config.Bind("制动配置", "进入速度", 1e-3f);
-            VariableEx.ControlMinSpeed = Config.Bind("制动配置", "最低速度", 0f);
+            VariableEx.AutoThreshold = Config.Bind("自动控制参数", "距离阈值", 0.1f);
+            VariableEx.AutoStrength = Config.Bind("自动控制参数", "制动强度", 1.5f);
+            VariableEx.AutoCrossSpeed = Config.Bind("自动控制参数", "越界速度", 5e-4f);
+            VariableEx.AutoMinSpeed = Config.Bind("自动控制参数", "最低速度", 0f);
 
-            float[] set = [100f, 0f, 50f], speed = [10f, 1f, 0.1f]; int[] mass = [10, 20, 50];
-            for (int i = 0; i < 3; i++)
+            for (var i = 0; i < 3; i++)
             {
-                VariableEx.ConfigGrindSet[i] = Config.Bind("操作控制", $"定量研磨 {i + 1}", set[i]);
-                VariableEx.ConfigHeatSet[i] = Config.Bind("操作控制", $"定量加热 {i + 1}", set[i]);
-                VariableEx.ConfigGrindSpeed[i] = Config.Bind("操作控制", $"研磨速度 {i + 1}", speed[i]);
-                VariableEx.ConfigStirSpeed[i] = Config.Bind("操作控制", $"搅拌速度 {i + 1}", speed[i]);
-                VariableEx.ConfigLadleSpeed[i] = Config.Bind("操作控制", $"加水速度 {i + 1}", speed[i]);
-                VariableEx.ConfigHeatSpeed[i] = Config.Bind("操作控制", $"加热速度 {i + 1}", speed[i]);
-                VariableEx.ConfigBrewMassive[i] = Config.Bind("操作控制", $"批量酿造 {i + 1}", mass[i]);
+                VariableEx.ConfigGrindSpeed[i] = Config.Bind($"手动控制参数 {i + 1}", "研磨速度", VariableEx.Speed[i]);
+                VariableEx.ConfigStirSpeed[i] = Config.Bind($"手动控制参数 {i + 1}", "搅拌速度", VariableEx.Speed[i]);
+                VariableEx.ConfigLadleSpeed[i] = Config.Bind($"手动控制参数 {i + 1}", "加水速度", VariableEx.Speed[i]);
+                VariableEx.ConfigHeatSpeed[i] = Config.Bind($"手动控制参数 {i + 1}", "加热速度", VariableEx.Speed[i]);
+                VariableEx.ConfigBrewBulk[i] = Config.Bind($"手动控制参数 {i + 1}", "酿造倍率", VariableEx.Bulk[i]);
             }
 
             FunctionEx.InitInputs();
             LocalizationManager.OnInitialize.AddListener(FunctionEx.FormatLocalization);
-            LocalizationManager.OnLocaleChanged.AddListener(FunctionEx.ClearLabelWidth);
+            LocalizationManager.OnLocaleChanged.AddListener(FunctionEx.ResetLabelWidth);
             Harmony.CreateAndPatchAll(typeof(MainEx));
             Logger.LogInfo("Alchemist's Assistant Extension V3 插件已加载");
         }
@@ -60,21 +55,22 @@ namespace AlchAssExV3
         /// </summary>
         public void Update()
         {
-            FunctionEx.UpdateManualValue();
-            FunctionEx.SetGrind();
-            FunctionEx.SetHeat();
+            FunctionEx.UpdateManualSpeedValue();
+            FunctionEx.UpdateAutoSpeedValue();
+            FunctionEx.QuantitativeHeating();
+            FunctionEx.QuantitativeGrinding();
         }
         #endregion
 
-        #region Patch - 减速操作
+        #region Patch - 手动减速操作
         /// <summary>
         /// 减速研磨
         /// </summary>
         [HarmonyPrefix]
         [HarmonyPatch(typeof(SubstanceGrinding), "TryToGrind")]
-        public static void SpeedGrind(ref float pestleLinearSpeed, ref float pestleAngularSpeed)
+        public static void SlowGrinding(ref float pestleLinearSpeed, ref float pestleAngularSpeed)
         {
-            if (VariableEx.EnableGrindSpeed)
+            if (VariableEx.EnableSlowGrinding)
             {
                 pestleLinearSpeed *= VariableEx.GrindSpeed;
                 pestleAngularSpeed *= VariableEx.GrindSpeed;
@@ -86,10 +82,10 @@ namespace AlchAssExV3
         /// </summary>
         [HarmonyPostfix]
         [HarmonyPatch(typeof(Cauldron), "UpdateStirringValue")]
-        public static void SpeedStir(ref float ___StirringValue)
+        public static void SlowStirring(ref float ___StirringValue)
         {
-            if (VariableEx.EnableStirSpeed)
-                ___StirringValue *= VariableEx.StirSpeed;
+            if (VariableEx.EnableSlowStirring)
+                ___StirringValue *= VariableEx.StirSpeed * VariableEx.AutoStirSpeed;
         }
 
         /// <summary>
@@ -97,10 +93,10 @@ namespace AlchAssExV3
         /// </summary>
         [HarmonyPostfix]
         [HarmonyPatch(typeof(RecipeMapManager), "GetSpeedOfMovingTowardsBase")]
-        public static void SpeedLadle(ref float __result)
+        public static void SlowLadling(ref float __result)
         {
-            if (VariableEx.EnableLadleSpeed)
-                __result *= VariableEx.LadleSpeed;
+            if (VariableEx.EnableSlowLadling)
+                __result *= VariableEx.LadleSpeed * VariableEx.AutoLadleSpeed;
         }
 
         /// <summary>
@@ -108,12 +104,12 @@ namespace AlchAssExV3
         /// </summary>
         [HarmonyPrefix]
         [HarmonyPatch(typeof(RecipeMapManager), "MoveIndicatorTowardsVortex")]
-        public static void SpeedHeat(ref float __state)
+        public static void SlowHeating(ref float __state)
         {
             var vortexSettings = Settings<RecipeMapManagerVortexSettings>.Asset;
             __state = vortexSettings.vortexMovementSpeed;
-            if (VariableEx.EnableHeatSpeed)
-                vortexSettings.vortexMovementSpeed *= VariableEx.HeatSpeed;
+            if (VariableEx.EnableSlowHeating)
+                vortexSettings.vortexMovementSpeed *= VariableEx.HeatSpeed * VariableEx.AutoHeatSpeed;
         }
 
         /// <summary>
@@ -128,20 +124,20 @@ namespace AlchAssExV3
         }
         #endregion
 
-        #region Patch - 批量酿造
+        #region Patch - 手动批量酿造
         /// <summary>
         /// 批量酿造
         /// </summary>
         [HarmonyPrefix]
         [HarmonyPatch(typeof(RecipeBookRecipeBrewController), "BrewRecipe")]
-        public static void MassBrewing(ref int count, IRecipeBookPageContent recipePageContent)
+        public static void BulkBrewing(ref int count, IRecipeBookPageContent recipePageContent)
         {
-            if (VariableEx.EnableBrewMassive && count > 1 && FunctionEx.CanBrewTimes(recipePageContent, count, VariableEx.BrewMassive))
-                count *= VariableEx.BrewMassive;
+            if (VariableEx.EnableBulkBrewing && count > 1 && FunctionEx.CanBrewTimes(recipePageContent, count, VariableEx.BrewBulk))
+                count *= VariableEx.BrewBulk;
         }
         #endregion
 
-        #region Patch - 制动功能
+        #region Patch - 自动控制
         /// <summary>
         /// 指示器更新时
         /// </summary>
@@ -149,49 +145,18 @@ namespace AlchAssExV3
         [HarmonyPatch(typeof(IndicatorMapItem), "UpdateByCollection")]
         public static void SpeedControl()
         {
-            CalculationEx.GetEdgeControl();
-            CalculationEx.GetClosestControl();
-            CalculationEx.GetProximityControl();
-            CalculationEx.GetStirSet();
-            CalculationEx.GetLadleSet();
+            CalculationEx.GetQuantitativeSpeed();
+            CalculationEx.GetEffectSpeed();
+            CalculationEx.GetVortexSpeed();
+            CalculationEx.GetDangerSpeed();
+            CalculationEx.GetSwampSpeed();
         }
 
-        /// <summary>
-        /// 进入漩涡时
-        /// </summary>
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(VortexMapItemCollider), "OnTriggerEnter2D")]
-        public static void VortexDistanceEnter()
-        {
-            if (VariableEx.LoadReset)
-                VariableEx.LoadReset = false;
-            else if (VariableEx.EnableEdgeControl)
-            {
-                VariableEx.EdgeSpeed = float.MinValue;
-                VariableEx.EnterPosition = Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition + Variable.Offset;
-            }
-        }
-
-        /// <summary>
-        /// 离开漩涡时
-        /// </summary>
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(VortexMapItemCollider), "OnTriggerExit2D")]
-        public static void VortexDistanceExit()
-        {
-            if (VariableEx.EnableEdgeControl)
-                VariableEx.EdgeSpeed = float.MaxValue;
-        }
-
-        /// <summary>
-        /// 读档时
-        /// </summary>
         [HarmonyPostfix]
         [HarmonyPatch(typeof(SaveLoadManager), "LoadProgressState")]
         public static void ResetWhenLoading()
         {
-            if (Managers.RecipeMap.CurrentVortexMapItem != null)
-                VariableEx.LoadReset = true;
+            FunctionEx.ResetAutoSpeedValue();
         }
         #endregion
 
@@ -200,12 +165,11 @@ namespace AlchAssExV3
         [HarmonyPatch(typeof(UIWindow), "DrawExpansion")]
         public static void DrawExpansionUI()
         {
-            UIWindowEx.GetLabelWidth();
-            UIWindowEx.DrawEnables();
-            UIWindowEx.DrawSets();
-            UIWindowEx.DrawLevels("默认数值配置一", 0, ref VariableEx.L1Expand);
-            UIWindowEx.DrawLevels("默认数值配置二", 1, ref VariableEx.L2Expand);
-            UIWindowEx.DrawLevels("默认数值配置三", 2, ref VariableEx.L3Expand);
+            FunctionEx.SetLabelWidth();
+            UIWindowEx.DrawAutoEnables();
+            UIWindowEx.DrawManualEnables();
+            UIWindowEx.DrawAutoSettings();
+            UIWindowEx.DrawManualSettings();
         }
         #endregion
     }
