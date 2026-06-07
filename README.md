@@ -1,4 +1,3 @@
-[AlchAss 功能介绍.md](https://github.com/user-attachments/files/28687371/AlchAss.md)
 # AlchAss 功能介绍
 
 ## 基本概念
