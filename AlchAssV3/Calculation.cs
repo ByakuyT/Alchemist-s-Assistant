@@ -373,7 +373,7 @@ namespace AlchAssV3
             var indPos = Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition + Variable.Offset;
             List<Vector3> points = [];
 
-            if (Math.Abs(dx) > 1e-5)
+            if (Math.Abs(dx) > 1e-6)
             {
                 var t = (-80 - indPos.x) / dx;
                 var y = indPos.y + t * dy;
@@ -384,7 +384,7 @@ namespace AlchAssV3
                 if (y >= -80 && y <= 80)
                     points.Add(mapTrans.TransformPoint(new(80, (float)y)));
             }
-            if (Math.Abs(dy) > 1e-5)
+            if (Math.Abs(dy) > 1e-6)
             {
                 var t = (-80 - indPos.y) / dy;
                 var x = indPos.x + t * dx;
@@ -462,7 +462,7 @@ namespace AlchAssV3
             var indPos = Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition + Variable.Offset;
             var maxDis = ((CircleCollider2D)Traverse.Create(curVortex).Field("vortexCollider").GetValue()).radius + 0.74;
             var distance = Vector2.Distance(vortexPos, indPos);
-            if (distance > maxDis + 1e-5)
+            if (distance > maxDis + 1e-6)
                 return;
 
             var v = indPos - vortexPos;

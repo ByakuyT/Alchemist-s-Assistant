@@ -15,7 +15,7 @@ namespace AlchAssV3
         /// </summary>
         public static void SqrDisToPoint(Vector2 p0, Vector2 p1, Vector2 tar, bool isTp, out double dis, out Vector2 pos)
         {
-            if (Math.Abs(p0.x - p1.x) < 1e-5 && Math.Abs(p0.y - p1.y) < 1e-5)
+            if (Math.Abs(p0.x - p1.x) < 1e-6 && Math.Abs(p0.y - p1.y) < 1e-6)
             {
                 dis = (p0 - tar).sqrMagnitude;
                 pos = p0;
@@ -125,7 +125,7 @@ namespace AlchAssV3
                 if (prevF * fx <= 0)
                 {
                     var t = Brent(f, prevX, x);
-                    if (roots.Count == 0 || Math.Abs(t - roots[roots.Count - 1].Item2) > 1e-5)
+                    if (roots.Count == 0 || Math.Abs(t - roots[roots.Count - 1].Item2) > 1e-6)
                     {
                         var r = t * Variable.VortexA;
                         var pos = new Vector2((float)(r * Math.Cos(t)), (float)(r * Math.Sin(t)));
@@ -147,7 +147,7 @@ namespace AlchAssV3
             var tmin = 0.0;
             var tmax = 1.0;
 
-            if (Mathf.Abs(d.x) < 1e-5)
+            if (Mathf.Abs(d.x) < 1e-6)
             {
                 if (p0.x < node.MinX || p0.x > node.MaxX)
                     return false;
@@ -165,7 +165,7 @@ namespace AlchAssV3
                     return false;
             }
 
-            if (Mathf.Abs(d.y) < 1e-5)
+            if (Mathf.Abs(d.y) < 1e-6)
             {
                 if (p0.y < node.MinY || p0.y > node.MaxY)
                     return false;
@@ -291,7 +291,7 @@ namespace AlchAssV3
         public static void TargetRange(Vector2 p0, Vector2 p1, Vector2 cen, bool isTp, out List<Vector2> pos)
         {
             pos = [];
-            if (Math.Abs(p0.x - p1.x) < 1e-5 && Math.Abs(p0.y - p1.y) < 1e-5)
+            if (Math.Abs(p0.x - p1.x) < 1e-6 && Math.Abs(p0.y - p1.y) < 1e-6)
                 return;
 
             var targetRot = Variable.TargetEffect.transform.localEulerAngles.z;
@@ -313,7 +313,7 @@ namespace AlchAssV3
         public static void VortexRange(Vector2 p0, Vector2 p1, Vector2 cen, double rad, bool isTp, out List<Vector2> pos)
         {
             pos = [];
-            if (Math.Abs(p0.x - p1.x) < 1e-5 && Math.Abs(p0.y - p1.y) < 1e-5)
+            if (Math.Abs(p0.x - p1.x) < 1e-6 && Math.Abs(p0.y - p1.y) < 1e-6)
                 return;
 
             LineVsCircle(p0, p1, cen, rad, out pos, out _);
@@ -327,7 +327,7 @@ namespace AlchAssV3
         public static void DangerLine(Vector2 p0, Vector2 p1, string mapid, int index, bool isTp, out List<(Vector2, int, double, int)> pos)
         {
             pos = [];
-            if (Math.Abs(p0.x - p1.x) < 1e-5 && Math.Abs(p0.y - p1.y) < 1e-5)
+            if (Math.Abs(p0.x - p1.x) < 1e-6 && Math.Abs(p0.y - p1.y) < 1e-6)
                 return;
 
             List<(Vector2, int, double, int)> points = [];
@@ -376,7 +376,7 @@ namespace AlchAssV3
             {
                 pointsort.Add(points[0]);
                 for (var i = 1; i < points.Count; i++)
-                    if (points[i].Item4 != points[i - 1].Item4 || points[i].Item3 - points[i - 1].Item3 > 1e-5)
+                    if (points[i].Item4 != points[i - 1].Item4 || points[i].Item3 - points[i - 1].Item3 > 1e-6)
                         pointsort.Add(points[i]);
             }
 
@@ -466,7 +466,7 @@ namespace AlchAssV3
                 TransToGlobal(cX, cY, rot, points[0].Item1.x, points[0].Item1.y, out var nx0, out var ny0);
                 pos.Add((new Vector2((float)nx0, (float)ny0), points[0].Item2));
                 for (var i = 1; i < points.Count; i++)
-                    if (points[i - 1].Item2 - points[i].Item2 > 1e-5)
+                    if (points[i - 1].Item2 - points[i].Item2 > 1e-6)
                     {
                         TransToGlobal(cX, cY, rot, points[i].Item1.x, points[i].Item1.y, out var nxi, out var nyi);
                         pos.Add((new Vector2((float)nxi, (float)nyi), points[i].Item2));
@@ -675,7 +675,7 @@ namespace AlchAssV3
         public static void ScalePathPoint(Vector2 p0, Vector2 p1, int index, bool isTp, out List<(Vector2, int, double)> pos)
         {
             pos = [];
-            if (Math.Abs(p0.x - p1.x) < 1e-5 && Math.Abs(p0.y - p1.y) < 1e-5)
+            if (Math.Abs(p0.x - p1.x) < 1e-6 && Math.Abs(p0.y - p1.y) < 1e-6)
                 return;
 
             LineBVH(p0, p1, Variable.SwampOilBVH, out var items);
@@ -699,7 +699,7 @@ namespace AlchAssV3
             {
                 pointsort.Add(points[0]);
                 for (var i = 1; i < points.Count; i++)
-                    if (points[i].Item3 - points[i - 1].Item3 > 1e-5)
+                    if (points[i].Item3 - points[i - 1].Item3 > 1e-6)
                         pointsort.Add(points[i]);
             }
 
@@ -775,7 +775,7 @@ namespace AlchAssV3
                         {
                             var pointPre = p0 + (p1 - p0) * (float)points[0].Item3;
                             splitPos = isTp ? p1 : pointPre;
-                            if (!(Math.Abs(splitPos.x - s.x) < 1e-5 && Math.Abs(splitPos.y - s.y) < 1e-5))
+                            if (!(Math.Abs(splitPos.x - s.x) < 1e-6 && Math.Abs(splitPos.y - s.y) < 1e-6))
                                 break;
                             points.RemoveAt(0);
                         }
@@ -785,11 +785,11 @@ namespace AlchAssV3
                             Vector3 pointCur = points[0].Item1;
                             var scalePos = isTp ? q1 : pointCur;
 
-                            if (!(Math.Abs(splitPos.x - p0.x) < 1e-5 && Math.Abs(splitPos.y - p0.y) < 1e-5))
+                            if (!(Math.Abs(splitPos.x - p0.x) < 1e-6 && Math.Abs(splitPos.y - p0.y) < 1e-6))
                                 LineC.Add(scalePos);
 
                             List<Vector3> newLineP = [];
-                            if (!(Math.Abs(splitPos.x - p1.x) < 1e-5 && Math.Abs(splitPos.y - p1.y) < 1e-5))
+                            if (!(Math.Abs(splitPos.x - p1.x) < 1e-6 && Math.Abs(splitPos.y - p1.y) < 1e-6))
                                 newLineP.Add(splitPos);
                             for (var k = j + 1; k < lineP.Count; k++)
                                 newLineP.Add(lineP[k]);
@@ -947,8 +947,8 @@ namespace AlchAssV3
         public static double Brent(Func<double, double> f, double a, double b)
         {
             var fa = f(a); var fb = f(b);
-            if (Math.Abs(fa) < 1e-5) return a;
-            if (Math.Abs(fb) < 1e-5) return b;
+            if (Math.Abs(fa) < 1e-6) return a;
+            if (Math.Abs(fb) < 1e-6) return b;
             if (Math.Abs(fa) < Math.Abs(fb))
             {
                 (a, b) = (b, a);
@@ -959,7 +959,7 @@ namespace AlchAssV3
             var mflag = true;
             for (int iter = 0; iter < 100; iter++)
             {
-                if (Math.Abs(fb) < 1e-5 || Math.Abs(b - a) < 1e-5)
+                if (Math.Abs(fb) < 1e-6 || Math.Abs(b - a) < 1e-6)
                     return b;
 
                 double s;
@@ -971,8 +971,8 @@ namespace AlchAssV3
                 var co1 = s < (3 * a + b) / 4 || s > b;
                 var co2 = mflag && Math.Abs(s - b) >= Math.Abs(b - c) / 2;
                 var co3 = !mflag && Math.Abs(s - b) >= Math.Abs(c - d) / 2;
-                var co4 = mflag && Math.Abs(b - c) < 1e-5;
-                var co5 = !mflag && Math.Abs(c - d) < 1e-5;
+                var co4 = mflag && Math.Abs(b - c) < 1e-6;
+                var co5 = !mflag && Math.Abs(c - d) < 1e-6;
                 if (co1 || co2 || co3 || co4 || co5)
                 {
                     s = (a + b) / 2;
