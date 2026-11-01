@@ -292,9 +292,9 @@ public static class UIWindow
             {
                 GUILayout.BeginHorizontal();
                 GUILayout.Label($"{i + 1}.", Variable.LabelStyle, GUILayout.Width(Variable.CustomLineLabelWidth));
-                var slideValue = GUILayout.HorizontalSlider(Variable.CustomLineDirections[i], -180, 180,
+                var slideValue = GUILayout.HorizontalSlider((float)Variable.CustomLineDirections[i], -180, 180,
                     Variable.SliderStyle, new(GUI.skin.horizontalSliderThumb));
-                if (slideValue != Variable.CustomLineDirections[i])
+                if (slideValue != (float)Variable.CustomLineDirections[i])
                 {
                     Variable.CustomLineDirections[i] = slideValue;
                     Variable.CustomLineInputs[i] = ($"{slideValue}", false);
@@ -304,9 +304,9 @@ public static class UIWindow
                 var inputValue = GUILayout.TextField(Variable.CustomLineInputs[i].Item1, style);
                 if (inputValue != Variable.CustomLineInputs[i].Item1)
                 {
-                    if (float.TryParse(inputValue, out var parsedValue) && Algebra.IsFinite(parsedValue))
+                    if (double.TryParse(inputValue, out var parsedValue) && Algebra.IsFinite(parsedValue))
                     {
-                        var clamped = Mathf.Clamp(parsedValue, -180, 180);
+                        var clamped = Algebra.Clamp(parsedValue, -180, 180);
                         Variable.CustomLineDirections[i] = clamped;
                         Variable.CustomLineInputs[i] = (
                             parsedValue == clamped ? inputValue : $"{clamped}", false);
@@ -347,7 +347,7 @@ public static class UIWindow
         {
             if (GUILayout.Button($"+ {LocalizationManager.GetText("添加标记点")}", Variable.ButtonStyle))
             {
-                Variable.CustomMarkerPositions.Add(Vector2.zero);
+                Variable.CustomMarkerPositions.Add(Variable.Vec2D.Zero);
                 Variable.CustomMarkerHovers.Add(false);
                 Variable.CustomMarkerInputs.Add(("0", "0", false, false));
                 Localization.UpdateCustomMarkerLabelWidth();
@@ -408,10 +408,10 @@ public static class UIWindow
         GUILayout.BeginHorizontal();
         GUILayout.Label(GetMarkerAxisLabel(isFirst), Variable.AxisStyle);
         var (min, max) = GetMarkerAxisRange(isFirst);
-        var axisValue = isFirst ? Variable.CustomMarkerPositions[index].x : Variable.CustomMarkerPositions[index].y;
-        var slideValue = GUILayout.HorizontalSlider(axisValue, min, max, Variable.SliderStyle,
+        var axisValue = isFirst ? Variable.CustomMarkerPositions[index].X : Variable.CustomMarkerPositions[index].Y;
+        var slideValue = GUILayout.HorizontalSlider((float)axisValue, min, max, Variable.SliderStyle,
             new(GUI.skin.horizontalSliderThumb));
-        if (slideValue != axisValue)
+        if (slideValue != (float)axisValue)
         {
             SetMarkerAxisValue(index, isFirst, slideValue);
             SetMarkerInput(index, isFirst, $"{slideValue}", false);
@@ -424,9 +424,9 @@ public static class UIWindow
         var inputValue = GUILayout.TextField(input, style);
         if (inputValue != input)
         {
-            if (float.TryParse(inputValue, out var parsedValue) && Algebra.IsFinite(parsedValue))
+            if (double.TryParse(inputValue, out var parsedValue) && Algebra.IsFinite(parsedValue))
             {
-                var clamped = Mathf.Clamp(parsedValue, min, max);
+                var clamped = Algebra.Clamp(parsedValue, min, max);
                 SetMarkerAxisValue(index, isFirst, clamped);
                 SetMarkerInput(index, isFirst, parsedValue == clamped ? inputValue : $"{clamped}", false);
             }
@@ -456,11 +456,11 @@ public static class UIWindow
     /// <summary>
     /// 设置标记点坐标轴数值
     /// </summary>
-    private static void SetMarkerAxisValue(int index, bool isFirst, float value)
+    private static void SetMarkerAxisValue(int index, bool isFirst, double value)
     {
         var position = Variable.CustomMarkerPositions[index];
         Variable.CustomMarkerPositions[index] =
-            isFirst ? new Vector2(value, position.y) : new Vector2(position.x, value);
+            isFirst ? new Variable.Vec2D(value, position.Y) : new Variable.Vec2D(position.X, value);
     }
 
     /// <summary>

@@ -357,7 +357,7 @@ public static class Rendering
             var effectPos = Variable.Vec2D.From(Variable.TargetEffect.transform.localPosition);
             var effectRot = Variable.TargetEffect.transform.localEulerAngles.z;
             var indRot = Managers.RecipeMap.indicatorRotation.Value;
-            var devRot = Mathf.Abs(Mathf.DeltaAngle(indRot, effectRot));
+            var devRot = Math.Abs(Algebra.DeltaAngle(indRot, effectRot));
             var cen = effectPos + Variable.Offset;
             var mapTrans = Managers.RecipeMap.currentMap.referencesContainer.transform;
             var posDev = mapTrans.TransformPoint(cen.ToVec3());
@@ -431,10 +431,10 @@ public static class Rendering
         {
             var indPos = Variable.Vec2D.From(Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition) +
                          Variable.Offset;
-            var indRot = -Managers.RecipeMap.indicatorRotation.Value * Mathf.Deg2Rad;
+            var indRot = -Managers.RecipeMap.indicatorRotation.Value * Math.PI / 180.0;
             var mapTrans = Managers.RecipeMap.currentMap.referencesContainer.transform;
-            var delta = new Variable.Vec2D(Variable.IndicatorRad * Mathf.Sin(indRot),
-                Variable.IndicatorRad * Mathf.Cos(indRot));
+            var delta = new Variable.Vec2D(Variable.IndicatorRad * Math.Sin(indRot),
+                Variable.IndicatorRad * Math.Cos(indRot));
             Vector3[] linePoints =
                 [mapTrans.TransformPoint(indPos.ToVec3()), mapTrans.TransformPoint((indPos + delta).ToVec3())];
             InitRange(Variable.IndicatorRad - Variable.LineWidth.Value * 0.5, indPos, out var rangePoints);
@@ -503,9 +503,9 @@ public static class Rendering
             var arm = Variable.LineWidth.Value * 2.5f;
             for (var i = 0; i < Variable.CustomMarkerPositions.Count; i++)
             {
-                var pos = Variable.DisplayPolar
+                var pos = (Variable.DisplayPolar
                     ? Algebra.FromPolar(Variable.CustomMarkerPositions[i])
-                    : Variable.CustomMarkerPositions[i];
+                    : Variable.CustomMarkerPositions[i]).ToVec2();
                 Vector3[] horizontal =
                 [
                     mapTrans.TransformPoint(new(pos.x - arm, pos.y)), mapTrans.TransformPoint(new(pos.x + arm, pos.y))

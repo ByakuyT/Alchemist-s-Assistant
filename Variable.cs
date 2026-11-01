@@ -195,10 +195,10 @@ public static class Variable
     public static PotionEffectMapItem TargetEffect;
     public static int TargetLineIndex;
     public static int TargetMarkerIndex;
-    public static List<float> CustomLineDirections = [];
+    public static List<double> CustomLineDirections = [];
     public static List<bool> CustomLineHovers = [];
     public static List<(string, bool)> CustomLineInputs = [];
-    public static List<Vector2> CustomMarkerPositions = [];
+    public static List<Vec2D> CustomMarkerPositions = [];
     public static List<bool> CustomMarkerHovers = [];
 
     public static List<(string, string, bool, bool)> CustomMarkerInputs = [];

@@ -16,6 +16,17 @@ public static class Localization
     #region 格式化文本
 
     /// <summary>
+    /// 格式化位置文本
+    /// </summary>
+    public static string FormatPosition(Variable.Vec2D position)
+    {
+        if (!Variable.DisplayPolar)
+            return $"{(position.X, position.Y)}";
+        var polar = Algebra.ToPolar(position);
+        return $"{(polar.X, polar.Y)}";
+    }
+
+    /// <summary>
     /// 格式化月盐文本
     /// </summary>
     public static string FormatMoonSalt(double rotation)

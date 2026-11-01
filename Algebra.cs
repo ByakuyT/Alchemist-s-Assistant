@@ -136,18 +136,18 @@ public static class Algebra
     /// <summary>
     /// 转换为极坐标
     /// </summary>
-    public static Vector2 ToPolar(Vector2 v)
+    public static Variable.Vec2D ToPolar(Variable.Vec2D v)
     {
-        return new(v.magnitude, Vector2.SignedAngle(Vector2.right, v));
+        return new(v.Magnitude, Variable.Vec2D.Right.SignedAngle(v));
     }
 
     /// <summary>
     /// 转换为直角坐标
     /// </summary>
-    public static Vector2 FromPolar(Vector2 v)
+    public static Variable.Vec2D FromPolar(Variable.Vec2D v)
     {
-        var theta = v.y / 180 * Mathf.PI;
-        return new(v.x * Mathf.Cos(theta), v.x * Mathf.Sin(theta));
+        var theta = v.Y / 180 * Mathf.PI;
+        return new(v.X * Math.Cos(theta), v.X * Math.Sin(theta));
     }
 
     /// <summary>

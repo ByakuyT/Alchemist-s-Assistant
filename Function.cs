@@ -156,14 +156,14 @@ public static class Function
 
             var worldPos = Managers.RecipeMap.recipeMapObject.transmitterWindow.ViewToCamera(mousePos);
             var mapPosV = Managers.RecipeMap.currentMap.referencesContainer.transform.InverseTransformPoint(worldPos);
-            var mapPos = new Vector2(Mathf.Clamp(mapPosV.x, -80, 80), Mathf.Clamp(mapPosV.y, -80, 80));
+            var mapPos = new Variable.Vec2D(Mathf.Clamp(mapPosV.x, -80, 80), Mathf.Clamp(mapPosV.y, -80, 80));
             var storagePos = Variable.DisplayPolar ? Algebra.ToPolar(mapPos) : mapPos;
             if (Mouse.current.middleButton.isPressed)
             {
                 if (Variable.TargetMarkerIndex < 0) return;
                 Variable.CustomMarkerPositions[Variable.TargetMarkerIndex] = storagePos;
                 Variable.CustomMarkerInputs[Variable.TargetMarkerIndex] =
-                    ($"{storagePos.x}", $"{storagePos.y}", false, false);
+                    ($"{storagePos.X}", $"{storagePos.Y}", false, false);
             }
             else
             {
@@ -171,10 +171,9 @@ public static class Function
                 var minDis = double.PositiveInfinity;
                 for (var i = 0; i < Variable.CustomMarkerPositions.Count; i++)
                 {
-                    var dis = Vector2.Distance(mapPos,
-                        Variable.DisplayPolar
-                            ? Algebra.FromPolar(Variable.CustomMarkerPositions[i])
-                            : Variable.CustomMarkerPositions[i]);
+                    var dis = mapPos.Distance(Variable.DisplayPolar
+                        ? Algebra.FromPolar(Variable.CustomMarkerPositions[i])
+                        : Variable.CustomMarkerPositions[i]);
                     if (dis < minDis)
                     {
                         minDis = dis;
@@ -189,7 +188,7 @@ public static class Function
                     {
                         Variable.CustomMarkerPositions.Add(storagePos);
                         Variable.CustomMarkerHovers.Add(false);
-                        Variable.CustomMarkerInputs.Add(($"{storagePos.x}", $"{storagePos.y}", false, false));
+                        Variable.CustomMarkerInputs.Add(($"{storagePos.X}", $"{storagePos.Y}", false, false));
                         Variable.TargetMarkerIndex = Variable.CustomMarkerPositions.Count - 1;
                     }
                     else
@@ -218,8 +217,8 @@ public static class Function
             Variable.CustomMarkerPositions[i] = Variable.DisplayPolar
                 ? Algebra.ToPolar(Variable.CustomMarkerPositions[i])
                 : Algebra.FromPolar(Variable.CustomMarkerPositions[i]);
-            Variable.CustomMarkerInputs[i] = ($"{Variable.CustomMarkerPositions[i].x}",
-                $"{Variable.CustomMarkerPositions[i].y}", false, false);
+            Variable.CustomMarkerInputs[i] = ($"{Variable.CustomMarkerPositions[i].X}",
+                $"{Variable.CustomMarkerPositions[i].Y}", false, false);
         }
     }
 
