@@ -32,9 +32,7 @@ public static class Localization
     public static string FormatMoonSalt(double rotation)
     {
         var angle = Algebra.DeltaAngleDeg(rotation, 0.0);
-        return !Variable.DisplaySalt ? $"{(float)angle}'" :
-            angle < 0.0 ? $"<sprite=\"IconsAtlas\" name=\"MoonSalt\"> {(float)(-angle / 9 * 25)}" :
-            $"<sprite=\"IconsAtlas\" name=\"SunSalt\"> {(float)(angle / 9f * 25f)}";
+        return !Variable.DisplaySalt ? $"{(float)angle}'" : angle < 0.0 ? $"<sprite=\"IconsAtlas\" name=\"MoonSalt\"> {(float)(-angle / 9 * 25)}" : $"<sprite=\"IconsAtlas\" name=\"SunSalt\"> {(float)(angle / 9f * 25f)}";
     }
 
     /// <summary>
@@ -43,9 +41,7 @@ public static class Localization
     public static string FormatLifeSalt(double dangerDistance)
     {
         var hp = Variable.DangerStrongDamage * dangerDistance * 100.0 - 100.0;
-        return !Variable.DisplaySalt
-            ? $"{(float)hp}%"
-            : $"<sprite=\"IconsAtlas\" name=\"LifeSalt\"> {(float)(hp * 2.5)}";
+        return !Variable.DisplaySalt ? $"{(float)hp}%" : $"<sprite=\"IconsAtlas\" name=\"LifeSalt\"> {(float)(hp * 2.5)}";
     }
 
     /// <summary>
@@ -54,8 +50,7 @@ public static class Localization
     public static string FormatReachableAngles(List<(double, double)> intervals)
     {
         if (intervals.Count == 0) return "";
-        return string.Join(" ∪ ",
-            intervals.Select(x => $"({(float)(x.Item1 * 180 / Math.PI)}', {(float)(x.Item2 * 180 / Math.PI)}')"));
+        return string.Join(" ∪ ", intervals.Select(x => $"({(float)(x.Item1 * 180 / Math.PI)}', {(float)(x.Item2 * 180 / Math.PI)}')"));
     }
 
     /// <summary>
@@ -92,10 +87,7 @@ public static class Localization
     /// </summary>
     private static float GetLabelWidth(string[] labels, bool loc)
     {
-        return labels.Select(label =>
-            loc
-                ? Variable.LabelStyle.CalcSize(new GUIContent(LocalizationManager.GetText(label) + "0")).x
-                : Variable.LabelStyle.CalcSize(new GUIContent(label + "0")).x).Prepend(0f).Max();
+        return labels.Select(label => loc ? Variable.LabelStyle.CalcSize(new GUIContent(LocalizationManager.GetText(label) + "0")).x : Variable.LabelStyle.CalcSize(new GUIContent(label + "0")).x).Prepend(0f).Max();
     }
 
     #endregion

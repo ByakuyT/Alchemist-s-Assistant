@@ -36,8 +36,7 @@ public static class Variable
     // 0 - 路径切向线; 1 - 加水方向线; 2 - 效果径向线; 3 - 漩涡径向线; 4 - 漩涡切向线
     public static ConfigEntry<Color>[] ColorLines = new ConfigEntry<Color>[5];
 
-    // 0 - 路径信息; 1 - 加水信息; 2 - 移动信息; 3 - 目标效果; 4 - 酿造信息
-    // 5 - 效果偏离; 6 - 活跃漩涡; 7 - 目标漩涡; 8 - 研磨信息
+    // 0 - 路径信息; 1 - 加水信息; 2 - 移动信息; 3 - 目标效果; 4 - 酿造信息; 5 - 效果偏离; 6 - 活跃漩涡; 7 - 目标漩涡; 8 - 研磨信息
     public static ConfigEntry<Vector3>[] WindowPositions = new ConfigEntry<Vector3>[9];
     public static ConfigEntry<Rect> MenuRectConfig;
 
@@ -51,15 +50,9 @@ public static class Variable
     public const double BoxSkin = 0.01;
     public const double DangerStrongDamage = 0.4;
     public static readonly Font Font = Font.CreateDynamicFontFromOSFont("Microsoft YaHei", 16);
-
-    public static readonly string[] WindowTags =
-        ["路径信息", "加水信息", "移动信息", "目标效果", "酿造信息", "效果偏离", "活跃漩涡", "目标漩涡", "研磨信息"];
-
+    public static readonly string[] WindowTags = ["路径信息", "加水信息", "移动信息", "目标效果", "酿造信息", "效果偏离", "活跃漩涡", "目标漩涡", "研磨信息"];
     public static readonly string[] VortexTags = ["Vortex_Water", "Vortex_Oil"];
-
-    public static readonly string[] ZoneTags =
-        ["Strong_Water", "Strong_Oil", "Strong_Wine", "Weak_Wine", "Heal_Wine", "Swamp_Oil"];
-
+    public static readonly string[] ZoneTags = ["Strong_Water", "Strong_Oil", "Strong_Wine", "Weak_Wine", "Heal_Wine", "Swamp_Oil"];
     public static readonly Dictionary<string, int> MapId = new() { { "Water", 0 }, { "Oil", 1 }, { "Wine", 2 } };
 
     #endregion
@@ -237,8 +230,7 @@ public static class Variable
     //0 - 路径; 1 - 加水; 2 - 漩涡
     public static double?[] DangerDistance = [null, null, null];
 
-    // 0 - 路径信息; 1 - 加水信息; 2 - 移动信息; 3 - 目标效果; 4 - 酿造信息
-    // 5 - 效果偏离; 6 - 活跃漩涡; 7 - 目标漩涡; 8 - 研磨信息
+    // 0 - 路径信息; 1 - 加水信息; 2 - 移动信息; 3 - 目标效果; 4 - 酿造信息; 5 - 效果偏离; 6 - 活跃漩涡; 7 - 目标漩涡; 8 - 研磨信息
     public static DebugWindow[] DebugWindows = new DebugWindow[9];
 
     #endregion
@@ -440,17 +432,13 @@ public static class Variable
         public bool IsEmpty => double.IsNaN(L) || double.IsNaN(H);
         public static Interval Empty => new(double.NaN, double.NaN);
         public static Interval Point(double x) => new(x, x);
-
-        public static Interval operator -(Interval a) =>
-            a.IsEmpty ? Empty : new(Algebra.Down(-a.H), Algebra.Up(-a.L));
+        public static Interval operator -(Interval a) => a.IsEmpty ? Empty : new(Algebra.Down(-a.H), Algebra.Up(-a.L));
 
         public static Interval operator *(Interval a, double k)
         {
             if (a.IsEmpty || double.IsNaN(k)) return Empty;
             if (k == 0.0) return new(0.0, 0.0);
-            return k > 0.0
-                ? new(Algebra.Down(a.L * k), Algebra.Up(a.H * k))
-                : new(Algebra.Down(a.H * k), Algebra.Up(a.L * k));
+            return k > 0.0 ? new(Algebra.Down(a.L * k), Algebra.Up(a.H * k)) : new(Algebra.Down(a.H * k), Algebra.Up(a.L * k));
         }
 
         public static Interval operator *(double k, Interval a) => a * k;
@@ -470,10 +458,8 @@ public static class Variable
         public static Interval operator *(Interval a, Interval b)
         {
             if (a.IsEmpty || b.IsEmpty) return Empty;
-            var l = Math.Min(Math.Min(Algebra.Down(a.L * b.L), Algebra.Down(a.L * b.H)),
-                Math.Min(Algebra.Down(a.H * b.L), Algebra.Down(a.H * b.H)));
-            var h = Math.Max(Math.Max(Algebra.Up(a.L * b.L), Algebra.Up(a.L * b.H)),
-                Math.Max(Algebra.Up(a.H * b.L), Algebra.Up(a.H * b.H)));
+            var l = Math.Min(Math.Min(Algebra.Down(a.L * b.L), Algebra.Down(a.L * b.H)), Math.Min(Algebra.Down(a.H * b.L), Algebra.Down(a.H * b.H)));
+            var h = Math.Max(Math.Max(Algebra.Up(a.L * b.L), Algebra.Up(a.L * b.H)), Math.Max(Algebra.Up(a.H * b.L), Algebra.Up(a.H * b.H)));
             return new(l, h);
         }
 

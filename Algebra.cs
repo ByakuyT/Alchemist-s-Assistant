@@ -34,8 +34,7 @@ public static class Algebra
         {
             double s;
             if (fa != fc && fb != fc && fa != fb)
-                s = a * fb * fc / ((fa - fb) * (fa - fc)) + b * fa * fc / ((fb - fa) * (fb - fc)) +
-                    c * fa * fb / ((fc - fa) * (fc - fb));
+                s = a * fb * fc / ((fa - fb) * (fa - fc)) + b * fa * fc / ((fb - fa) * (fb - fc)) + c * fa * fb / ((fc - fa) * (fc - fb));
             else
                 s = b - fb * (b - a) / (fb - fa);
             var co1 = s < (3 * a + b) / 4 || s > b;
@@ -122,8 +121,7 @@ public static class Algebra
     /// <summary>
     /// 一元连续函数的严格变号根
     /// </summary>
-    public static List<double> GetEnclosureRoots(Func<double, double> f,
-        Func<Variable.Interval, Variable.Interval?> enclosure, double x0, double x1)
+    public static List<double> GetEnclosureRoots(Func<double, double> f, Func<Variable.Interval, Variable.Interval?> enclosure, double x0, double x1)
     {
         if (x1 <= x0) return [];
         List<double> roots = [];

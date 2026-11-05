@@ -1,5 +1,4 @@
-﻿using System;
-using PotionCraft.LocalizationSystem;
+﻿using PotionCraft.LocalizationSystem;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -134,37 +133,23 @@ public static class UIWindow
         {
             GUILayout.BeginHorizontal();
             GUILayout.BeginVertical();
-            Variable.EnablePathLine = GUILayout.Toggle(Variable.EnablePathLine, LocalizationManager.GetText("路径切向线"),
-                Variable.ToggleStyle);
-            Variable.EnableLadleLine = GUILayout.Toggle(Variable.EnableLadleLine, LocalizationManager.GetText("加水方向线"),
-                Variable.ToggleStyle);
-            Variable.EnableEffectLine = GUILayout.Toggle(Variable.EnableEffectLine,
-                LocalizationManager.GetText("效果径向线"), Variable.ToggleStyle);
-            Variable.EnableVortexLine = GUILayout.Toggle(Variable.EnableVortexLine,
-                LocalizationManager.GetText("漩涡径向线"), Variable.ToggleStyle);
-            Variable.EnableTangentLine = GUILayout.Toggle(Variable.EnableTangentLine,
-                LocalizationManager.GetText("漩涡切向线"), Variable.ToggleStyle);
-            Variable.EnableCustomLine = GUILayout.Toggle(Variable.EnableCustomLine,
-                LocalizationManager.GetText("自定义方向线"), Variable.ToggleStyle);
-            Variable.EnableCustomMarker = GUILayout.Toggle(Variable.EnableCustomMarker,
-                LocalizationManager.GetText("自定义标记点"), Variable.ToggleStyle);
+            Variable.EnablePathLine = GUILayout.Toggle(Variable.EnablePathLine, LocalizationManager.GetText("路径切向线"), Variable.ToggleStyle);
+            Variable.EnableLadleLine = GUILayout.Toggle(Variable.EnableLadleLine, LocalizationManager.GetText("加水方向线"), Variable.ToggleStyle);
+            Variable.EnableEffectLine = GUILayout.Toggle(Variable.EnableEffectLine, LocalizationManager.GetText("效果径向线"), Variable.ToggleStyle);
+            Variable.EnableVortexLine = GUILayout.Toggle(Variable.EnableVortexLine, LocalizationManager.GetText("漩涡径向线"), Variable.ToggleStyle);
+            Variable.EnableTangentLine = GUILayout.Toggle(Variable.EnableTangentLine, LocalizationManager.GetText("漩涡切向线"), Variable.ToggleStyle);
+            Variable.EnableCustomLine = GUILayout.Toggle(Variable.EnableCustomLine, LocalizationManager.GetText("自定义方向线"), Variable.ToggleStyle);
+            Variable.EnableCustomMarker = GUILayout.Toggle(Variable.EnableCustomMarker, LocalizationManager.GetText("自定义标记点"), Variable.ToggleStyle);
             GUILayout.EndVertical();
             GUILayout.FlexibleSpace();
             GUILayout.BeginVertical();
-            Variable.EnablePathCurve = GUILayout.Toggle(Variable.EnablePathCurve, LocalizationManager.GetText("路径曲线"),
-                Variable.ToggleStyle);
-            Variable.EnableVortexCurve = GUILayout.Toggle(Variable.EnableVortexCurve,
-                LocalizationManager.GetText("漩涡曲线"), Variable.ToggleStyle);
-            Variable.EnableEffectRange = GUILayout.Toggle(Variable.EnableEffectRange,
-                LocalizationManager.GetText("效果范围"), Variable.ToggleStyle);
-            Variable.EnableVortexRange = GUILayout.Toggle(Variable.EnableVortexRange,
-                LocalizationManager.GetText("漩涡范围"), Variable.ToggleStyle);
-            Variable.EnableDangerSimulation = GUILayout.Toggle(Variable.EnableDangerSimulation,
-                LocalizationManager.GetText("骷髅区模拟"), Variable.ToggleStyle);
-            Variable.EnableSwampSimulation = GUILayout.Toggle(Variable.EnableSwampSimulation,
-                LocalizationManager.GetText("沼泽区模拟"), Variable.ToggleStyle);
-            Variable.EnableTransparency = GUILayout.Toggle(Variable.EnableTransparency,
-                LocalizationManager.GetText("透明瓶身"), Variable.ToggleStyle);
+            Variable.EnablePathCurve = GUILayout.Toggle(Variable.EnablePathCurve, LocalizationManager.GetText("路径曲线"), Variable.ToggleStyle);
+            Variable.EnableVortexCurve = GUILayout.Toggle(Variable.EnableVortexCurve, LocalizationManager.GetText("漩涡曲线"), Variable.ToggleStyle);
+            Variable.EnableEffectRange = GUILayout.Toggle(Variable.EnableEffectRange, LocalizationManager.GetText("效果范围"), Variable.ToggleStyle);
+            Variable.EnableVortexRange = GUILayout.Toggle(Variable.EnableVortexRange, LocalizationManager.GetText("漩涡范围"), Variable.ToggleStyle);
+            Variable.EnableDangerSimulation = GUILayout.Toggle(Variable.EnableDangerSimulation, LocalizationManager.GetText("骷髅区模拟"), Variable.ToggleStyle);
+            Variable.EnableSwampSimulation = GUILayout.Toggle(Variable.EnableSwampSimulation, LocalizationManager.GetText("沼泽区模拟"), Variable.ToggleStyle);
+            Variable.EnableTransparency = GUILayout.Toggle(Variable.EnableTransparency, LocalizationManager.GetText("透明瓶身"), Variable.ToggleStyle);
             GUILayout.EndVertical();
             GUILayout.EndHorizontal();
             Function.UpdateDoFromEnable();
@@ -185,23 +170,19 @@ public static class UIWindow
         {
             GUILayout.BeginHorizontal();
             GUILayout.BeginVertical();
-            Variable.DisplaySalt = GUILayout.Toggle(Variable.DisplaySalt, LocalizationManager.GetText("盐量数据"),
-                Variable.ToggleStyle);
-            Variable.DisplayStage = GUILayout.Toggle(Variable.DisplayStage, LocalizationManager.GetText("搅拌阶段"),
-                Variable.ToggleStyle);
+            Variable.DisplaySalt = GUILayout.Toggle(Variable.DisplaySalt, LocalizationManager.GetText("盐量数据"), Variable.ToggleStyle);
+            Variable.DisplayStage = GUILayout.Toggle(Variable.DisplayStage, LocalizationManager.GetText("搅拌阶段"), Variable.ToggleStyle);
             GUILayout.EndVertical();
             GUILayout.FlexibleSpace();
             GUILayout.BeginVertical();
-            var displayPolar = GUILayout.Toggle(Variable.DisplayPolar, LocalizationManager.GetText("极坐标"),
-                Variable.ToggleStyle);
+            var displayPolar = GUILayout.Toggle(Variable.DisplayPolar, LocalizationManager.GetText("极坐标"), Variable.ToggleStyle);
             if (Variable.DisplayPolar != displayPolar)
             {
                 Variable.DisplayPolar = displayPolar;
                 Function.UpdateCustomMarkerPositionType();
             }
 
-            Variable.DisplayOffset = GUILayout.Toggle(Variable.DisplayOffset, LocalizationManager.GetText("碰撞体位置"),
-                Variable.ToggleStyle);
+            Variable.DisplayOffset = GUILayout.Toggle(Variable.DisplayOffset, LocalizationManager.GetText("碰撞体位置"), Variable.ToggleStyle);
             GUILayout.EndVertical();
             GUILayout.EndHorizontal();
         }
@@ -244,19 +225,15 @@ public static class UIWindow
             var busy = run >= 0;
             GUILayout.BeginHorizontal();
             GUILayout.BeginVertical();
-            if (GUILayout.Button(LocalizationManager.GetText(run == 0 ? "计算中…" : "加水 → 路径"), Variable.ButtonStyle) &&
-                !busy)
+            if (GUILayout.Button(LocalizationManager.GetText(run == 0 ? "计算中…" : "加水 → 路径"), Variable.ButtonStyle) && !busy)
                 PathSolve.StartLadleToPath();
-            if (GUILayout.Button(LocalizationManager.GetText(run == 1 ? "计算中…" : "路径 → 加水"), Variable.ButtonStyle) &&
-                !busy)
+            if (GUILayout.Button(LocalizationManager.GetText(run == 1 ? "计算中…" : "路径 → 加水"), Variable.ButtonStyle) && !busy)
                 PathSolve.StartPathToLadle();
             GUILayout.EndVertical();
             GUILayout.BeginVertical();
-            if (GUILayout.Button(LocalizationManager.GetText(run == 2 ? "计算中…" : "漩涡 → 路径"), Variable.ButtonStyle) &&
-                !busy)
+            if (GUILayout.Button(LocalizationManager.GetText(run == 2 ? "计算中…" : "漩涡 → 路径"), Variable.ButtonStyle) && !busy)
                 PathSolve.StartVortexToPath();
-            if (GUILayout.Button(LocalizationManager.GetText(run == 3 ? "计算中…" : "漩涡 → 加水"), Variable.ButtonStyle) &&
-                !busy)
+            if (GUILayout.Button(LocalizationManager.GetText(run == 3 ? "计算中…" : "漩涡 → 加水"), Variable.ButtonStyle) && !busy)
                 PathSolve.StartVortexToLadle();
             GUILayout.EndVertical();
             GUILayout.BeginVertical();
@@ -292,8 +269,7 @@ public static class UIWindow
             {
                 GUILayout.BeginHorizontal();
                 GUILayout.Label($"{i + 1}.", Variable.LabelStyle, GUILayout.Width(Variable.CustomLineLabelWidth));
-                var slideValue = GUILayout.HorizontalSlider((float)Variable.CustomLineDirections[i], -180, 180,
-                    Variable.SliderStyle, new(GUI.skin.horizontalSliderThumb));
+                var slideValue = GUILayout.HorizontalSlider((float)Variable.CustomLineDirections[i], -180, 180, Variable.SliderStyle, new(GUI.skin.horizontalSliderThumb));
                 if (slideValue != (float)Variable.CustomLineDirections[i])
                 {
                     Variable.CustomLineDirections[i] = slideValue;
@@ -406,20 +382,17 @@ public static class UIWindow
     private static void DrawMarkerInput(int index, bool isFirst)
     {
         GUILayout.BeginHorizontal();
-        GUILayout.Label(GetMarkerAxisLabel(isFirst), Variable.AxisStyle);
-        var (min, max) = GetMarkerAxisRange(isFirst);
+        GUILayout.Label(Variable.DisplayPolar ? isFirst ? "R" : "θ" : isFirst ? "X" : "Y", Variable.AxisStyle);
+        var (min, max) = Variable.DisplayPolar ? isFirst ? (0f, 115f) : (-180f, 180f) : (-80f, 80f);
         var axisValue = isFirst ? Variable.CustomMarkerPositions[index].X : Variable.CustomMarkerPositions[index].Y;
-        var slideValue = GUILayout.HorizontalSlider((float)axisValue, min, max, Variable.SliderStyle,
-            new(GUI.skin.horizontalSliderThumb));
+        var slideValue = GUILayout.HorizontalSlider((float)axisValue, min, max, Variable.SliderStyle, new(GUI.skin.horizontalSliderThumb));
         if (slideValue != (float)axisValue)
         {
             SetMarkerAxisValue(index, isFirst, slideValue);
             SetMarkerInput(index, isFirst, $"{slideValue}", false);
         }
 
-        var style = (isFirst ? Variable.CustomMarkerInputs[index].Item3 : Variable.CustomMarkerInputs[index].Item4)
-            ? Variable.TextFieldErrorStyle
-            : Variable.TextFieldStyle;
+        var style = (isFirst ? Variable.CustomMarkerInputs[index].Item3 : Variable.CustomMarkerInputs[index].Item4) ? Variable.TextFieldErrorStyle : Variable.TextFieldStyle;
         var input = isFirst ? Variable.CustomMarkerInputs[index].Item1 : Variable.CustomMarkerInputs[index].Item2;
         var inputValue = GUILayout.TextField(input, style);
         if (inputValue != input)
@@ -438,29 +411,12 @@ public static class UIWindow
     }
 
     /// <summary>
-    /// 获取标记点坐标轴名称
-    /// </summary>
-    private static string GetMarkerAxisLabel(bool isFirst)
-    {
-        return Variable.DisplayPolar ? isFirst ? "R" : "θ" : isFirst ? "X" : "Y";
-    }
-
-    /// <summary>
-    /// 获取标记点坐标轴调节范围
-    /// </summary>
-    private static (float min, float max) GetMarkerAxisRange(bool isFirst)
-    {
-        return !Variable.DisplayPolar ? (-80f, 80f) : isFirst ? (0f, 115f) : (-180f, 180f);
-    }
-
-    /// <summary>
     /// 设置标记点坐标轴数值
     /// </summary>
     private static void SetMarkerAxisValue(int index, bool isFirst, double value)
     {
         var position = Variable.CustomMarkerPositions[index];
-        Variable.CustomMarkerPositions[index] =
-            isFirst ? new Variable.Vec2D(value, position.Y) : new Variable.Vec2D(position.X, value);
+        Variable.CustomMarkerPositions[index] = isFirst ? new Variable.Vec2D(value, position.Y) : new Variable.Vec2D(position.X, value);
     }
 
     /// <summary>
@@ -469,8 +425,7 @@ public static class UIWindow
     private static void SetMarkerInput(int index, bool isFirst, string value, bool error)
     {
         var (first, second, firstError, secondError) = Variable.CustomMarkerInputs[index];
-        Variable.CustomMarkerInputs[index] =
-            isFirst ? (value, second, error, secondError) : (first, value, firstError, error);
+        Variable.CustomMarkerInputs[index] = isFirst ? (value, second, error, secondError) : (first, value, firstError, error);
     }
 
     #endregion

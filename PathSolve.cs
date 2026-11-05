@@ -14,15 +14,12 @@ public static class PathSolve
     /// <summary>
     /// 计算路径 → 加水
     /// </summary>
-    private static Variable.Vec2D? PathToLadle(List<(Variable.Vec2D, bool)> path, Variable.Vec2D O,
-        Variable.Vec2D C,
-        double rad)
+    private static Variable.Vec2D? PathToLadle(List<(Variable.Vec2D, bool)> path, Variable.Vec2D O, Variable.Vec2D C, double rad)
     {
         if (path.Count < 2) return null;
         var gate = new object();
         var bestP = (double.PositiveInfinity, -1, 0.0);
-        Parallel.For(0, path.Count, () => (double.PositiveInfinity, -1, 0.0),
-            (i, _, local) =>
+        Parallel.For(0, path.Count, () => (double.PositiveInfinity, -1, 0.0), (i, _, local) =>
             {
                 var B = path[i].Item1;
                 Geometry.LineVsCircle(B, O, C, rad, out var ti);
@@ -93,8 +90,7 @@ public static class PathSolve
     /// <summary>
     /// 计算漩涡 → 加水
     /// </summary>
-    private static Variable.Vec2D? VortexToLadle(Variable.Spiral? spiral, Variable.Vec2D o, Variable.Vec2D c,
-        double rad)
+    private static Variable.Vec2D? VortexToLadle(Variable.Spiral? spiral, Variable.Vec2D o, Variable.Vec2D c, double rad)
     {
         if (spiral == null) return null;
         var sp = spiral.Value;
@@ -114,9 +110,7 @@ public static class PathSolve
             }
 
             var locals = new List<double>[n];
-            Parallel.For(0, n,
-                i => locals[i] =
-                    Algebra.GetEnclosureRoots(PhiPoint, EnclosePhi, partitions[i].Item1, partitions[i].Item2));
+            Parallel.For(0, n, i => locals[i] = Algebra.GetEnclosureRoots(PhiPoint, EnclosePhi, partitions[i].Item1, partitions[i].Item2));
             var rootl = locals.SelectMany(l => l).OrderBy(x => x).ToList();
             var roots = new List<double>();
             foreach (var r in rootl)
@@ -127,8 +121,7 @@ public static class PathSolve
             bestP = Better(SpiralPoint(sp, sp.MaxAngle, o, c, rad), bestP);
         }
 
-        return new(sp.Pos.X + Variable.Spiral.A * bestP.Item2 * Math.Cos(bestP.Item2 + sp.Rot),
-            sp.Pos.Y + Variable.Spiral.A * bestP.Item2 * Math.Sin(bestP.Item2 + sp.Rot));
+        return new(sp.Pos.X + Variable.Spiral.A * bestP.Item2 * Math.Cos(bestP.Item2 + sp.Rot), sp.Pos.Y + Variable.Spiral.A * bestP.Item2 * Math.Sin(bestP.Item2 + sp.Rot));
 
         double PhiPoint(double th)
         {
@@ -191,8 +184,7 @@ public static class PathSolve
 
         var path = new List<(Variable.Vec2D, bool)>(Variable.PathPhysical);
         var offset = Variable.Offset;
-        GetEffectAndVortex(out var doEffect, out var doVortex, out var effectPos, out var vortexPos,
-            out var vortexRad);
+        GetEffectAndVortex(out var doEffect, out var doVortex, out var effectPos, out var vortexPos, out var vortexRad);
         ThreadingHelper.Instance.StartAsyncInvoke(() =>
         {
             var effectHandoff = doEffect ? PathToLadle(path, offset, effectPos, Variable.EffectRad) : null;
@@ -221,8 +213,7 @@ public static class PathSolve
 
         var spiral = Variable.SpiralPhysical;
         var offset = Variable.Offset;
-        GetEffectAndVortex(out var doEffect, out var doVortex, out var effectPos, out var vortexPos,
-            out var vortexRad);
+        GetEffectAndVortex(out var doEffect, out var doVortex, out var effectPos, out var vortexPos, out var vortexRad);
         ThreadingHelper.Instance.StartAsyncInvoke(() =>
         {
             var effectHandoff = doEffect ? VortexToLadle(spiral, offset, effectPos, Variable.EffectRad) : null;
@@ -279,8 +270,7 @@ public static class PathSolve
     private static (double, double) SpiralPoint(Variable.Spiral S, double ang, Variable.Vec2D O, Variable.Vec2D C,
         double rad)
     {
-        var pos = new Variable.Vec2D(S.Pos.X + Variable.Spiral.A * ang * Math.Cos(ang + S.Rot),
-            S.Pos.Y + Variable.Spiral.A * ang * Math.Sin(ang + S.Rot));
+        var pos = new Variable.Vec2D(S.Pos.X + Variable.Spiral.A * ang * Math.Cos(ang + S.Rot), S.Pos.Y + Variable.Spiral.A * ang * Math.Sin(ang + S.Rot));
         Geometry.LineVsCircle(pos, O, C, rad, out var t);
         return (t.HasValue ? t.Value * O.Distance(pos) : double.PositiveInfinity, ang);
     }

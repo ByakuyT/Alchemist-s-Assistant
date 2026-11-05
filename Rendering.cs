@@ -128,11 +128,7 @@ public static class Rendering
     public static void SetNodeRenderers()
     {
         bool[] ClosestEnables = [Variable.DoPathCurve, Variable.DoPathCurve, Variable.DoLines[1], Variable.DoLines[1]];
-        bool[] IntersectionEnables =
-        [
-            Variable.DoPathEffectPoint, Variable.DoLadleEffectPoint, Variable.DoPathVortexPoint,
-            Variable.DoLadleVortexPoint
-        ];
+        bool[] IntersectionEnables = [Variable.DoPathEffectPoint, Variable.DoLadleEffectPoint, Variable.DoPathVortexPoint, Variable.DoLadleVortexPoint];
         bool[] DangerEnables = [Variable.DoPathDangerPoint, Variable.DoLadleDangerPoint, Variable.DoVortexDangerPoint];
         var mapTrans = Managers.RecipeMap.currentMap.referencesContainer.transform;
         for (var i = 0; i < 4; i++)
@@ -141,8 +137,7 @@ public static class Rendering
             {
                 var posDev = mapTrans.TransformPoint(Variable.ClosestPositions[i].Value.ToVec3());
                 if (Variable.ClosestPoints[i] == null)
-                    InitSpriteRenderer(Variable.SquareSprite, Variable.ColorClosest.Value, 4,
-                        out Variable.ClosestPoints[i]);
+                    InitSpriteRenderer(Variable.SquareSprite, Variable.ColorClosest.Value, 4, out Variable.ClosestPoints[i]);
                 Variable.ClosestPoints[i].transform.position = posDev;
             }
             else if (Variable.ClosestPoints[i] != null)
@@ -183,8 +178,7 @@ public static class Rendering
             {
                 var posDev = mapTrans.TransformPoint(Variable.DefeatPositions[i].Value.ToVec3());
                 if (Variable.DefeatPoints[i] == null)
-                    InitSpriteRenderer(Variable.SquareSprite, Variable.ColorDefeat.Value, 4,
-                        out Variable.DefeatPoints[i]);
+                    InitSpriteRenderer(Variable.SquareSprite, Variable.ColorDefeat.Value, 4, out Variable.DefeatPoints[i]);
                 Variable.DefeatPoints[i].transform.position = posDev;
             }
             else if (Variable.DefeatPoints[i] != null)
@@ -253,8 +247,7 @@ public static class Rendering
             {
                 var posDev = mapTrans.TransformPoint(Variable.HandoffPositions[i].Value.ToVec3());
                 if (Variable.HandoffPoints[i] == null)
-                    InitSpriteRenderer(Variable.SquareSprite, Variable.ColorHandoff.Value, 4,
-                        out Variable.HandoffPoints[i]);
+                    InitSpriteRenderer(Variable.SquareSprite, Variable.ColorHandoff.Value, 4, out Variable.HandoffPoints[i]);
                 Variable.HandoffPoints[i].transform.position = posDev;
             }
             else if (Variable.HandoffPoints[i] != null)
@@ -276,8 +269,7 @@ public static class Rendering
                 if (points.Length == 2)
                 {
                     if (Variable.Lines[i] == null)
-                        InitLineRenderer(Variable.SolidMaterial, Variable.ColorLines[i].Value, 3,
-                            out Variable.Lines[i]);
+                        InitLineRenderer(Variable.SolidMaterial, Variable.ColorLines[i].Value, 3, out Variable.Lines[i]);
                     Variable.Lines[i].SetPositions(points);
                 }
                 else if (Variable.Lines[i] != null)
@@ -429,14 +421,11 @@ public static class Rendering
         SetOriginalIndicatorVisible(!Variable.DoTransparency);
         if (Variable.DoTransparency)
         {
-            var indPos = Variable.Vec2D.From(Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition) +
-                         Variable.Offset;
+            var indPos = Variable.Vec2D.From(Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition) + Variable.Offset;
             var indRot = -Managers.RecipeMap.indicatorRotation.Value * Math.PI / 180.0;
             var mapTrans = Managers.RecipeMap.currentMap.referencesContainer.transform;
-            var delta = new Variable.Vec2D(Variable.IndicatorRad * Math.Sin(indRot),
-                Variable.IndicatorRad * Math.Cos(indRot));
-            Vector3[] linePoints =
-                [mapTrans.TransformPoint(indPos.ToVec3()), mapTrans.TransformPoint((indPos + delta).ToVec3())];
+            var delta = new Variable.Vec2D(Variable.IndicatorRad * Math.Sin(indRot), Variable.IndicatorRad * Math.Cos(indRot));
+            Vector3[] linePoints = [mapTrans.TransformPoint(indPos.ToVec3()), mapTrans.TransformPoint((indPos + delta).ToVec3())];
             InitRange(Variable.IndicatorRad - Variable.LineWidth.Value * 0.5, indPos, out var rangePoints);
             if (Variable.IndicatorRange == null)
             {
@@ -464,9 +453,7 @@ public static class Rendering
             for (var i = 0; i < Variable.CustomLineDirections.Count; i++)
             {
                 InitLine(Variable.CustomLineDirections[i], out var points);
-                var color = Variable.CustomLineHovers[i] || Variable.TargetLineIndex == i
-                    ? Variable.ColorCustomLineHover.Value
-                    : Variable.ColorCustomLineNormal.Value;
+                var color = Variable.CustomLineHovers[i] || Variable.TargetLineIndex == i ? Variable.ColorCustomLineHover.Value : Variable.ColorCustomLineNormal.Value;
                 var order = Variable.CustomLineHovers[i] || Variable.TargetLineIndex == i ? 6 : 5;
                 if (Variable.CustomLines.Count > i)
                     Variable.CustomLines[i].SetPositions(points);
@@ -503,20 +490,10 @@ public static class Rendering
             var arm = Variable.LineWidth.Value * 2.5f;
             for (var i = 0; i < Variable.CustomMarkerPositions.Count; i++)
             {
-                var pos = (Variable.DisplayPolar
-                    ? Algebra.FromPolar(Variable.CustomMarkerPositions[i])
-                    : Variable.CustomMarkerPositions[i]).ToVec2();
-                Vector3[] horizontal =
-                [
-                    mapTrans.TransformPoint(new(pos.x - arm, pos.y)), mapTrans.TransformPoint(new(pos.x + arm, pos.y))
-                ];
-                Vector3[] vertical =
-                [
-                    mapTrans.TransformPoint(new(pos.x, pos.y - arm)), mapTrans.TransformPoint(new(pos.x, pos.y + arm))
-                ];
-                var color = Variable.CustomMarkerHovers[i] || Variable.TargetMarkerIndex == i
-                    ? Variable.ColorCustomMarkerHover.Value
-                    : Variable.ColorCustomMarkerNormal.Value;
+                var pos = (Variable.DisplayPolar ? Algebra.FromPolar(Variable.CustomMarkerPositions[i]) : Variable.CustomMarkerPositions[i]).ToVec2();
+                Vector3[] horizontal = [mapTrans.TransformPoint(new(pos.x - arm, pos.y)), mapTrans.TransformPoint(new(pos.x + arm, pos.y))];
+                Vector3[] vertical = [mapTrans.TransformPoint(new(pos.x, pos.y - arm)), mapTrans.TransformPoint(new(pos.x, pos.y + arm))];
+                var color = Variable.CustomMarkerHovers[i] || Variable.TargetMarkerIndex == i ? Variable.ColorCustomMarkerHover.Value : Variable.ColorCustomMarkerNormal.Value;
                 var order = Variable.CustomMarkerHovers[i] || Variable.TargetMarkerIndex == i ? 6 : 5;
                 if (Variable.CustomMarkers.Count > i)
                 {
@@ -568,8 +545,7 @@ public static class Rendering
         var dx = Math.Cos(rad);
         var dy = Math.Sin(rad);
         var mapTrans = Managers.RecipeMap.currentMap.referencesContainer.transform;
-        var indPos = Variable.Vec2D.From(Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition) +
-                     Variable.Offset;
+        var indPos = Variable.Vec2D.From(Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition) + Variable.Offset;
         List<Vector3> pts = [];
         if (Math.Abs(dx) > 1e-10)
         {

@@ -11,8 +11,7 @@ public static class Geometry
     /// <summary>
     /// 计算线段与圆的交点参数
     /// </summary>
-    private static void LineVsCircleRoots(Variable.Vec2D p0, Variable.Vec2D p1, Variable.Vec2D cen, double rad,
-        out Variable.Vec2D d, out List<double> ti)
+    private static void LineVsCircleRoots(Variable.Vec2D p0, Variable.Vec2D p1, Variable.Vec2D cen, double rad, out Variable.Vec2D d, out List<double> ti)
     {
         ti = [];
         d = p1 - p0;
@@ -34,8 +33,7 @@ public static class Geometry
     /// <summary>
     /// 计算线段与圆的交点
     /// </summary>
-    public static void LineVsCircle(Variable.Vec2D p0, Variable.Vec2D p1, Variable.Vec2D cen, double rad,
-        out List<Variable.Vec2D> pos, out List<double> ti)
+    public static void LineVsCircle(Variable.Vec2D p0, Variable.Vec2D p1, Variable.Vec2D cen, double rad, out List<Variable.Vec2D> pos, out List<double> ti)
     {
         LineVsCircleRoots(p0, p1, cen, rad, out var d, out ti);
         pos = [.. ti.Select(t => p0 + d * t)];
@@ -44,8 +42,7 @@ public static class Geometry
     /// <summary>
     /// 计算线段与圆最近的交点
     /// </summary>
-    public static void LineVsCircle(Variable.Vec2D p0, Variable.Vec2D p1, Variable.Vec2D cen, double rad,
-        out double? ti)
+    public static void LineVsCircle(Variable.Vec2D p0, Variable.Vec2D p1, Variable.Vec2D cen, double rad, out double? ti)
     {
         LineVsCircleRoots(p0, p1, cen, rad, out _, out var ts);
         ti = ts.Count > 0 ? ts[0] : null;

@@ -37,9 +37,7 @@ public static class Function
     public static void UpdateSelectEffect(InteractiveItem item)
     {
         if (Variable.KeyEffect.Value.IsPressed() && Mouse.current.rightButton.wasPressedThisFrame)
-            Variable.TargetEffect =
-                Managers.RecipeMap.currentMap.referencesContainer.potionEffectsOnMap.FirstOrDefault(x =>
-                    x.name == item.name);
+            Variable.TargetEffect = Managers.RecipeMap.currentMap.referencesContainer.potionEffectsOnMap.FirstOrDefault(x => x.name == item.name);
     }
 
     /// <summary>
@@ -56,9 +54,7 @@ public static class Function
             var mousePos = Managers.Cursor.cursor.transform.position;
             if (!Managers.RecipeMap.recipeMapObject.visibilityZoneCollider.OverlapPoint(mousePos)) return;
             var worldPos = Managers.RecipeMap.recipeMapObject.transmitterWindow.ViewToCamera(mousePos);
-            var mapPos =
-                Variable.Vec2D.From(
-                    Managers.RecipeMap.currentMap.referencesContainer.transform.InverseTransformPoint(worldPos));
+            var mapPos = Variable.Vec2D.From(Managers.RecipeMap.currentMap.referencesContainer.transform.InverseTransformPoint(worldPos));
             Variable.VortexIndex[mapid] = -1;
             for (var i = 0; i < Variable.Vortices[mapid].Count; i++)
             {
@@ -87,11 +83,8 @@ public static class Function
             }
 
             var worldPos = Managers.RecipeMap.recipeMapObject.transmitterWindow.ViewToCamera(mousePos);
-            var mapPos =
-                Variable.Vec2D.From(
-                    Managers.RecipeMap.currentMap.referencesContainer.transform.InverseTransformPoint(worldPos));
-            var delta = mapPos - Variable.Offset -
-                        Variable.Vec2D.From(Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition);
+            var mapPos = Variable.Vec2D.From(Managers.RecipeMap.currentMap.referencesContainer.transform.InverseTransformPoint(worldPos));
+            var delta = mapPos - Variable.Offset - Variable.Vec2D.From(Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition);
             var dir = (float)Variable.Vec2D.Right.SignedAngle(delta);
             if (Mouse.current.middleButton.isPressed)
             {
@@ -162,8 +155,7 @@ public static class Function
             {
                 if (Variable.TargetMarkerIndex < 0) return;
                 Variable.CustomMarkerPositions[Variable.TargetMarkerIndex] = storagePos;
-                Variable.CustomMarkerInputs[Variable.TargetMarkerIndex] =
-                    ($"{storagePos.X}", $"{storagePos.Y}", false, false);
+                Variable.CustomMarkerInputs[Variable.TargetMarkerIndex] = ($"{storagePos.X}", $"{storagePos.Y}", false, false);
             }
             else
             {
@@ -171,9 +163,7 @@ public static class Function
                 var minDis = double.PositiveInfinity;
                 for (var i = 0; i < Variable.CustomMarkerPositions.Count; i++)
                 {
-                    var dis = mapPos.Distance(Variable.DisplayPolar
-                        ? Algebra.FromPolar(Variable.CustomMarkerPositions[i])
-                        : Variable.CustomMarkerPositions[i]);
+                    var dis = mapPos.Distance(Variable.DisplayPolar ? Algebra.FromPolar(Variable.CustomMarkerPositions[i]) : Variable.CustomMarkerPositions[i]);
                     if (dis < minDis)
                     {
                         minDis = dis;
@@ -214,11 +204,8 @@ public static class Function
     {
         for (var i = 0; i < Variable.CustomMarkerPositions.Count; i++)
         {
-            Variable.CustomMarkerPositions[i] = Variable.DisplayPolar
-                ? Algebra.ToPolar(Variable.CustomMarkerPositions[i])
-                : Algebra.FromPolar(Variable.CustomMarkerPositions[i]);
-            Variable.CustomMarkerInputs[i] = ($"{Variable.CustomMarkerPositions[i].X}",
-                $"{Variable.CustomMarkerPositions[i].Y}", false, false);
+            Variable.CustomMarkerPositions[i] = Variable.DisplayPolar ? Algebra.ToPolar(Variable.CustomMarkerPositions[i]) : Algebra.FromPolar(Variable.CustomMarkerPositions[i]);
+            Variable.CustomMarkerInputs[i] = ($"{Variable.CustomMarkerPositions[i].X}", $"{Variable.CustomMarkerPositions[i].Y}", false, false);
         }
     }
 
@@ -324,15 +311,13 @@ public static class Function
         var len = reader.ReadInt32();
         list = new List<Variable.Vortex>(len);
         for (var i = 0; i < len; i++)
-            list.Add(new Variable.Vortex
-                { Pos = new(reader.ReadDouble(), reader.ReadDouble()), Rad = reader.ReadDouble() });
+            list.Add(new Variable.Vortex { Pos = new(reader.ReadDouble(), reader.ReadDouble()), Rad = reader.ReadDouble() });
     }
 
     /// <summary>
     /// 加载区域数据
     /// </summary>
-    private static void LoadZoneFromBin(string path, out List<Variable.ZoneCircle> circles,
-        out List<Variable.ZoneBox> boxes, out List<Variable.ZoneBvh> bvh, out int[,] occsum, out Variable.Vec2D origin)
+    private static void LoadZoneFromBin(string path, out List<Variable.ZoneCircle> circles, out List<Variable.ZoneBox> boxes, out List<Variable.ZoneBvh> bvh, out int[,] occsum, out Variable.Vec2D origin)
     {
         var data = ReadBinaryFile($"AlchAssV4.Bins.{path}.bin");
         using var reader = new BinaryReader(new MemoryStream(data));
@@ -344,15 +329,10 @@ public static class Function
         var numBvhNode = reader.ReadInt32();
         circles = [];
         for (var i = 0; i < numCircle; i++)
-            circles.Add(new Variable.ZoneCircle
-                { Pos = new(reader.ReadDouble(), reader.ReadDouble()), Rad = reader.ReadDouble() });
+            circles.Add(new Variable.ZoneCircle { Pos = new(reader.ReadDouble(), reader.ReadDouble()), Rad = reader.ReadDouble() });
         boxes = [];
         for (var i = 0; i < numBox; i++)
-            boxes.Add(new Variable.ZoneBox
-            {
-                Pos = new(reader.ReadDouble(), reader.ReadDouble()), XHalf = reader.ReadDouble(),
-                YHalf = reader.ReadDouble(), Rot = reader.ReadDouble()
-            });
+            boxes.Add(new Variable.ZoneBox { Pos = new(reader.ReadDouble(), reader.ReadDouble()), XHalf = reader.ReadDouble(), YHalf = reader.ReadDouble(), Rot = reader.ReadDouble() });
         occsum = new int[girdX, girdY];
         for (var i = 0; i < girdX; i++)
         for (var j = 0; j < girdY; j++)
@@ -360,11 +340,7 @@ public static class Function
         bvh = [];
         for (var i = 0; i < numBvhNode; i++)
         {
-            var node = new Variable.ZoneBvh
-            {
-                XMin = reader.ReadDouble(), YMin = reader.ReadDouble(), XMax = reader.ReadDouble(),
-                YMax = reader.ReadDouble(), Left = reader.ReadInt32(), Right = reader.ReadInt32()
-            };
+            var node = new Variable.ZoneBvh { XMin = reader.ReadDouble(), YMin = reader.ReadDouble(), XMax = reader.ReadDouble(), YMax = reader.ReadDouble(), Left = reader.ReadInt32(), Right = reader.ReadInt32() };
             var circleCount = reader.ReadInt32();
             node.Circles = [];
             for (var j = 0; j < circleCount; j++)

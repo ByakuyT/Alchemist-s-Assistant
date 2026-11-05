@@ -54,10 +54,8 @@ public class Main : BaseUnityPlugin
         Variable.KeyMenu = Config.Bind("快捷键", "开关控制面板", new KeyboardShortcut(KeyCode.F1));
         Variable.KeyEffect = Config.Bind("快捷键", "选择目标效果", new KeyboardShortcut(KeyCode.LeftControl));
         Variable.KeyVortex = Config.Bind("快捷键", "选择目标漩涡", new KeyboardShortcut(KeyCode.LeftAlt));
-        Variable.KeyCustomLine =
-            Config.Bind("快捷键", "自定义方向线", new KeyboardShortcut(KeyCode.LeftControl, KeyCode.LeftShift));
-        Variable.KeyCustomMarker =
-            Config.Bind("快捷键", "自定义标记点", new KeyboardShortcut(KeyCode.LeftAlt, KeyCode.LeftShift));
+        Variable.KeyCustomLine = Config.Bind("快捷键", "自定义方向线", new KeyboardShortcut(KeyCode.LeftControl, KeyCode.LeftShift));
+        Variable.KeyCustomMarker = Config.Bind("快捷键", "自定义标记点", new KeyboardShortcut(KeyCode.LeftAlt, KeyCode.LeftShift));
         Variable.LineWidth = Config.Bind("其他设置", "渲染线宽", 0.075f);
         Variable.NodeSize = Config.Bind("其他设置", "渲染点大小", 0.15f);
         Variable.WindowScale = Config.Bind("其他设置", "信息窗口缩放", 0.8f);

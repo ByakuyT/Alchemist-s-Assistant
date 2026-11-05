@@ -30,20 +30,17 @@ public static class Calculation
             if (Variable.ClosestUseOffset[0]) targetPos += Variable.Offset;
             var targetRot = Variable.TargetEffect.transform.localEulerAngles.z;
             var devPos = targetPos.Distance(Variable.ClosestPositions[0].Value) * 1800;
-            var devRot = Math.Abs(Algebra.DeltaAngleDeg(Managers.RecipeMap.indicatorRotation.Value, targetRot)) * 25 /
-                         3;
+            var devRot = Math.Abs(Algebra.DeltaAngleDeg(Managers.RecipeMap.indicatorRotation.Value, targetRot)) * 25 / 3;
             var devTot = devPos + devRot;
             var lvlPos = devPos <= 100 ? 3 : devPos <= 600 ? 2 : devPos <= 2754 ? 1 : 0;
             var lvlTot = devTot <= 100 ? 3 : devTot <= 600 ? 2 : devPos <= 2754 ? 1 : 0;
             devPosText = $"<color=red>L{lvlPos}</color> {(float)devPos}%";
             devTotText = $"<color=red>L{lvlTot}</color> {(float)devTot}%";
-            closestDirText =
-                $"{(float)Variable.Vec2D.Right.SignedAngle(Variable.ClosestPositions[0].Value - targetPos)}'";
+            closestDirText = $"{(float)Variable.Vec2D.Right.SignedAngle(Variable.ClosestPositions[0].Value - targetPos)}'";
         }
 
         if (Variable.LineDirections[0].HasValue && Variable.LineDirections[2].HasValue)
-            deltaAngleText =
-                $"{(float)Algebra.DeltaAngleDeg(Variable.LineDirections[0].Value, Variable.LineDirections[2].Value)}'";
+            deltaAngleText = $"{(float)Algebra.DeltaAngleDeg(Variable.LineDirections[0].Value, Variable.LineDirections[2].Value)}'";
         if (Variable.DangerDistance[0].HasValue)
             lifeSaltText = Localization.FormatLifeSalt(Variable.DangerDistance[0].Value);
         if (Variable.SwampDistance.HasValue)
@@ -74,20 +71,17 @@ public static class Calculation
             if (Variable.ClosestUseOffset[1]) targetPos += Variable.Offset;
             var targetRot = Variable.TargetEffect.transform.localEulerAngles.z;
             var devPos = targetPos.Distance(Variable.ClosestPositions[2].Value) * 1800;
-            var devRot = Math.Abs(Algebra.DeltaAngleDeg(Managers.RecipeMap.indicatorRotation.Value, targetRot)) * 25 /
-                         3;
+            var devRot = Math.Abs(Algebra.DeltaAngleDeg(Managers.RecipeMap.indicatorRotation.Value, targetRot)) * 25 / 3;
             var devTot = devPos + devRot;
             var lvlPos = devPos <= 100 ? 3 : devPos <= 600 ? 2 : devPos <= 2754 ? 1 : 0;
             var lvlTot = devTot <= 100 ? 3 : devTot <= 600 ? 2 : devPos <= 2754 ? 1 : 0;
             devPosText = $"<color=red>L{lvlPos}</color> {(float)devPos}%";
             devTotText = $"<color=red>L{lvlTot}</color> {(float)devTot}%";
-            closestDirText =
-                $"{(float)Variable.Vec2D.Right.SignedAngle(Variable.ClosestPositions[2].Value - targetPos)}'";
+            closestDirText = $"{(float)Variable.Vec2D.Right.SignedAngle(Variable.ClosestPositions[2].Value - targetPos)}'";
         }
 
         if (Variable.LineDirections[1].HasValue && Variable.LineDirections[2].HasValue)
-            deltaAngleText =
-                $"{(float)Algebra.DeltaAngleDeg(Variable.LineDirections[1].Value, Variable.LineDirections[2].Value)}'";
+            deltaAngleText = $"{(float)Algebra.DeltaAngleDeg(Variable.LineDirections[1].Value, Variable.LineDirections[2].Value)}'";
         if (Variable.DangerDistance[1].HasValue)
             lifeSaltText = Localization.FormatLifeSalt(Variable.DangerDistance[1].Value);
         return $"""
@@ -159,8 +153,7 @@ public static class Calculation
     /// </summary>
     public static string CalculateBrewing(float health)
     {
-        var colPos = Variable.Vec2D.From(Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition) +
-                     Variable.Offset;
+        var colPos = Variable.Vec2D.From(Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition) + Variable.Offset;
         var offPos = Variable.Vec2D.From(Managers.RecipeMap.indicator.thisTransform.localPosition);
         var indRot = Managers.RecipeMap.indicatorRotation.Value;
         var posText = Localization.FormatPosition(colPos);
@@ -182,8 +175,7 @@ public static class Calculation
         if (Variable.TargetEffect == null) return "";
         var targetPos = Variable.Vec2D.From(Variable.TargetEffect.transform.localPosition);
         var targetRot = Variable.TargetEffect.transform.localEulerAngles.z;
-        var colPos = Variable.Vec2D.From(Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition) +
-                     Variable.Offset;
+        var colPos = Variable.Vec2D.From(Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition) + Variable.Offset;
         var indRot = Managers.RecipeMap.indicatorRotation.Value;
         var devPos0 = colPos.Distance(targetPos) * 1800;
         var devPos2 = colPos.Distance(targetPos + Variable.Offset) * 1800;
@@ -206,17 +198,13 @@ public static class Calculation
     public static string CalculateVortex()
     {
         if (Managers.RecipeMap.CurrentVortexMapItem == null) return "";
-        var colPos = Variable.Vec2D.From(Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition) +
-                     Variable.Offset;
+        var colPos = Variable.Vec2D.From(Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition) + Variable.Offset;
         var vortexPos = Variable.Vec2D.From(Managers.RecipeMap.CurrentVortexMapItem.thisTransform.localPosition);
         var disText = $"{(float)vortexPos.Distance(colPos)}";
-        var maxText =
-            $"{((CircleCollider2D)Traverse.Create(Managers.RecipeMap.CurrentVortexMapItem).Field("vortexCollider").GetValue()).radius + Variable.IndicatorRad}";
+        var maxText = $"{((CircleCollider2D)Traverse.Create(Managers.RecipeMap.CurrentVortexMapItem).Field("vortexCollider").GetValue()).radius + Variable.IndicatorRad}";
         var dirText = $"{(float)Variable.Vec2D.Right.SignedAngle(vortexPos - colPos)}";
         var tanText = Variable.LineDirections[4].HasValue ? $"{(float)Variable.LineDirections[4]}'" : "";
-        var lfsText = Variable.DangerDistance[2].HasValue
-            ? Localization.FormatLifeSalt(Variable.DangerDistance[2].Value)
-            : "";
+        var lfsText = Variable.DangerDistance[2].HasValue ? Localization.FormatLifeSalt(Variable.DangerDistance[2].Value) : "";
         return $"""
                 {LocalizationManager.GetText("漩涡距离")}: {disText}
                 {LocalizationManager.GetText("最大距离")}: {maxText}
@@ -233,18 +221,13 @@ public static class Calculation
     {
         var mapindex = Variable.MapId[Managers.RecipeMap.currentMap.potionBase.name];
         if (mapindex == 2 || Variable.VortexIndex[mapindex] < 0) return "";
-        var colPos = Variable.Vec2D.From(Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition) +
-                     Variable.Offset;
+        var colPos = Variable.Vec2D.From(Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition) + Variable.Offset;
         var selVortex = Variable.Vortices[mapindex][Variable.VortexIndex[mapindex]];
         var disText = $"{(float)selVortex.Pos.Distance(colPos)}";
         var maxText = $"{(float)selVortex.Rad}";
         var dirText = Variable.LineDirections[3].HasValue ? $"{(float)Variable.LineDirections[3].Value}'" : "";
-        var strText = Variable.ClosestPositions[1].HasValue
-            ? $"{(float)selVortex.Pos.Distance(Variable.ClosestPositions[1].Value)}"
-            : "";
-        var ldlText = Variable.ClosestPositions[3].HasValue
-            ? $"{(float)selVortex.Pos.Distance(Variable.ClosestPositions[3].Value)}"
-            : "";
+        var strText = Variable.ClosestPositions[1].HasValue ? $"{(float)selVortex.Pos.Distance(Variable.ClosestPositions[1].Value)}" : "";
+        var ldlText = Variable.ClosestPositions[3].HasValue ? $"{(float)selVortex.Pos.Distance(Variable.ClosestPositions[3].Value)}" : "";
         return $"""
                 {LocalizationManager.GetText("漩涡距离")}: {disText}
                 {LocalizationManager.GetText("路径近点")}: {strText}
@@ -259,9 +242,7 @@ public static class Calculation
     /// </summary>
     public static string CalculateGrind(Mortar mortar)
     {
-        return mortar.ContainedStack == null
-            ? ""
-            : $"{LocalizationManager.GetText("研磨进度")}: {mortar.ContainedStack.overallGrindStatus * 100}%";
+        return mortar.ContainedStack == null ? "" : $"{LocalizationManager.GetText("研磨进度")}: {mortar.ContainedStack.overallGrindStatus * 100}%";
     }
 
     #endregion
@@ -273,9 +254,7 @@ public static class Calculation
     /// </summary>
     public static void UpdateOffset()
     {
-        Variable.Offset = Variable.DisplayOffset
-            ? Variable.Vec2D.From(Managers.RecipeMap.indicator.thisTransform.localPosition)
-            : Variable.Vec2D.Zero;
+        Variable.Offset = Variable.DisplayOffset ? Variable.Vec2D.From(Managers.RecipeMap.indicator.thisTransform.localPosition) : Variable.Vec2D.Zero;
     }
 
     /// <summary>
@@ -286,8 +265,7 @@ public static class Calculation
         if (!Variable.DoLines[0] || Variable.PathPhysical.Count < 2)
             Variable.LineDirections[0] = null;
         else
-            Variable.LineDirections[0] =
-                Variable.Vec2D.Right.SignedAngle(Variable.PathPhysical[1].Item1 - Variable.PathPhysical[0].Item1);
+            Variable.LineDirections[0] = Variable.Vec2D.Right.SignedAngle(Variable.PathPhysical[1].Item1 - Variable.PathPhysical[0].Item1);
     }
 
     /// <summary>
@@ -298,9 +276,7 @@ public static class Calculation
         if (!Variable.DoLines[1])
             Variable.LineDirections[1] = null;
         else
-            Variable.LineDirections[1] =
-                Variable.Vec2D.Right.SignedAngle(
-                    -Variable.Vec2D.From(Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition));
+            Variable.LineDirections[1] = Variable.Vec2D.Right.SignedAngle(-Variable.Vec2D.From(Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition));
     }
 
     /// <summary>
@@ -313,8 +289,7 @@ public static class Calculation
         else
         {
             var targetPos = Variable.Vec2D.From(Variable.TargetEffect.transform.localPosition);
-            var colPos = Variable.Vec2D.From(Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition) +
-                         Variable.Offset;
+            var colPos = Variable.Vec2D.From(Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition) + Variable.Offset;
             Variable.LineDirections[2] = Variable.Vec2D.Right.SignedAngle(targetPos - colPos);
         }
     }
@@ -334,8 +309,7 @@ public static class Calculation
             else
             {
                 var selVortex = Variable.Vortices[mapindex][Variable.VortexIndex[mapindex]];
-                var colPos = Variable.Vec2D.From(Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition) +
-                             Variable.Offset;
+                var colPos = Variable.Vec2D.From(Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition) + Variable.Offset;
                 Variable.LineDirections[2] = Variable.Vec2D.Right.SignedAngle(selVortex.Pos - colPos);
             }
         }
@@ -350,8 +324,7 @@ public static class Calculation
             Variable.LineDirections[4] = null;
         else
         {
-            var dir = Variable.SpiralPhysical.Value.MaxAngle + Variable.SpiralPhysical.Value.Rot +
-                      Math.Atan(Variable.SpiralPhysical.Value.MaxAngle);
+            var dir = Variable.SpiralPhysical.Value.MaxAngle + Variable.SpiralPhysical.Value.Rot + Math.Atan(Variable.SpiralPhysical.Value.MaxAngle);
             Variable.LineDirections[4] = Algebra.DeltaAngleRad(0, dir - Math.PI) / Math.PI * 180;
         }
     }
@@ -370,9 +343,7 @@ public static class Calculation
         var indPos = Variable.Vec2D.From(Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition);
         var spiralPos = vortexPos + Variable.Offset;
         var colPos = indPos + Variable.Offset;
-        var maxDis =
-            ((CircleCollider2D)Traverse.Create(Managers.RecipeMap.CurrentVortexMapItem).Field("vortexCollider")
-                .GetValue()).radius + Variable.IndicatorRad;
+        var maxDis = ((CircleCollider2D)Traverse.Create(Managers.RecipeMap.CurrentVortexMapItem).Field("vortexCollider").GetValue()).radius + Variable.IndicatorRad;
         var dist = vortexPos.Distance(colPos);
         if (dist > maxDis + 1e-10) return;
         var v = indPos - vortexPos;
@@ -380,8 +351,7 @@ public static class Calculation
         var rot = Algebra.DeltaAngleRad(0, Math.Atan2(v.Y, v.X) - maxAng);
         var roots = Algebra.GetEnclosureRoots(CurvePoint, EncloseCurve, 0, maxAng);
         var minAng = roots.Count > 0 ? roots.Last() : 0;
-        Variable.SpiralPhysical = new Variable.Spiral
-            { MaxAngle = maxAng, MinAngle = minAng, Pos = spiralPos, Rot = rot };
+        Variable.SpiralPhysical = new Variable.Spiral { MaxAngle = maxAng, MinAngle = minAng, Pos = spiralPos, Rot = rot };
         var mapTrans = Managers.RecipeMap.currentMap.referencesContainer.transform;
         var angSpan = maxAng - minAng;
         var pointCount = Math.Max(10, (int)Math.Ceiling(angSpan * 40));
