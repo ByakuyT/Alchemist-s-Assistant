@@ -31,7 +31,7 @@ public static class Localization
     /// </summary>
     public static string FormatMoonSalt(double rotation)
     {
-        var angle = Algebra.DeltaAngle(rotation, 0.0);
+        var angle = Algebra.DeltaAngleDeg(rotation, 0.0);
         return !Variable.DisplaySalt ? $"{(float)angle}'" :
             angle < 0.0 ? $"<sprite=\"IconsAtlas\" name=\"MoonSalt\"> {(float)(-angle / 9 * 25)}" :
             $"<sprite=\"IconsAtlas\" name=\"SunSalt\"> {(float)(angle / 9f * 25f)}";
@@ -46,6 +46,16 @@ public static class Localization
         return !Variable.DisplaySalt
             ? $"{(float)hp}%"
             : $"<sprite=\"IconsAtlas\" name=\"LifeSalt\"> {(float)(hp * 2.5)}";
+    }
+
+    /// <summary>
+    /// 格式化可达角度区间
+    /// </summary>
+    public static string FormatReachableAngles(List<(double, double)> intervals)
+    {
+        if (intervals.Count == 0) return "";
+        return string.Join(" ∪ ",
+            intervals.Select(x => $"({(float)(x.Item1 * 180 / Math.PI)}', {(float)(x.Item2 * 180 / Math.PI)}')"));
     }
 
     /// <summary>

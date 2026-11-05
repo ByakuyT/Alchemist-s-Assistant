@@ -156,7 +156,7 @@ public static class Function
 
             var worldPos = Managers.RecipeMap.recipeMapObject.transmitterWindow.ViewToCamera(mousePos);
             var mapPosV = Managers.RecipeMap.currentMap.referencesContainer.transform.InverseTransformPoint(worldPos);
-            var mapPos = new Variable.Vec2D(Mathf.Clamp(mapPosV.x, -80, 80), Mathf.Clamp(mapPosV.y, -80, 80));
+            var mapPos = new Variable.Vec2D(Algebra.Clamp(mapPosV.x, -80, 80), Algebra.Clamp(mapPosV.y, -80, 80));
             var storagePos = Variable.DisplayPolar ? Algebra.ToPolar(mapPos) : mapPos;
             if (Mouse.current.middleButton.isPressed)
             {

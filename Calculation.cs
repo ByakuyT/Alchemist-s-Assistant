@@ -12,6 +12,127 @@ public static class Calculation
     #region 窗口信息计算
 
     /// <summary>
+    /// 计算路径信息
+    /// </summary>
+    public static string CalculatePath()
+    {
+        var devTotText = "";
+        var devPosText = "";
+        var closestDirText = "";
+        var deltaAngleText = "";
+        var lifeSaltText = "";
+        var swampDisText = "";
+        if (Variable.ClosestPositions[0].HasValue)
+        {
+            var targetPos = Variable.Vec2D.From(Variable.TargetEffect.transform.localPosition);
+            if (Variable.ClosestUseOffset[0]) targetPos += Variable.Offset;
+            var targetRot = Variable.TargetEffect.transform.localEulerAngles.z;
+            var devPos = targetPos.Distance(Variable.ClosestPositions[0].Value) * 1800;
+            var devRot = Math.Abs(Algebra.DeltaAngleDeg(Managers.RecipeMap.indicatorRotation.Value, targetRot)) * 25 /
+                         3;
+            var devTot = devPos + devRot;
+            var lvlPos = devPos <= 100 ? 3 : devPos <= 600 ? 2 : devPos <= 2754 ? 1 : 0;
+            var lvlTot = devTot <= 100 ? 3 : devTot <= 600 ? 2 : devPos <= 2754 ? 1 : 0;
+            devPosText = $"<color=red>L{lvlPos}</color> {(float)devPos}%";
+            devTotText = $"<color=red>L{lvlTot}</color> {(float)devTot}%";
+            closestDirText =
+                $"{(float)Variable.Vec2D.Right.SignedAngle(Variable.ClosestPositions[0].Value - targetPos)}'";
+        }
+
+        if (Variable.LineDirections[0].HasValue && Variable.LineDirections[2].HasValue)
+            deltaAngleText =
+                $"{(float)Algebra.DeltaAngleDeg(Variable.LineDirections[0].Value, Variable.LineDirections[2].Value)}'";
+        if (Variable.DangerDistance[0].HasValue)
+            lifeSaltText = Localization.FormatLifeSalt(Variable.DangerDistance[0].Value);
+        if (Variable.SwampDistance.HasValue)
+            swampDisText = $"{(float)Variable.SwampDistance.Value}";
+        return $"""
+                {LocalizationManager.GetText("总体偏离")}: {devTotText}
+                {LocalizationManager.GetText("位置偏离")}: {devPosText}
+                {LocalizationManager.GetText("近点方向")}: {closestDirText}
+                {LocalizationManager.GetText("效果夹角")}: {deltaAngleText}
+                {LocalizationManager.GetText("加血需求")}: {lifeSaltText}
+                {LocalizationManager.GetText("沼泽长度")}: {swampDisText}
+                """;
+    }
+
+    /// <summary>
+    /// 计算加水信息
+    /// </summary>
+    public static string CalculateLadle()
+    {
+        var devTotText = "";
+        var devPosText = "";
+        var closestDirText = "";
+        var deltaAngleText = "";
+        var lifeSaltText = "";
+        if (Variable.ClosestPositions[2].HasValue)
+        {
+            var targetPos = Variable.Vec2D.From(Variable.TargetEffect.transform.localPosition);
+            if (Variable.ClosestUseOffset[1]) targetPos += Variable.Offset;
+            var targetRot = Variable.TargetEffect.transform.localEulerAngles.z;
+            var devPos = targetPos.Distance(Variable.ClosestPositions[2].Value) * 1800;
+            var devRot = Math.Abs(Algebra.DeltaAngleDeg(Managers.RecipeMap.indicatorRotation.Value, targetRot)) * 25 /
+                         3;
+            var devTot = devPos + devRot;
+            var lvlPos = devPos <= 100 ? 3 : devPos <= 600 ? 2 : devPos <= 2754 ? 1 : 0;
+            var lvlTot = devTot <= 100 ? 3 : devTot <= 600 ? 2 : devPos <= 2754 ? 1 : 0;
+            devPosText = $"<color=red>L{lvlPos}</color> {(float)devPos}%";
+            devTotText = $"<color=red>L{lvlTot}</color> {(float)devTot}%";
+            closestDirText =
+                $"{(float)Variable.Vec2D.Right.SignedAngle(Variable.ClosestPositions[2].Value - targetPos)}'";
+        }
+
+        if (Variable.LineDirections[1].HasValue && Variable.LineDirections[2].HasValue)
+            deltaAngleText =
+                $"{(float)Algebra.DeltaAngleDeg(Variable.LineDirections[1].Value, Variable.LineDirections[2].Value)}'";
+        if (Variable.DangerDistance[1].HasValue)
+            lifeSaltText = Localization.FormatLifeSalt(Variable.DangerDistance[1].Value);
+        return $"""
+                {LocalizationManager.GetText("总体偏离")}: {devTotText}
+                {LocalizationManager.GetText("位置偏离")}: {devPosText}
+                {LocalizationManager.GetText("近点方向")}: {closestDirText}
+                {LocalizationManager.GetText("效果夹角")}: {deltaAngleText}
+                {LocalizationManager.GetText("加血需求")}: {lifeSaltText}
+                """;
+    }
+
+    /// <summary>
+    /// 计算移动信息
+    /// </summary>
+    public static string CalculateMove()
+    {
+        var path = Managers.RecipeMap.path;
+        var phase = path.deletedGraphicsSegments;
+        var progress = path.segmentLengthToDeletePhysics;
+        var pathDir = Variable.LineDirections[0].HasValue ? $"{(float)Variable.LineDirections[0]}'" : "";
+        var ladleDir = Variable.LineDirections[1].HasValue ? $"{(float)Variable.LineDirections[1]}'" : "";
+        var vortexText = "";
+        var vortex = Managers.RecipeMap.CurrentVortexMapItem;
+        if (vortex != null)
+        {
+            var vortexPos = Variable.Vec2D.From(vortex.thisTransform.localPosition);
+            var collider = (CircleCollider2D)Traverse.Create(vortex).Field("vortexCollider").GetValue();
+            var maxDis = collider.radius + Variable.IndicatorRad;
+            var intervals = Geometry.GetVortexReachableAngles(vortexPos, maxDis);
+            vortexText = Localization.FormatReachableAngles(intervals);
+        }
+
+        var stage = Variable.DisplayStage
+            ? $"""
+               {LocalizationManager.GetText("搅拌阶段")}: {phase}
+               {LocalizationManager.GetText("阶段进度")}: {progress}
+               """
+            : $"{LocalizationManager.GetText("搅拌进度")}: {phase + progress}";
+        return $"""
+                {stage}
+                {LocalizationManager.GetText("路径方向")}: {pathDir}
+                {LocalizationManager.GetText("加水方向")}: {ladleDir}
+                {LocalizationManager.GetText("漩涡切角")}: {vortexText}
+                """;
+    }
+
+    /// <summary>
     /// 计算目标效果
     /// </summary>
     public static string CalculateEffect()
@@ -65,7 +186,7 @@ public static class Calculation
         var devPos0 = colPos.Distance(targetPos) * 1800;
         var devPos2 = colPos.Distance(targetPos + Variable.Offset) * 1800;
         var devPos = devPos0 <= 2754 && devPos2 <= 600 ? devPos2 : devPos0;
-        var devRot = Math.Abs(Algebra.DeltaAngle(indRot, targetRot)) / 3 * 25;
+        var devRot = Math.Abs(Algebra.DeltaAngleDeg(indRot, targetRot)) / 3 * 25;
         var devTot = devPos + devRot;
         var lvlPos = devPos <= 100 ? 3 : devPos <= 600 ? 2 : devPos <= 2754 ? 1 : 0;
         var lvlRot = devRot <= 100 ? 3 : devRot <= 600 ? 2 : 1;

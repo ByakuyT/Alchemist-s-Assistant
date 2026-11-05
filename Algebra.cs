@@ -121,16 +121,81 @@ public static class Algebra
 
     #endregion
 
+    #region 三次方程求根
+
+    /// <summary>
+    /// 求解一般三次方程的全部不同实根
+    /// </summary>
+    public static List<double> SolveCubic(double A, double B, double C, double D)
+    {
+        List<double> roots = [];
+        var p = B / A;
+        var q = C / A;
+        var r = D / A;
+        var shift = -p / 3.0;
+        var P = q - p * p / 3.0;
+        var Q = 2.0 * p * p * p / 27.0 - p * q / 3.0 + r;
+        var disc = Q * Q / 4.0 + P * P * P / 27.0;
+        if (P > 0.0)
+        {
+            var arg = 1.5 * Q / P * Math.Sqrt(3.0 / P);
+            var t = -2.0 * Math.Sqrt(P / 3.0) * Math.Sinh(Asinh(arg) / 3.0);
+            AddUniqueRoot(roots, t + shift);
+        }
+        else if (P < 0.0)
+        {
+            if (disc > 0.0)
+            {
+                var sqrtDisc = Math.Sqrt(disc);
+                var u = Cbrt(-Q / 2.0 + sqrtDisc);
+                var v = Cbrt(-Q / 2.0 - sqrtDisc);
+                var denom = u * u - u * v + v * v;
+                var t = denom > 0.0 ? -Q / denom : u + v;
+                AddUniqueRoot(roots, t + shift);
+            }
+            else
+            {
+                var m = 2.0 * Math.Sqrt(-P / 3.0);
+                var denom = Math.Sqrt(-P * P * P / 27.0);
+                var arg = -Q / 2.0 / denom;
+                arg = arg < -1.0 ? -1.0 : arg > 1.0 ? 1.0 : arg;
+                var theta = Math.Acos(arg) / 3.0;
+                for (var i = 0; i < 3; i++)
+                {
+                    var t = m * Math.Cos(theta + 2.0 * Math.PI * i / 3.0);
+                    AddUniqueRoot(roots, t + shift);
+                }
+            }
+        }
+        else
+            AddUniqueRoot(roots, Cbrt(-Q) + shift);
+
+        return roots;
+    }
+
+    #endregion
+
     #region 数值处理
 
     /// <summary>
     /// 添加不重复的根
     /// </summary>
-    private static void AddUniqueRoot(List<double> roots, double value)
+    public static void AddUniqueRoot(List<double> roots, double value)
     {
         if (roots.Any(root => Math.Abs(value - root) < 1e-10))
             return;
         roots.Add(value);
+    }
+
+    /// <summary>
+    /// 添加不重复的弧度根
+    /// </summary>
+    public static void AddUniqueAngleRoot(List<double> roots, double angle)
+    {
+        angle = DeltaAngleRad(0, angle);
+        if (roots.Any(root => Math.Abs(DeltaAngleRad(angle, root)) < 1e-10))
+            return;
+        roots.Add(angle);
     }
 
     /// <summary>
@@ -146,7 +211,7 @@ public static class Algebra
     /// </summary>
     public static Variable.Vec2D FromPolar(Variable.Vec2D v)
     {
-        var theta = v.Y / 180 * Mathf.PI;
+        var theta = v.Y / 180 * Math.PI;
         return new(v.X * Math.Cos(theta), v.X * Math.Sin(theta));
     }
 
@@ -201,12 +266,37 @@ public static class Algebra
     }
 
     /// <summary>
-    /// Math.DeltaAngle(double)
+    /// Math.DeltaAngle(double, deg)
     /// </summary>
-    public static double DeltaAngle(double current, double target)
+    public static double DeltaAngleDeg(double current, double target)
     {
         var delta = (target - current) % 360.0;
         return delta > 180.0 ? delta - 360.0 : delta <= -180.0 ? delta + 360.0 : delta;
+    }
+
+    /// <summary>
+    /// Math.DeltaAngle(double, rad)
+    /// </summary>
+    public static double DeltaAngleRad(double current, double target)
+    {
+        var delta = (target - current) % (2.0 * Math.PI);
+        return delta > Math.PI ? delta - 2.0 * Math.PI : delta <= -Math.PI ? delta + 2.0 * Math.PI : delta;
+    }
+
+    /// <summary>
+    /// Math.Asinh(double)
+    /// </summary>
+    public static double Asinh(double x)
+    {
+        return Math.Sign(x) * Math.Log(Math.Abs(x) + Math.Sqrt(x * x + 1.0));
+    }
+
+    /// <summary>
+    /// Math.Cbrt(double)
+    /// </summary>
+    public static double Cbrt(double x)
+    {
+        return x >= 0.0 ? Math.Pow(x, 1.0 / 3.0) : -Math.Pow(-x, 1.0 / 3.0);
     }
 
     #endregion

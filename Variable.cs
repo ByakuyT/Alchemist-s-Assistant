@@ -195,13 +195,15 @@ public static class Variable
     public static PotionEffectMapItem TargetEffect;
     public static int TargetLineIndex;
     public static int TargetMarkerIndex;
+    public static double? SwampDistance;
     public static List<double> CustomLineDirections = [];
     public static List<bool> CustomLineHovers = [];
     public static List<(string, bool)> CustomLineInputs = [];
     public static List<Vec2D> CustomMarkerPositions = [];
     public static List<bool> CustomMarkerHovers = [];
-
     public static List<(string, string, bool, bool)> CustomMarkerInputs = [];
+    // 0 - 路径; 1 - 加水;
+    public static bool[] ClosestUseOffset = new bool[2];
 
     // 0 - 水; 1 - 油
     public static int[] VortexIndex = [-1, -1];

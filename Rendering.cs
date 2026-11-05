@@ -357,7 +357,7 @@ public static class Rendering
             var effectPos = Variable.Vec2D.From(Variable.TargetEffect.transform.localPosition);
             var effectRot = Variable.TargetEffect.transform.localEulerAngles.z;
             var indRot = Managers.RecipeMap.indicatorRotation.Value;
-            var devRot = Math.Abs(Algebra.DeltaAngle(indRot, effectRot));
+            var devRot = Math.Abs(Algebra.DeltaAngleDeg(indRot, effectRot));
             var cen = effectPos + Variable.Offset;
             var mapTrans = Managers.RecipeMap.currentMap.referencesContainer.transform;
             var posDev = mapTrans.TransformPoint(cen.ToVec3());
