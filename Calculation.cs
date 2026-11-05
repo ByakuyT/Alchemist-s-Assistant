@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using HarmonyLib;
 using PotionCraft.LocalizationSystem;
 using PotionCraft.ManagersSystem;
@@ -274,6 +276,147 @@ public static class Calculation
         Variable.Offset = Variable.DisplayOffset
             ? Variable.Vec2D.From(Managers.RecipeMap.indicator.thisTransform.localPosition)
             : Variable.Vec2D.Zero;
+    }
+
+    /// <summary>
+    /// 计算路径方向
+    /// </summary>
+    public static void GetPathLineDirection()
+    {
+        if (!Variable.DoLines[0] || Variable.PathPhysical.Count < 2)
+            Variable.LineDirections[0] = null;
+        else
+            Variable.LineDirections[0] =
+                Variable.Vec2D.Right.SignedAngle(Variable.PathPhysical[1].Item1 - Variable.PathPhysical[0].Item1);
+    }
+
+    /// <summary>
+    /// 计算加水方向
+    /// </summary>
+    public static void GetLadleLineDirection()
+    {
+        if (!Variable.DoLines[1])
+            Variable.LineDirections[1] = null;
+        else
+            Variable.LineDirections[1] =
+                Variable.Vec2D.Right.SignedAngle(
+                    -Variable.Vec2D.From(Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition));
+    }
+
+    /// <summary>
+    /// 计算目标方向
+    /// </summary>
+    public static void GetTargetLineDirection()
+    {
+        if (!Variable.DoLines[2] || Variable.TargetEffect == null)
+            Variable.LineDirections[2] = null;
+        else
+        {
+            var targetPos = Variable.Vec2D.From(Variable.TargetEffect.transform.localPosition);
+            var colPos = Variable.Vec2D.From(Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition) +
+                         Variable.Offset;
+            Variable.LineDirections[2] = Variable.Vec2D.Right.SignedAngle(targetPos - colPos);
+        }
+    }
+
+    /// <summary>
+    /// 计算漩涡方向
+    /// </summary>
+    public static void GetVortexLineDirection()
+    {
+        if (!Variable.DoLines[3])
+            Variable.LineDirections[3] = null;
+        else
+        {
+            var mapindex = Variable.MapId[Managers.RecipeMap.currentMap.potionBase.name];
+            if (mapindex == 2 || Variable.VortexIndex[mapindex] < 0)
+                Variable.LineDirections[3] = null;
+            else
+            {
+                var selVortex = Variable.Vortices[mapindex][Variable.VortexIndex[mapindex]];
+                var colPos = Variable.Vec2D.From(Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition) +
+                             Variable.Offset;
+                Variable.LineDirections[2] = Variable.Vec2D.Right.SignedAngle(selVortex.Pos - colPos);
+            }
+        }
+    }
+
+    /// <summary>
+    /// 计算漩涡切向
+    /// </summary>
+    public static void GetTangentLineDirection()
+    {
+        if (!Variable.DoLines[4] || !Variable.SpiralPhysical.HasValue)
+            Variable.LineDirections[4] = null;
+        else
+        {
+            var dir = Variable.SpiralPhysical.Value.MaxAngle + Variable.SpiralPhysical.Value.Rot +
+                      Math.Atan(Variable.SpiralPhysical.Value.MaxAngle);
+            Variable.LineDirections[4] = Algebra.DeltaAngleRad(0, dir - Math.PI) / Math.PI * 180;
+        }
+    }
+
+    /// <summary>
+    /// 生成漩涡曲线（参数和散列）
+    /// </summary>
+    public static void InitVortexCurve()
+    {
+        Variable.SpiralPhysical = null;
+        Variable.SpiralGraphical = [];
+        if (!Variable.DoVortexCurve) return;
+        var curVortex = Managers.RecipeMap.CurrentVortexMapItem;
+        if (curVortex == null) return;
+        var vortexPos = Variable.Vec2D.From(curVortex.thisTransform.localPosition);
+        var indPos = Variable.Vec2D.From(Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition);
+        var spiralPos = vortexPos + Variable.Offset;
+        var colPos = indPos + Variable.Offset;
+        var maxDis =
+            ((CircleCollider2D)Traverse.Create(Managers.RecipeMap.CurrentVortexMapItem).Field("vortexCollider")
+                .GetValue()).radius + Variable.IndicatorRad;
+        var dist = vortexPos.Distance(colPos);
+        if (dist > maxDis + 1e-10) return;
+        var v = indPos - vortexPos;
+        var maxAng = v.Magnitude / Variable.Spiral.A;
+        var rot = Algebra.DeltaAngleRad(0, Math.Atan2(v.Y, v.X) - maxAng);
+        var roots = Algebra.GetEnclosureRoots(CurvePoint, EncloseCurve, 0, maxAng);
+        var minAng = roots.Count > 0 ? roots.Last() : 0;
+        Variable.SpiralPhysical = new Variable.Spiral
+            { MaxAngle = maxAng, MinAngle = minAng, Pos = spiralPos, Rot = rot };
+        var mapTrans = Managers.RecipeMap.currentMap.referencesContainer.transform;
+        var angSpan = maxAng - minAng;
+        var pointCount = Math.Max(10, (int)Math.Ceiling(angSpan * 40));
+        List<Variable.Vec2D> localPoints = [];
+        for (var i = 0; i < pointCount; i++)
+        {
+            var t = i / (double)pointCount;
+            var angle = minAng + t * angSpan;
+            var radius = Variable.Spiral.A * angle;
+            var x = radius * Math.Cos(angle);
+            var y = radius * Math.Sin(angle);
+            var pRot = new Variable.Vec2D(x * Math.Cos(rot) - y * Math.Sin(rot), x * Math.Sin(rot) + y * Math.Cos(rot));
+            localPoints.Add(pRot + spiralPos);
+        }
+
+        localPoints.Add(colPos);
+        Variable.SpiralGraphical = [.. localPoints.Select(p => mapTrans.TransformPoint(p.ToVec3()))];
+
+        double CurvePoint(double t)
+        {
+            var r = t * Variable.Spiral.A;
+            var ang = t + rot;
+            var x = r * Math.Cos(ang) + Variable.Offset.X;
+            var y = r * Math.Sin(ang) + Variable.Offset.Y;
+            return x * x + y * y - maxDis * maxDis;
+        }
+
+        Variable.Interval? EncloseCurve(Variable.Interval theta)
+        {
+            var ang = theta + Variable.Interval.Point(rot);
+            var r = theta * Variable.Spiral.A;
+            var x = r * ang.Cos() + Variable.Interval.Point(Variable.Offset.X);
+            var y = r * ang.Sin() + Variable.Interval.Point(Variable.Offset.Y);
+            return x * x + y * y - Variable.Interval.Point(maxDis * maxDis);
+        }
     }
 
     #endregion

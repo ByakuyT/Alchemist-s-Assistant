@@ -191,7 +191,6 @@ public static class Variable
     public static int HandoffRunning = -1;
     public static Vector2 LastMousePos;
     public static Vec2D Offset;
-    public static Spiral? SpiralPhysical;
     public static PotionEffectMapItem TargetEffect;
     public static int TargetLineIndex;
     public static int TargetMarkerIndex;
@@ -201,7 +200,9 @@ public static class Variable
     public static List<(string, bool)> CustomLineInputs = [];
     public static List<Vec2D> CustomMarkerPositions = [];
     public static List<bool> CustomMarkerHovers = [];
+
     public static List<(string, string, bool, bool)> CustomMarkerInputs = [];
+
     // 0 - 路径; 1 - 加水;
     public static bool[] ClosestUseOffset = new bool[2];
 
@@ -226,8 +227,9 @@ public static class Variable
     public static Vec2D?[] ClosestPositions = [null, null, null, null];
     public static List<(Vec2D, bool)> PathPhysical = [];
     public static List<(Vector3[], bool)> PathGraphical = [];
+    public static Spiral? SpiralPhysical;
 
-    public static Vector3[] VortexGraphical;
+    public static Vector3[] SpiralGraphical;
 
     // 0 - 路径切向线; 1 - 加水方向线; 2 - 效果径向线; 3 - 漩涡径向线; 4 - 漩涡切向线
     public static double?[] LineDirections = [null, null, null, null, null];

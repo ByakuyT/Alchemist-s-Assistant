@@ -325,11 +325,11 @@ public static class Rendering
             Variable.PathCurves.Clear();
         }
 
-        if (Variable.DoVortexCurve && Variable.VortexGraphical.Length >= 2)
+        if (Variable.DoVortexCurve && Variable.SpiralGraphical.Length >= 2)
         {
             if (Variable.VortexCurve == null)
                 InitLineRenderer(Variable.SolidMaterial, Variable.ColorSpiral.Value, 2, out Variable.VortexCurve);
-            Variable.VortexCurve.SetPositions(Variable.VortexGraphical);
+            Variable.VortexCurve.SetPositions(Variable.SpiralGraphical);
         }
         else if (Variable.VortexCurve != null)
             Object.Destroy(Variable.VortexCurve.gameObject);

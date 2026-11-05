@@ -119,6 +119,84 @@ public static class Algebra
         }
     }
 
+    /// <summary>
+    /// 一元连续函数的严格变号根
+    /// </summary>
+    public static List<double> GetEnclosureRoots(Func<double, double> f,
+        Func<Variable.Interval, Variable.Interval?> enclosure, double x0, double x1)
+    {
+        if (x1 <= x0) return [];
+        List<double> roots = [];
+        Refine(x0, x1);
+        return roots;
+
+        void Refine(double a, double b)
+        {
+            var fa = f(a);
+            var fb = f(b);
+            var m = 0.5 * (a + b);
+            if (double.IsNaN(fa) || double.IsNaN(fb))
+            {
+                if (b - a < 1e-10) return;
+                Refine(a, m);
+                Refine(m, b);
+                return;
+            }
+
+            if (fa == 0.0)
+            {
+                TryAdd(a);
+                return;
+            }
+
+            if (fb == 0.0)
+            {
+                TryAdd(b);
+                return;
+            }
+
+            if (Math.Sign(fa) != Math.Sign(fb))
+            {
+                var r = Brent(f, a, b);
+                if (double.IsNaN(r))
+                {
+                    Refine(a, m);
+                    Refine(m, b);
+                }
+                else
+                    TryAdd(r);
+
+                return;
+            }
+
+            if (b - a < 1e-10)
+            {
+                var pe = enclosure(new(a, b));
+                if (pe is { IsEmpty: false, L: <= 0.0, H: >= 0.0 })
+                    TryAdd(m);
+                return;
+            }
+
+            var psi = enclosure(new(a, b));
+            if (psi is not { IsEmpty: false, L: <= 0.0, H: >= 0.0 }) return;
+            Refine(a, m);
+            Refine(m, b);
+        }
+
+        void TryAdd(double r)
+        {
+            var rl = r - 1e-10;
+            var rr = r + 1e-10;
+            if (rl < x0 || rr > x1) return;
+            var fl = f(rl);
+            var fr = f(rr);
+            if (double.IsNaN(fl) || double.IsNaN(fr)) return;
+            if (Math.Sign(fl) == Math.Sign(fr)) return;
+            if (roots.Any(ex => Math.Abs(ex - r) < 1e-10)) return;
+            roots.Add(r);
+        }
+    }
+
     #endregion
 
     #region 三次方程求根

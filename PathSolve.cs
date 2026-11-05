@@ -93,14 +93,14 @@ public static class PathSolve
     /// <summary>
     /// 计算漩涡 → 加水
     /// </summary>
-    private static Variable.Vec2D? VortexToLadle(Variable.Spiral? spiral, Variable.Vec2D O, Variable.Vec2D C,
+    private static Variable.Vec2D? VortexToLadle(Variable.Spiral? spiral, Variable.Vec2D o, Variable.Vec2D c,
         double rad)
     {
         if (spiral == null) return null;
-        var S = spiral.Value;
+        var sp = spiral.Value;
         var bestP = (double.PositiveInfinity, 0.0);
-        bestP = Better(SpiralPoint(S, S.MinAngle, O, C, rad), bestP);
-        var width = S.MaxAngle - S.MinAngle;
+        bestP = Better(SpiralPoint(sp, sp.MinAngle, o, c, rad), bestP);
+        var width = sp.MaxAngle - sp.MinAngle;
         if (width > 1e-10)
         {
             var n = Math.Max(1, (int)Math.Ceiling(width / Math.PI * 16.0));
@@ -108,26 +108,68 @@ public static class PathSolve
             var partitions = new (double, double)[n];
             for (var i = 0; i < n; i++)
             {
-                var a = S.MinAngle + i * span;
-                var b = i == n - 1 ? S.MaxAngle : S.MinAngle + (i + 1) * span;
+                var a = sp.MinAngle + i * span;
+                var b = i == n - 1 ? sp.MaxAngle : sp.MinAngle + (i + 1) * span;
                 partitions[i] = (a, b);
             }
 
             var locals = new List<double>[n];
             Parallel.For(0, n,
-                i => locals[i] = SolvePartition(partitions[i].Item1, partitions[i].Item2, S, O, C, rad));
+                i => locals[i] =
+                    Algebra.GetEnclosureRoots(PhiPoint, EnclosePhi, partitions[i].Item1, partitions[i].Item2));
             var rootl = locals.SelectMany(l => l).OrderBy(x => x).ToList();
             var roots = new List<double>();
             foreach (var r in rootl)
                 if (roots.Count == 0 || Math.Abs(roots.Last() - r) > 1e-10)
                     roots.Add(r);
             foreach (var r in roots)
-                bestP = Better(SpiralPoint(S, r, O, C, rad), bestP);
-            bestP = Better(SpiralPoint(S, S.MaxAngle, O, C, rad), bestP);
+                bestP = Better(SpiralPoint(sp, r, o, c, rad), bestP);
+            bestP = Better(SpiralPoint(sp, sp.MaxAngle, o, c, rad), bestP);
         }
 
-        return new(S.Pos.X + Variable.Spiral.A * bestP.Item2 * Math.Cos(bestP.Item2 + S.Rot),
-            S.Pos.Y + Variable.Spiral.A * bestP.Item2 * Math.Sin(bestP.Item2 + S.Rot));
+        return new(sp.Pos.X + Variable.Spiral.A * bestP.Item2 * Math.Cos(bestP.Item2 + sp.Rot),
+            sp.Pos.Y + Variable.Spiral.A * bestP.Item2 * Math.Sin(bestP.Item2 + sp.Rot));
+
+        double PhiPoint(double th)
+        {
+            var phi = th + sp.Rot;
+            var sinPhi = Math.Sin(phi);
+            var cosPhi = Math.Cos(phi);
+            var dir = new Variable.Vec2D(cosPhi, sinPhi);
+            var tan = new Variable.Vec2D(-sinPhi, cosPhi);
+            var z = c - o;
+            var d = sp.Pos + th * Variable.Spiral.A * dir - o;
+            var dp = Variable.Spiral.A * (dir + th * tan);
+            var q2 = d.SqrMagnitude;
+            var zd = d.Dot(z);
+            var h = zd * zd - (z.SqrMagnitude - rad * rad) * q2;
+            if (h <= 0.0) return double.NaN;
+            var d2 = d.Dot(dp);
+            var zdp = dp.Dot(z);
+            var t = zd * d2 - zdp * q2;
+            return 2.0 * (Math.Sqrt(h) * (d2 * q2 + t) + zd * t);
+        }
+
+        Variable.Interval? EnclosePhi(Variable.Interval th)
+        {
+            var phi = th + Variable.Interval.Point(sp.Rot);
+            var sinPhi = phi.Sin();
+            var cosPhi = phi.Cos();
+            var at = th * Variable.Spiral.A;
+            var dx = Variable.Interval.Point(sp.Pos.X - o.X) + at * cosPhi;
+            var dy = Variable.Interval.Point(sp.Pos.Y - o.Y) + at * sinPhi;
+            var dxp = (cosPhi - th * sinPhi) * Variable.Spiral.A;
+            var dyp = (sinPhi + th * cosPhi) * Variable.Spiral.A;
+            var z = c - o;
+            var k2 = z.SqrMagnitude - rad * rad;
+            var q2 = dx * dx + dy * dy;
+            var zd = dx * z.X + dy * z.Y;
+            var h = zd * zd - q2 * k2;
+            var d2 = dx * dxp + dy * dyp;
+            var zdp = dxp * z.X + dyp * z.Y;
+            var t = zd * d2 - zdp * q2;
+            return 2.0 * (h.Sqrt() * (d2 * q2 + t) + zd * t);
+        }
     }
 
     #endregion
@@ -211,134 +253,6 @@ public static class PathSolve
     #endregion
 
     #region 辅助计算
-
-    /// <summary>
-    /// 螺线 → 加水残差
-    /// </summary>
-    private static double PsiPoint(double th, in Variable.Spiral sp, Variable.Vec2D o, Variable.Vec2D c, double rad)
-    {
-        var phi = th + sp.Rot;
-        var sinPhi = Math.Sin(phi);
-        var cosPhi = Math.Cos(phi);
-        var dir = new Variable.Vec2D(cosPhi, sinPhi);
-        var tan = new Variable.Vec2D(-sinPhi, cosPhi);
-        var z = c - o;
-        var d = sp.Pos + th * Variable.Spiral.A * dir - o;
-        var dp = Variable.Spiral.A * (dir + th * tan);
-        var q2 = d.SqrMagnitude;
-        var zd = d.Dot(z);
-        var h = zd * zd - (z.SqrMagnitude - rad * rad) * q2;
-        if (h <= 0.0) return double.NaN;
-        var d2 = d.Dot(dp);
-        var zdp = dp.Dot(z);
-        var t = zd * d2 - zdp * q2;
-        return 2.0 * (Math.Sqrt(h) * (d2 * q2 + t) + zd * t);
-    }
-
-    /// <summary>
-    /// 螺线 → 加水区间计算
-    /// </summary>
-    private static Variable.Interval EnclosePhi(Variable.Interval th, in Variable.Spiral sp, Variable.Vec2D o,
-        Variable.Vec2D c, double rad)
-    {
-        var phi = th + Variable.Interval.Point(sp.Rot);
-        var sinPhi = phi.Sin();
-        var cosPhi = phi.Cos();
-        var at = th * Variable.Spiral.A;
-        var dx = Variable.Interval.Point(sp.Pos.X - o.X) + at * cosPhi;
-        var dy = Variable.Interval.Point(sp.Pos.Y - o.Y) + at * sinPhi;
-        var dxp = (cosPhi - th * sinPhi) * Variable.Spiral.A;
-        var dyp = (sinPhi + th * cosPhi) * Variable.Spiral.A;
-        var z = c - o;
-        var k2 = z.SqrMagnitude - rad * rad;
-        var q2 = dx * dx + dy * dy;
-        var zd = dx * z.X + dy * z.Y;
-        var h = zd * zd - q2 * k2;
-        var d2 = dx * dxp + dy * dyp;
-        var zdp = dxp * z.X + dyp * z.Y;
-        var t = zd * d2 - zdp * q2;
-        return 2.0 * (h.Sqrt() * (d2 * q2 + t) + zd * t);
-    }
-
-    /// <summary>
-    /// 螺线 → 加水单个分区求解
-    /// </summary>
-    private static List<double> SolvePartition(double a0, double b0, Variable.Spiral sp, Variable.Vec2D o,
-        Variable.Vec2D c, double rad)
-    {
-        var localRoots = new List<double>();
-        Func<double, double> Psi = t => PsiPoint(t, sp, o, c, rad);
-        Refine(a0, b0);
-        return localRoots;
-
-        void Refine(double a, double b)
-        {
-            var fa = Psi(a);
-            var fb = Psi(b);
-            if (double.IsNaN(fa) || double.IsNaN(fb))
-            {
-                if (b - a < 1e-10) return;
-                var m0 = 0.5 * (a + b);
-                Refine(a, m0);
-                Refine(m0, b);
-                return;
-            }
-
-            if (fa == 0.0)
-            {
-                TryAdd(a);
-                return;
-            }
-
-            if (fb == 0.0)
-            {
-                TryAdd(b);
-                return;
-            }
-
-            if (Math.Sign(fa) != Math.Sign(fb))
-            {
-                var r = Algebra.Brent(Psi, a, b);
-                if (double.IsNaN(r))
-                {
-                    var m1 = 0.5 * (a + b);
-                    Refine(a, m1);
-                    Refine(m1, b);
-                }
-                else
-                    TryAdd(r);
-
-                return;
-            }
-
-            if (b - a < 1e-10)
-            {
-                var pe = EnclosePhi(new(a, b), sp, o, c, rad);
-                if (pe is { IsEmpty: false, L: <= 0.0, H: >= 0.0 })
-                    TryAdd(0.5 * (a + b));
-                return;
-            }
-
-            var psi = EnclosePhi(new(a, b), sp, o, c, rad);
-            if (psi is not { IsEmpty: false, L: <= 0.0, H: >= 0.0 }) return;
-            var m2 = 0.5 * (a + b);
-            Refine(a, m2);
-            Refine(m2, b);
-        }
-
-        void TryAdd(double r)
-        {
-            var rl = r - 1e-10;
-            var rr = r + 1e-10;
-            if (rl < sp.MinAngle || rr > sp.MaxAngle) return;
-            var fl = Psi(rl);
-            var fr = Psi(rr);
-            if (double.IsNaN(fl) || double.IsNaN(fr)) return;
-            if (Math.Sign(fl) == Math.Sign(fr)) return;
-            if (localRoots.Any(ex => Math.Abs(ex - r) < 1e-10)) return;
-            localRoots.Add(r);
-        }
-    }
 
     /// <summary>
     /// 比较两个折线候选结果
