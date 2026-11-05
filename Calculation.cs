@@ -185,7 +185,7 @@ public static class Calculation
         var indRot = Managers.RecipeMap.indicatorRotation.Value;
         var devPos0 = colPos.Distance(targetPos) * 1800;
         var devPos2 = colPos.Distance(targetPos + Variable.Offset) * 1800;
-        var devPos = devPos0 <= 2754 && devPos2 <= 600 ? devPos2 : devPos0;
+        var devPos = devPos0 <= 2754 && devPos2 <= 2754 ? devPos2 : devPos0;
         var devRot = Math.Abs(Algebra.DeltaAngleDeg(indRot, targetRot)) / 3 * 25;
         var devTot = devPos + devRot;
         var lvlPos = devPos <= 100 ? 3 : devPos <= 600 ? 2 : devPos <= 2754 ? 1 : 0;
