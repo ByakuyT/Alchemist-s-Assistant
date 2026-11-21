@@ -342,6 +342,24 @@
     }
   },
   {
+    "key": "漩涡落点预测",
+    "values": {
+      "en": "Vortex Destination",
+      "de": "Vortex-Ziel",
+      "fr": "Destination du vortex",
+      "it": "Destinazione del vortice",
+      "es": "Destino del vórtice",
+      "ptBR": "Destino do vórtice",
+      "ru": "Точка назначения вихря",
+      "pl": "Cel wiru",
+      "tr": "Girdap Hedefi",
+      "ja": "渦の到達点",
+      "ko": "소용돌이 도착점",
+      "th": "จุดหมายของกระแสน้ำวน",
+      "cs": "Cíl víru"
+    }
+  },
+  {
     "key": "盐量数据",
     "values": {
       "en": "Salt Data",

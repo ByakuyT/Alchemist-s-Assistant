@@ -5,6 +5,7 @@ using HarmonyLib;
 using PotionCraft.LocalizationSystem;
 using PotionCraft.ManagersSystem;
 using PotionCraft.ObjectBased.Mortar;
+using PotionCraft.ObjectBased.RecipeMap.RecipeMapItem.VortexMapItem;
 using UnityEngine;
 
 namespace AlchAssV4;
@@ -330,7 +331,7 @@ public static class Calculation
     }
 
     /// <summary>
-    /// 生成漩涡曲线（参数和散列）
+    /// 生成漩涡曲线（物理和渲染）
     /// </summary>
     public static void InitVortexCurve()
     {
@@ -387,6 +388,54 @@ public static class Calculation
             var y = r * ang.Sin() + Variable.Interval.Point(Variable.Offset.Y);
             return x * x + y * y - Variable.Interval.Point(maxDis * maxDis);
         }
+    }
+
+    /// <summary>
+    /// 生成路径曲线（物理和渲染）
+    /// </summary>
+    public static void InitPathCurve()
+    {
+        Variable.PathOriginal = [];
+        Variable.PathPhysical = [];
+        Variable.PathGraphical = [];
+        Variable.SwampPositions = [];
+        Variable.SwampDistance = null;
+        var pathHints = Managers.RecipeMap.path.fixedPathHints;
+        if (pathHints.Count == 0) return;
+        var mapTrans = Managers.RecipeMap.currentMap.referencesContainer.transform;
+        var pathTrans = Managers.RecipeMap.path.thisTransform;
+        var indPos = Variable.Vec2D.From(Managers.RecipeMap.recipeMapObject.indicatorContainer.localPosition);
+        var mapId = Variable.MapId[Managers.RecipeMap.currentMap.potionBase.name];
+        var curVortex = Managers.RecipeMap.CurrentVortexMapItem;
+        var offset = Variable.Offset;
+        if (Variable.DoVortexForecast && curVortex != null)
+        {
+            var landPos = Variable.Vec2D.From(mapTrans.InverseTransformPoint(pathTrans.TransformPoint(curVortex.GetComponent<VortexPath>().EvenlySpacedPointsMain.points.Last())));
+            offset += landPos - indPos;
+        }
+
+        Variable.PathPhysical.Add((indPos + offset, false));
+        var stIn = Geometry.GetStartInZone(indPos + offset, 5);
+        var stSet = Variable.Vec2D.Zero;
+        List<(int, double)> swampT = [];
+        var stInA = stIn;
+        foreach (var hint in pathHints)
+        {
+            var isTp = hint.GetType().Name == "TeleportationFixedHint";
+            var points = hint.evenlySpacedPointsFixedPhysics.points.Select(point => Variable.Vec2D.From(mapTrans.InverseTransformPoint(pathTrans.TransformPoint(point))) + offset).ToList();
+            if (points.Count < 2) continue;
+            points[0] = Variable.PathOriginal.Last().Item1;
+            Variable.PathOriginal.AddRange(points.Skip(1).Select(point => (point, isTp)));
+            Geometry.ClampPath(points, isTp, mapId, ref stIn, ref stSet, out var cPoints, out var sPoints, out var spT);
+            Variable.PathPhysical.AddRange(cPoints.Skip(1).Select(point => (point, isTp)));
+            Variable.PathGraphical.Add(([.. cPoints.Select(point => mapTrans.TransformPoint(point))], isTp));
+            if (!Variable.DoSwampPoint || mapId != 1) continue;
+            Variable.SwampPositions.AddRange(sPoints);
+            swampT.AddRange(spT);
+        }
+
+        if (Variable.DoSwampPoint && mapId == 1)
+            Variable.SwampDistance = Geometry.GetSwampLength(Variable.PathPhysical, swampT, stInA);
     }
 
     #endregion

@@ -112,9 +112,10 @@ public class Main : BaseUnityPlugin
     public static void IndicatorUpdate(float ___health)
     {
         Calculation.UpdateOffset();
-        Calculation.InitPathCurve();
         Calculation.InitVortexCurve();
-        Calculation.InitPoints(___health);
+        Calculation.InitPathCurve();
+        Calculation.InitPoints();
+        Calculation.InitDangerZone(___health);
         Calculation.GetPathLineDirection();
         Calculation.GetLadleLineDirection();
         Calculation.GetTargetLineDirection();

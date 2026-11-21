@@ -1,0 +1,9 @@
+# Rider / IDE
+.idea/
+.vs/
+*.user
+*.DotSettings.user
+
+# .NET build output
+bin/
+obj/

@@ -60,7 +60,7 @@ public static class Variable
     #region 文件数据
 
     // 0 - 水; 1 - 油
-    public static readonly List<Vortex>[] Vortices = [[], []];
+    public static readonly List<ZoneCircle>[] Vortices = [[], []];
 
     // 0 - 水强危险区; 1 - 油强危险区; 2 - 酒强危险区; 3 - 弱危险区; 4 - 治疗区; 5 - 沼泽区
     public static readonly List<ZoneCircle>[] Circles = [[], [], [], [], [], []];
@@ -152,6 +152,7 @@ public static class Variable
     public static bool EnableDangerSimulation = false;
     public static bool EnableSwampSimulation = false;
     public static bool EnableTransparency = false;
+    public static bool EnableVortexForecast = false;
     public static bool DoPathCurve = false;
     public static bool DoVortexCurve = false;
     public static bool DoCustomLine = false;
@@ -159,6 +160,7 @@ public static class Variable
     public static bool DoEffectRange = false;
     public static bool DoVortexRange = false;
     public static bool DoTransparency = false;
+    public static bool DoVortexForecast = false;
     public static bool DoPathEffectPoint = false;
     public static bool DoLadleEffectPoint = false;
     public static bool DoPathVortexPoint = false;
@@ -218,6 +220,7 @@ public static class Variable
 
     // 0 - 路径和效果; 1 - 路径和漩涡; 2 - 加水和效果; 3 - 加水和漩涡
     public static Vec2D?[] ClosestPositions = [null, null, null, null];
+    public static List<(Vec2D, bool)> PathOriginal = [];
     public static List<(Vec2D, bool)> PathPhysical = [];
     public static List<(Vector3[], bool)> PathGraphical = [];
     public static Spiral? SpiralPhysical;
@@ -244,15 +247,6 @@ public static class Variable
     {
         public string key;
         public Dictionary<string, string> values;
-    }
-
-    /// <summary>
-    /// 漩涡
-    /// </summary>
-    public struct Vortex
-    {
-        public Vec2D Pos;
-        public double Rad;
     }
 
     /// <summary>

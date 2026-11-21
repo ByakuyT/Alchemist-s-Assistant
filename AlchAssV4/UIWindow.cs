@@ -140,6 +140,7 @@ public static class UIWindow
             Variable.EnableTangentLine = GUILayout.Toggle(Variable.EnableTangentLine, LocalizationManager.GetText("漩涡切向线"), Variable.ToggleStyle);
             Variable.EnableCustomLine = GUILayout.Toggle(Variable.EnableCustomLine, LocalizationManager.GetText("自定义方向线"), Variable.ToggleStyle);
             Variable.EnableCustomMarker = GUILayout.Toggle(Variable.EnableCustomMarker, LocalizationManager.GetText("自定义标记点"), Variable.ToggleStyle);
+            Variable.EnableVortexForecast = GUILayout.Toggle(Variable.EnableVortexForecast, LocalizationManager.GetText("漩涡落点预测"), Variable.ToggleStyle);
             GUILayout.EndVertical();
             GUILayout.FlexibleSpace();
             GUILayout.BeginVertical();

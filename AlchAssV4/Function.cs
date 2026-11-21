@@ -221,6 +221,7 @@ public static class Function
         Variable.DoEffectRange = Variable.EnableEffectRange;
         Variable.DoVortexRange = Variable.EnableVortexRange;
         Variable.DoTransparency = Variable.EnableTransparency;
+        Variable.DoVortexForecast = Variable.EnableVortexForecast;
         Variable.DoPathEffectPoint = Variable.EnablePathCurve && Variable.EnableEffectRange;
         Variable.DoLadleEffectPoint = Variable.EnableLadleLine && Variable.EnableEffectRange;
         Variable.DoPathVortexPoint = Variable.EnablePathCurve && Variable.EnableVortexRange;
@@ -304,14 +305,14 @@ public static class Function
     /// <summary>
     /// 加载漩涡数据
     /// </summary>
-    private static void LoadVortexFromBin(string path, out List<Variable.Vortex> list)
+    private static void LoadVortexFromBin(string path, out List<Variable.ZoneCircle> list)
     {
         var data = ReadBinaryFile($"AlchAssV4.Bins.{path}.bin");
         using var reader = new BinaryReader(new MemoryStream(data));
         var len = reader.ReadInt32();
-        list = new List<Variable.Vortex>(len);
+        list = new List<Variable.ZoneCircle>(len);
         for (var i = 0; i < len; i++)
-            list.Add(new Variable.Vortex { Pos = new(reader.ReadDouble(), reader.ReadDouble()), Rad = reader.ReadDouble() });
+            list.Add(new Variable.ZoneCircle { Pos = new(reader.ReadDouble(), reader.ReadDouble()), Rad = reader.ReadDouble() });
     }
 
     /// <summary>

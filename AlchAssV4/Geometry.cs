@@ -50,6 +50,60 @@ public static class Geometry
 
     #endregion
 
+    #region 计算图形
+
+    /// <summary>
+    /// 计算点到AABB的距离
+    /// </summary>
+    private static double DistPointAABB(Variable.Vec2D p, double xmin, double ymin, double xmax, double ymax)
+    {
+        var cx = Algebra.Clamp(p.X, xmin, xmax);
+        var cy = Algebra.Clamp(p.Y, ymin, ymax);
+        return p.Distance(new Variable.Vec2D(cx, cy));
+    }
+
+    /// <summary>
+    /// 计算点到圆的距离
+    /// </summary>
+    private static double DistPointCircle(Variable.Vec2D p, Variable.ZoneCircle c)
+    {
+        return Math.Max(p.Distance(c.Pos) - c.Rad, 0);
+    }
+
+    /// <summary>
+    /// 计算点到矩形的距离
+    /// </summary>
+    private static double DistPointBox(Variable.Vec2D p, Variable.ZoneBox b)
+    {
+        var d = p - b.Pos;
+        var c = Math.Cos(-b.Rot);
+        var s = Math.Sin(-b.Rot);
+        var lx = d.X * c - d.Y * s;
+        var ly = d.X * s + d.Y * c;
+        var qx = Math.Max(Math.Abs(lx) - b.XHalf, 0);
+        var qy = Math.Max(Math.Abs(ly) - b.YHalf, 0);
+        return Math.Sqrt(qx * qx + qy * qy);
+    }
+
+    /// <summary>
+    /// 检查点所在格是否可能碰撞
+    /// </summary>
+    private static bool PointMayHit(Variable.Vec2D p, int zoneId)
+    {
+        var dp = p - Variable.OccOrigin[zoneId];
+        var occ = Variable.OccSum[zoneId];
+        var cx = (int)Math.Floor(dp.X / Variable.OccCell);
+        var cy = (int)Math.Floor(dp.Y / Variable.OccCell);
+        if (cx < 0 || cx >= occ.GetLength(0) || cy < 0 || cy >= occ.GetLength(1)) return false;
+        var a = occ[cx + 1, cy + 1];
+        var b = occ[cx, cy + 1];
+        var c = occ[cx + 1, cy];
+        var d = occ[cx, cy];
+        return a - b - c + d > 0;
+    }
+
+    #endregion
+
     #region 漩涡可达角
 
     /// <summary>
@@ -175,6 +229,44 @@ public static class Geometry
         var lhs = s * sinEta;
         var rhs = a * (rad + s * cosEta) / rho;
         return Math.Abs(lhs - rhs) < 1e-10;
+    }
+
+    #endregion
+
+    #region 区域判定
+
+    /// <summary>
+    /// 检查点是否在区域里
+    /// </summary>
+    public static bool GetStartInZone(Variable.Vec2D pos, int zoneId)
+    {
+        if (!PointMayHit(pos, zoneId)) return false;
+        var bvh = Variable.BVH[zoneId];
+        var db = DistPointAABB(pos, bvh[0].XMin, bvh[0].YMin, bvh[0].XMax, bvh[0].YMax);
+        if (db - Variable.BoxSkin >= Variable.IndicatorRad) return false;
+        var circles = Variable.Circles[zoneId];
+        var boxes = Variable.Boxes[zoneId];
+        var stack = new Stack<Variable.ZoneBvh>();
+        stack.Push(bvh[0]);
+        while (stack.Count > 0)
+        {
+            var node = stack.Pop();
+            if (node.Left < 0)
+            {
+                if (node.Circles.Any(index => DistPointCircle(pos, circles[index]) < Variable.IndicatorRad)) return true;
+                if (node.Boxes.Any(index => DistPointBox(pos, boxes[index]) - Variable.BoxSkin < Variable.IndicatorRad)) return true;
+            }
+
+            var left = bvh[node.Left];
+            var right = bvh[node.Right];
+            var dl = DistPointAABB(pos, left.XMin, left.YMin, left.XMax, left.YMax);
+            var dr = DistPointAABB(pos, right.XMin, right.YMin, right.XMax, right.YMax);
+            if (dl < dr) (left, right, dl, dr) = (right, left, dr, dl);
+            if (dl - Variable.BoxSkin < Variable.IndicatorRad) stack.Push(left);
+            if (dr - Variable.BoxSkin < Variable.IndicatorRad) stack.Push(right);
+        }
+
+        return false;
     }
 
     #endregion
